@@ -1,0 +1,98 @@
+# =======================================
+# === GENERAL PROJECT CONFIGURATION ====
+# =======================================
+# OS-specific junk
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# Temporary files
+*.swp
+*.bak
+*.tmp
+*.log
+
+# =======================================
+# === THESIS / LATEX SECTION ============
+# =======================================
+# Build and auxiliary LaTeX files
+thesis/build/
+thesis/*.aux
+thesis/*.bbl
+thesis/*.bcf
+thesis/*.blg
+thesis/*.fdb_latexmk
+thesis/*.fls
+thesis/*.lof
+thesis/*.lot
+thesis/*.out
+thesis/*.run.xml
+thesis/*.synctex.gz
+thesis/*.toc
+thesis/*.pdf
+
+# Backup files created by TeX editors
+thesis/*~
+thesis/*.bak
+thesis/*.tmp
+thesis/*.log
+
+# =======================================
+# === CODE / CMAKE / C SECTION ==========
+# =======================================
+# Build directories
+code/build/
+code/bin/
+code/lib/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.make
+*.ninja
+*.ninja_deps
+*.ninja_log
+
+# Object and binary files
+*.o
+*.obj
+*.exe
+*.out
+*.a
+*.so
+*.dll
+
+# GMP test output
+code/test_*.txt
+code/*.csv
+
+# =======================================
+# === PYTHON ANALYSIS SECTION ===========
+# =======================================
+# Python virtual environments
+code/analysis/venv/
+venv/
+env/
+ENV/
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
+
+# =======================================
+# === MISCELLANEOUS =====================
+# =======================================
+# Logs, archives, compressed data
+*.zip
+*.tar
+*.gz
+*.7z
+
+# =======================================
+# === OPTIONAL IGNORE (uncomment if used)
+# =======================================
+# .vscode/
+# .idea/
+# *.code-workspace
+
