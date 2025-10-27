@@ -1,0 +1,18 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-Iinclude",
+      "-Wall",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "build/knapsack",
+      "src/main.c"
+    ],
+    "directory": "/home/vavr0/school/knapsack_cryptosystems/code",
+    "file": "/home/vavr0/school/knapsack_cryptosystems/code/src/main.c",
+    "output": "/home/vavr0/school/knapsack_cryptosystems/code/build/knapsack"
+  }
+]
