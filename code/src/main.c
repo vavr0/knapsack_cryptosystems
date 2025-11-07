@@ -34,9 +34,15 @@ int main() {
     printf("\nCiphertext:\n");
     gmp_printf("C = %Zd\n", ciphertext);
 
-    // Step 4: Clean up
-    mpz_clear(ciphertext);
 
+    int decrypted[8];
+    decrypt_message(&key, ciphertext, decrypted);
+
+    printf("\nDecrypted bits: ");
+    for (size_t i = 0; i < key.n; i++) printf("%d", decrypted[i]);
+    printf("\n");
+
+    mpz_clear(ciphertext);
     keygen_clear(&key);
     return 0;
 }

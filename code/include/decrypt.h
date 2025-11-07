@@ -2,5 +2,6 @@
 #include "common.h"
 #include "keygen.h"
 
-void decrypt_message(const KnapsackKey *key, const mpz_t ciphertext, int message[8]);
-
+// Decrypts ciphertext using private key
+// 'message' must be an int array of size key->n (output bits)
+void decrypt_message(const KnapsackKey *key, const mpz_t ciphertext, int *message);
