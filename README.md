@@ -1,8 +1,17 @@
 # BAKALARKA
 
-- 27. oktobra 14:20
-- introduction, nejaky kod, volba jazyku (why?), nejaka kostra prace, uvod do knapsacku
-## OUTLINE
+## TODO
+
+- superincreasing knapasack porovnanie z normalny preco np jeden a druhy nie
+- mnozina vah, -> jedno / viac rieseni 
+- priklad -> ilustracny priklad
+- animacie mozno
+- atacky, fixy
+- 12.november (11:30) vynimocne
+
+## THESIS
+
+### OUTLINE
 Abstract (SK/EN)
 Introduction
 1. Theoretical Background
@@ -22,7 +31,7 @@ Conclusion
 Bibliography
 Appendices
 
-## INTRODUCTION (≈ 1–2 pages, unnumbered chapter)
+### INTRODUCTION (≈ 1–2 pages, unnumbered chapter)
 
 Introduce the reader to the problem and motivation:
 - Importance of cryptography and public-key systems
@@ -30,7 +39,7 @@ Introduce the reader to the problem and motivation:
 - Describe the aim and goals of your thesis
 - Outline of chapters (“The thesis is structured as follows…”)
 
-## THEORY 
+### THEORY 
 
 1. Theoretical Background
     1. Basics of Cryptography
@@ -89,20 +98,20 @@ Introduce the reader to the problem and motivation:
 	-	Discuss limitations and what could be improved
 	-	Relate your results to existing literature
 
-## CONCLUSION
+### CONCLUSION
 
 - Summarize what you learned and achieved
 - Evaluate if the aims were fulfilled
 - Mention possible directions for future work
 - (e.g., post-quantum cryptography, hybrid systems)
 
-## APPENDICES
+### APPENDICES
 
 - Appendix A: Source code
 - Appendix B: User guide / compilation instructions
 - Appendix C: Additional data or extended tests
 
-## BIBLIOGRAPHY
+### BIBLIOGRAPHY
 
 - Follow FMFI BibTeX format
 - Alexander Stanoyevitch – Discrete Structures with Contemporary Applications
@@ -110,11 +119,4 @@ Introduce the reader to the problem and motivation:
 - Any online sources used for algorithms or libraries
 
 
-### NEW
 
-- superincreasing knapasack porovnanie z normalny preco np jeden a druhy nie
-- mnozina vah, -> jedno / viac rieseni 
-- priklad -> ilustracny priklad
-- animacie mozno
-- atacky, fixy
-- 12.november (11:30) vynimocne
