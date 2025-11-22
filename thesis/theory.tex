@@ -1,11 +1,54 @@
 \chapter{Theoretical Background}
 
-\section{Basics of Cryptography} Cryptography is a part of computer science and
+\section{Basics of Cryptography} 
+Cryptography is a part of computer science and
 mathematics that focuses on protecting contents of transmitted data through
-insecure channels like internet, from unauthorized parties. It's name is
+insecure channels like the Internet, from unauthorized parties. Its name is
 derived from the greek word "kryptos" meaning hidden and "graphein" meaning
 writing so we could literally translate it as hidden writing. In today's world
 it is possible to hide any type of digital communication from text to video. 
+
+The need for secret communication came much earlier. One of the first
+implementations of cryptography was found in the use of non-standard
+hieroglyphs carved into the wall of a tomb from the Old Kingdom of
+Egypt~\cite{ibmCryptographyHistory}. This is an example of a classical cipher.
+Classical ciphers came before the invention of computers and for that reason
+they operate on letters rather than bits. In ancient times or even during the
+First World War, cryptography had to be performed manually using only pen and
+paper~\cite{aumasson2017serious}. The most famous classical cipher is Caesar
+cipher. It is named after Julius Caesar, who used it during his rule of Roman
+Empire to protect his military communications. It works by shifting each letter
+in message by a number of positions in alphabet. The number of the shifted
+letters must be agreed upon in advance between communicating parties and can be
+considered as key. Even though this worked well in times of Roman Empire, it's
+very easy to break. There are only 26 letters in English alphabet, hence only
+possible 26 keys possible. An attacker can simply try all possible shifts to
+quickly recover the plaintext. This weakness later motivated the development of more
+secure systems. 
+
+Another popular classical cipher is the Vigenère cipher which came
+around 1500 years after the invention of Caesar cipher. The Vigenère cipher
+became popular and was later used during the American Civil War by Confederate
+forces and during the First World War by the Swiss Army, among
+others~\cite{aumasson2017serious}. It works similary to the Caesar cipher, but
+rather than shifting every letter by a constant number of positions it shifts
+by values defined by key. In this context, the key is a word in which each letter
+represents numerical value derived from their position in alphabet. During
+encryption, the key is repeated until it matches the length of the message.
+Then, each letter of the message is shifted forward in the alphabet by the
+value corresponding to the matching letter of the key. 
+
+Despite the improvements, it's still quite easy to break with frequency
+analysis techniques which exploits the uneven distribution of letters in
+languages. Classical ciphers are insecure because they rely on basic operations
+that can be done manually and modern computers can break them with basic
+programs analysing letter frequencies or even brute force testing all possible
+keys.
+
+
+...
+
+
 
 To achieve this it relies on hard mathematical problems and algorithms such as
 integer factorization, discrete logarithms, or the subset-sum (knapsack)
@@ -16,7 +59,7 @@ verifying that the solution is correct is easy. All NP-complete problems are
 decision problems that for any input the output is yes or no. For that reason
 they form the foundation of modern cryptosystems. 
 
-Because solving these problems directly is basically impossible, cryptography 
+Because solving these problems directly is practically impossible, cryptography 
 uses mathematical functions that depend on secret information called keys. A
 key is a piece of data that controls the encryption and decryption process.
 
