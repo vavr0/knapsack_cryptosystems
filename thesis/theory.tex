@@ -1,7 +1,6 @@
 \chapter{Theoretical Background}
 
-\section{Basics of Cryptography} 
-Cryptography is a part of computer science and
+\section{Basics of Cryptography} Cryptography is a part of computer science and
 mathematics that focuses on protecting contents of transmitted data through
 insecure channels like the Internet, from unauthorized parties. Its name is
 derived from the greek word "kryptos" meaning hidden and "graphein" meaning
@@ -22,46 +21,59 @@ in message by a number of positions in alphabet. The number of the shifted
 letters must be agreed upon in advance between communicating parties and can be
 considered as key. Even though this worked well in times of Roman Empire, it's
 very easy to break. There are only 26 letters in English alphabet, hence only
-possible 26 keys possible. An attacker can simply try all possible shifts to
-quickly recover the plaintext. This weakness later motivated the development of more
+26 keys possible. An attacker can simply try all possible shifts to quickly
+recover the plaintext. This weakness later motivated the development of more
 secure systems. 
 
-Another popular classical cipher is the Vigenère cipher which came
-around 1500 years after the invention of Caesar cipher. The Vigenère cipher
-became popular and was later used during the American Civil War by Confederate
-forces and during the First World War by the Swiss Army, among
-others~\cite{aumasson2017serious}. It works similary to the Caesar cipher, but
+Another popular classical cipher is the Vigenère cipher which came around 1500
+years after the invention of Caesar cipher. The Vigenère cipher became popular
+and was later used during the American Civil War by Confederate forces and
+during the First World War by the Swiss Army, among
+others~\cite{aumasson2017serious}. It works similarly to the Caesar cipher, but
 rather than shifting every letter by a constant number of positions it shifts
-by values defined by key. In this context, the key is a word in which each letter
-represents numerical value derived from their position in alphabet. During
-encryption, the key is repeated until it matches the length of the message.
-Then, each letter of the message is shifted forward in the alphabet by the
-value corresponding to the matching letter of the key. 
+by values defined by key. In this context, the key is a word in which each
+letter represents numerical value derived from their position in alphabet.
+During encryption, the key is repeated until it matches the length of the
+message. Then, each letter of the message is shifted forward in the alphabet by
+the value corresponding to the matching letter of the key. 
 
 Despite the improvements, it's still quite easy to break with frequency
-analysis techniques which exploits the uneven distribution of letters in
+analysis techniques which exploit the uneven distribution of letters in
 languages. Classical ciphers are insecure because they rely on basic operations
 that can be done manually and modern computers can break them with basic
 programs analysing letter frequencies or even brute force testing all possible
 keys.
 
+As the need for secure communications grew, more sophisticated systems were
+developed, including mechanical rotor machines such as the Enigma and Lorenz
+ciphers used during the Second World War. These devices implemented rapidly
+changing substitution alphabets and, at the time, were considered as secure.
 
-...
+Their eventual breaking showed a primary flaw of classical cryptography.
+Security of classical and mechanical ciphers depended on complicated
+substitutions but they lacked computational hardness.
 
-
+During the 1970s and 1980s cryptography progressed into a modern era. New
+theory based on well-defined mathematical principles appeared, which led
+researchers to realize that long-term security could not rely on secrecy or
+complicated mechanical design, but instead on problems that are fundamentally
+hard to solve.
 
 To achieve this it relies on hard mathematical problems and algorithms such as
 integer factorization, discrete logarithms, or the subset-sum (knapsack)
-problem. These problems belong to class known as NP-comlete which means it is
-very difficult to find a solution within reasonable time without any
+problem. These problems belong to a class known as NP-complete which means it
+is very difficult to find a solution within reasonable time without any
 information about input even with vast computational power. On the other hand
 verifying that the solution is correct is easy. All NP-complete problems are
 decision problems that for any input the output is yes or no. For that reason
 they form the foundation of modern cryptosystems. 
 
-Because solving these problems directly is practically impossible, cryptography 
-uses mathematical functions that depend on secret information called keys. A
-key is a piece of data that controls the encryption and decryption process.
+Because solving these problems directly is practically impossible, modern
+cryptography uses mathematical functions that depend on secret information
+called keys. With knowledge of the key the computation becomes simple, but
+without it the problem remains computationally infeasible. This idea sparked
+development of wide range of encryption methods and eventualy to both symmetric
+and asymetric cryptosystems.
 
 \section{P, NP, and Computational Hardness}
 
@@ -78,7 +90,69 @@ There is also a broader category of difficult problems called \textit{NP-hard} p
 Cryptographic algorithms rely on the assumed hardness of such underlying problems. The security of a cryptosystem comes from the fact that no efficient algorithm is known for its core mathematical problem, making brute-force attacks infeasible on large instances. For example, the RSA public-key cryptosystem is based on the difficulty of integer factorization, which is not known to be NP-complete but is still believed to be intractable. In contrast, the Merkle–Hellman knapsack cryptosystem (one of the earliest public-key schemes) was built on the NP-complete Knapsack problem:contentReference[oaicite:14]{index=14}. Since the general Knapsack problem seems to require exponential time to solve, an attacker without the secret key faces an essentially impossible puzzle. In general, NP-completeness is a useful indicator of computational hardness, and many cryptographic constructions derive their strength from an assumed intractable NP-hard problem. As long as no efficient algorithms are discovered for these problems, cryptographic systems built on them will remain secure.
 
 
+\section{Symmetric and Asymmetric Cryptography}
+
+Modern cryptography is divided into two main types. Symmetric and Asymmetric
+also known as public-key cryptography. Aim of both is to secure communication,
+but they differ in how the keys are used and mathematical concepts that make
+them work giving each approach its own strengths and weaknesses.
+
+Symmetric cryptography follows the same basic idea that classical ciphers were
+built on. In this approach, all parties involved in transaction use a single
+shared secret key for both encryption and decryption. They must exchange this
+key in a secure way before communicating, so key distribution becomes an
+important problem.
+
+Because of this limitation, symmetric systems are often not practical when two
+parties have never communicated before or do not have a secure channel for
+exchanging the key. This problem motivated the development of a different
+approach, where the communicating parties do not need to share a secret in
+advance. This idea led to asymmetric, or public-key cryptography.
+
+Asymmetric cryptography works with a pair of keys: a public key that can be
+shared with anyone and a private key that must remain secret. Messages
+encrypted with the public key can only be decrypted with the corresponding
+private key, which removes the need for a secure key exchange. The security of
+these systems depends on mathematical problems that are easy to compute in one
+direction but extremely difficult to reverse without the private key.
+..
+These ideas form the basis of modern public-key cryptography. Many encryption
+schemes rely on specific mathematical problems that are assumed to be hard to
+solve without the secret key. One such problem is the subset-sum, also known as
+the knapsack problem, which plays a central role in the cryptosystem studied in
+this thesis. The following sections introduce this problem and explain how it
+can be used to construct a public-key encryption scheme.
+
 \section{The Knapsack Problem}
+
+
+The knapsack problem is a classical decision problem in combinatorics. 
+Given a set of positive integers 
+\[
+    W = \{w_1, w_2, \dots, w_n\}
+\]
+and a target value \(S\), the task is to determine whether there exists a subset of \(W\) whose sum is equal to \(S\):
+\[
+    \sum_{i=1}^{n} x_i w_i = S,
+\]
+where each \(x_i \in \{0,1\}\) indicates whether the weight \(w_i\) is chosen.
+
+The problem is simple to state, but the general version is computationally difficult. 
+The number of possible subsets is 
+\[
+    2^n,
+\]
+which grows exponentially with \(n\), and this is the main reason why the subset-sum (knapsack) problem is considered hard.
+
+A small example:
+\[
+    W = \{2,5,9,12\}, \quad S = 17.
+\]
+One valid solution is 
+\[
+    5 + 12 = 17,
+\]
+corresponding to the choice vector \(x = (0,1,0,1)\).
 % Definition, NP-completeness, small example
 
 \section{Knapsack Cryptosystem}
