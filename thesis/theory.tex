@@ -57,38 +57,98 @@ During the 1970s and 1980s cryptography progressed into a modern era. New
 theory based on well-defined mathematical principles appeared, which led
 researchers to realize that long-term security could not rely on secrecy or
 complicated mechanical design, but instead on problems that are fundamentally
-hard to solve.
+hard to solve. Modern cryptography is therefore built upon mathematically
+defined functions that are easy to compute in one direction but infeasible to
+reverse without secret information, called a key. These ideas led to the
+development of both symmetric and asymmetric cryptosystems. The next section
+introduces the computational principles underlying these constructions.
 
-To achieve this it relies on hard mathematical problems and algorithms such as
-integer factorization, discrete logarithms, or the subset-sum (knapsack)
-problem. These problems belong to a class known as NP-complete which means it
-is very difficult to find a solution within reasonable time without any
-information about input even with vast computational power. On the other hand
-verifying that the solution is correct is easy. All NP-complete problems are
-decision problems that for any input the output is yes or no. For that reason
-they form the foundation of modern cryptosystems. 
-
-Because solving these problems directly is practically impossible, modern
-cryptography uses mathematical functions that depend on secret information
-called keys. With knowledge of the key the computation becomes simple, but
-without it the problem remains computationally infeasible. This idea sparked
-development of wide range of encryption methods and eventualy to both symmetric
-and asymetric cryptosystems.
-
+% To achieve this it relies on hard mathematical problems and algorithms such as
+% integer factorization, discrete logarithms, or the subset-sum (knapsack)
+% problem. These problems belong to a class known as NP-complete which means it
+% is very difficult to find a solution within reasonable time without any
+% information about input even with vast computational power. On the other hand
+% verifying that the solution is correct is easy. All NP-complete problems are
+% decision problems that for any input the output is yes or no. For that reason
+% they form the foundation of modern cryptosystems. 
+% 
+% Because solving these problems directly is practically impossible, modern
+% cryptography uses mathematical functions that depend on secret information
+% called keys. With knowledge of the key the computation becomes simple, but
+% without it the problem remains computationally infeasible. This idea sparked
+% development of wide range of encryption methods and eventualy to both symmetric
+% and asymetric cryptosystems.
 \section{P, NP, and Computational Hardness}
 
-In cryptography, the security of many systems depends on problems that are believed to be computationally \emph{hard} to solve. To formalize what it means for a problem to be "hard," computer scientists classify problems into complexity classes based on how the time required to solve them grows with the input size. One fundamental class is $P$, which stands for \emph{polynomial time}. A decision problem (one with a yes/no answer) is in class $P$ if there exists an algorithm that solves any instance of the problem in time bounded by a polynomial function of the input size (for example, $O(n^3)$ for an input of length $n$):contentReference[oaicite:0]{index=0}. Intuitively, problems in $P$ are considered “efficiently solvable.” Another key class is $NP$, which stands for \emph{nondeterministic polynomial time}. A decision problem belongs to $NP$ if a given solution (or certificate) for the problem can be verified in polynomial time:contentReference[oaicite:1]{index=1}. In other words, we may not know how to \emph{find} a solution quickly, but we can \emph{check} a proposed solution quickly. (Note that $NP$ does \textit{not} mean “not polynomial” — it refers to nondeterministic computation:contentReference[oaicite:2]{index=2}.)
+In cryptography, the security of many systems depends on problems that are
+believed to be computationally hard to solve. To describe meaning to
+computational difficulty, problems are organized into complexity classes. The
+groups are based on how the running time of an algorithm grows with the size of
+the input. One important class is $\mathcal{P}$, which contains decision problems that
+can be solved in polynomial time. A decision problem meaning one with a yes or
+a no answer is in $\mathcal{P}$ if there exists an algorithm that solves any instance in
+time bounded by a polynomial in the input size. Intuitively, problems in $\mathcal{P}$
+are considered efficiently solvable.
 
-An important open question in computer science is whether $P = NP$. It is widely conjectured that $P \neq NP$:contentReference[oaicite:3]{index=3}, but this has not been proven. If $P$ were equal to $NP$, then every problem whose solution can be verified quickly (every problem in $NP$) could also be solved quickly (it would belong to $P$). Such a result would have huge implications: many problems currently thought to be intractable would become efficiently solvable, and cryptographic security would collapse. The prevailing assumption, however, is that $P \neq NP$:contentReference[oaicite:4]{index=4}. This implies there exist some problems in $NP$ that truly require super-polynomial (exponential or worse) time to solve. These presumed “one-way” problems — easy to compute in one direction but extremely difficult to invert — form the foundation of modern cryptographic schemes.
+Another fundamental class is $\mathcal{NP}$, which stands for nondeterministic
+polynomial time. A decision problem belongs to $\mathcal{NP}$ if a proposed
+solution, often called a certificate, can be verified in polynomial time.
+This means that even if we do not know how to find a solution quickly, we can
+check whether a given solution is correct in a reasonable time. 
 
-Within the class $NP$, researchers have identified certain problems that are, in a sense, the "hardest" problems in $NP$. These are known as \textit{NP-complete} problems. Formally, a decision problem $C$ is NP-complete if two conditions hold: (1) $C$ is in $NP$, and (2) every problem in $NP$ can be reduced to $C$ by a polynomial-time algorithm:contentReference[oaicite:5]{index=5}. The second condition implies that if we found a polynomial-time algorithm for $C$, we could solve every problem in $NP$ efficiently:contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7}—in other words, a single NP-complete problem with a fast algorithm would mean $P = NP$. Many problems across diverse domains are NP-complete, and none of them has a known polynomial-time solution, reinforcing the belief that these problems cannot be solved efficiently:contentReference[oaicite:8]{index=8}.
+% It is also
+% important to note that $\mathcal{NP}$ does not mean “not polynomial”; instead,
+% it refers to the way problems are defined in terms of verifiability.
 
-One well-known NP-complete problem is the \emph{Knapsack problem}:contentReference[oaicite:9]{index=9} (another example is the Boolean satisfiability problem, SAT). The Knapsack decision problem (also known as the subset-sum problem) asks whether a given target sum can be obtained by selecting a subset of numbers from a set. It is easy to verify a given subset quickly, but finding the correct subset among many possibilities appears to require trying an exponential number of combinations:contentReference[oaicite:10]{index=10}. This asymmetry between easy verification and hard search is the hallmark of NP-complete problems, and it makes the Knapsack problem especially appealing for cryptographic use.
+A major open problem in theoretical computer science is whether
+$\mathcal{P} = \mathcal{NP}$. Many researchers believe that $\mathcal{P} \neq
+\mathcal{NP}$, but this has not been proven. If it turned out that
+$\mathcal{P} = \mathcal{NP}$, then every problem whose solution can be verified
+quickly could also be solved quickly. This would have enormous consequences:
+many problems currently considered difficult would become easy, and most modern
+cryptographic systems would no longer be secure. Because no polynomial-time
+algorithm is known for many $\mathcal{NP}$ problems, the prevailing assumption
+is that $\mathcal{P}$ $\neq$ $\mathcal{NP}$.
 
-There is also a broader category of difficult problems called \textit{NP-hard} problems. Informally, NP-hard means a problem is at least as difficult as any problem in $NP$:contentReference[oaicite:11]{index=11}. More precisely, a problem $H$ is NP-hard if every problem in $NP$ can be polynomially reduced to $H$:contentReference[oaicite:12]{index=12}. NP-hard problems are not necessarily decision problems and may not have efficiently verifiable solutions. If an NP-hard problem \emph{is} also in $NP$, then it is by definition NP-complete:contentReference[oaicite:13]{index=13}. In short, NP-complete problems are exactly those that lie in $NP$ \emph{and} are NP-hard (the intersection $NP \cap \text{NP-hard}$).
+Within the class $\mathcal{NP}$  there exists a subset of problems that are, in a
+precise sense, the most computationally difficult problems in the class. These
+are referred to as $\mathcal{NP}$-complete problems. A decision problem $C$ is said to
+be $\mathcal{NP}$-complete if it satisfies two requirements: it belongs to
+$\mathcal{NP}$, and every problem in $\mathcal{NP}$ can be transformed into C by a
+polynomial-time reduction. If a polynomial-time algorithm were discovered for
+any $\mathcal{NP}$-complete problem, then all problems in $\mathcal{NP}$ would become
+solvable in polynomial time. Since no such algorithm is known,
+$\mathcal{NP}$-complete problems are generally regarded as computationally
+unsolvable. 
 
-Cryptographic algorithms rely on the assumed hardness of such underlying problems. The security of a cryptosystem comes from the fact that no efficient algorithm is known for its core mathematical problem, making brute-force attacks infeasible on large instances. For example, the RSA public-key cryptosystem is based on the difficulty of integer factorization, which is not known to be NP-complete but is still believed to be intractable. In contrast, the Merkle–Hellman knapsack cryptosystem (one of the earliest public-key schemes) was built on the NP-complete Knapsack problem:contentReference[oaicite:14]{index=14}. Since the general Knapsack problem seems to require exponential time to solve, an attacker without the secret key faces an essentially impossible puzzle. In general, NP-completeness is a useful indicator of computational hardness, and many cryptographic constructions derive their strength from an assumed intractable NP-hard problem. As long as no efficient algorithms are discovered for these problems, cryptographic systems built on them will remain secure.
+One well-known $\mathcal{NP}$-complete problem is the subset-sum problem. In the decision
+version of this problem, we are given a set of numbers and a target sum, and we
+ask whether there exists a subset of the numbers whose sum equals the target.
+It is easy to verify whether a chosen subset achieves the target sum, but
+finding the correct subset appears to require exponential time in the worst
+case. This contrast between easy verification and difficult search is typical
+for $\mathcal{NP}$-complete problems and is one of the reasons why the Knapsack problem has
+been used in cryptography.
 
+There is also a broader category known as $\mathcal{NP}$-hard problems. Informally,
+$\mathcal{NP}$-hard means that a problem is at least as difficult as any problem in
+$\mathcal{NP}$. More formally, a problem $H$ is $\mathcal{NP}$-hard if every problem in
+$\mathcal{NP}$ can be reduced to $H$ in polynomial time. $\mathcal{NP}$-hard problems do not
+need to be decision problems, and they do not need to have efficiently
+verifiable solutions. If an $\mathcal{NP}$-hard problem is also in $\mathcal{NP}$, then it
+is $\mathcal{NP}$-complete. In other words, $\mathcal{NP}$-complete problems are exactly those that lie
+in the intersection $\mathcal{NP} \cap \mathcal{NP}$-hard.
+
+Modern cryptographic algorithms rely on the assumed hardness of such problems.
+The security of a cryptosystem is based on the fact that no efficient algorithm
+is known for solving its underlying mathematical problem. For instance, the RSA
+cryptosystem is based on the difficulty of integer factorization, which is not
+known to be $\mathcal{NP}$-complete but is still considered hard. The classical Merkle--Hellman
+knapsack cryptosystem, on the other hand, is built directly on the $\mathcal{NP}$-complete
+Knapsack problem. Because solving the general knapsack problem appears to
+require exponential time, an attacker without the secret key faces an extremely
+difficult computational task. As long as no efficient algorithms are found for
+these kinds of hard problems, cryptographic schemes based on them remain secure.
 
 \section{Symmetric and Asymmetric Cryptography}
 
@@ -125,35 +185,94 @@ can be used to construct a public-key encryption scheme.
 
 \section{The Knapsack Problem}
 
+The knapsack problem, also known as the subset--sum problem, is a fundamental
+combinatorial decision problem. Given a sequence of positive integers
+\[
+W = (w_1, w_2, \dots, w_n)
+\]
+and a target value \(s \in \mathbb{N}\), the task is to determine whether there exists
+a binary vector
+\[
+x = (x_1, x_2, \dots, x_n) \in \{0,1\}^n
+\]
+such that
+\[
+\sum_{i=1}^{n} x_i w_i = s.
+\]
+In this formulation, each variable \(x_i\) indicates whether the weight \(w_i\) is
+included in the subset. The problem is NP--complete: verifying a proposed solution
+is efficient, but no polynomial--time algorithm is known for solving arbitrary
+instances.
 
-The knapsack problem is a classical decision problem in combinatorics. 
-Given a set of positive integers 
-\[
-    W = \{w_1, w_2, \dots, w_n\}
-\]
-and a target value \(S\), the task is to determine whether there exists a subset of \(W\) whose sum is equal to \(S\):
-\[
-    \sum_{i=1}^{n} x_i w_i = S,
-\]
-where each \(x_i \in \{0,1\}\) indicates whether the weight \(w_i\) is chosen.
+\subsection*{Example of a general instance}
 
-The problem is simple to state, but the general version is computationally difficult. 
-The number of possible subsets is 
+Consider the sequence
 \[
-    2^n,
+W = (3,\, 8,\, 12,\, 19)
 \]
-which grows exponentially with \(n\), and this is the main reason why the subset-sum (knapsack) problem is considered hard.
+and the target value
+\[
+s = 27.
+\]
+To decide whether a subset sums to \(27\), one must explore combinations of the
+weights. In this case, a valid solution exists:
+\[
+8 + 19 = 27,
+\]
+corresponding to the vector
+\[
+x = (0,\,1,\,0,\,1).
+\]
+For a general instance, systematically finding such a vector may require testing
+an exponential number of subsets in the worst case.
 
-A small example:
+\subsection*{Superincreasing sequences}
+
+A sequence \(W\) is called \emph{superincreasing} if every element is strictly larger
+than the sum of all previous ones:
 \[
-    W = \{2,5,9,12\}, \quad S = 17.
+w_i > \sum_{j=1}^{i-1} w_j \qquad \forall i \ge 2.
 \]
-One valid solution is 
+For such sequences, the subset--sum problem is solvable by a simple greedy algorithm
+that starts with the largest weight and works downward.
+
+\subsection*{Example of a superincreasing instance}
+
+Consider the sequence
 \[
-    5 + 12 = 17,
+W = (2,\, 5,\, 11,\, 23),
 \]
-corresponding to the choice vector \(x = (0,1,0,1)\).
-% Definition, NP-completeness, small example
+which satisfies
+\[
+5 > 2,\quad 11 > 2+5,\quad 23 > 2+5+11.
+\]
+Let the target value be
+\[
+s = 28.
+\]
+The greedy procedure proceeds as follows:
+\begin{enumerate}
+    \item \(23 \le s\), include it: \(x_4 = 1\), new \(s = 5\).
+    \item \(11 > 5\), skip it: \(x_3 = 0\).
+    \item \(5 \le 5\), include it: \(x_2 = 1\), new \(s = 0\).
+    \item \(2 > 0\), skip it: \(x_1 = 0\).
+\end{enumerate}
+The algorithm terminates with the unique solution
+\[
+x = (0,\,1,\,0,\,1),
+\]
+corresponding to
+\[
+23 + 5 = 28.
+\]
+
+\subsection*{Summary}
+
+The essential feature of the knapsack problem is the strong contrast between
+general instances, which appear computationally intractable, and structured
+instances such as superincreasing sequences, which admit efficient solutions.
+This distinction forms the mathematical basis for constructions discussed in
+later chapters.
 
 \section{Knapsack Cryptosystem}
 % Merkle–Hellman, keygen, encryption, decryption

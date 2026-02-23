@@ -1,48 +1,31 @@
-#include "keygen.h"
-#include "encrypt.h"
-#include "decrypt.h"
-#include "utils.h"
-
-int main() {
-    printf("===knapsack demo===\n");
-
-    KnapsackKey key;
-    keygen_init(&key, 8);
-    keygen_generate(&key);
-
-    printf("Private key (superincreasing):\n");
-    for (size_t i = 0; i < key.n; i++)
-        gmp_printf("w[%zu] = %Zd\n", i, key.w[i]);
-
-    printf("\nPublic key:\n");
-    for (size_t i = 0; i < key.n; i++)
-        gmp_printf("b[%zu] = %Zd\n", i, key.b[i]);
-
-    gmp_printf("\nm = %Zd\nn = %Zd\n", key.m, key.n_mult);
-
-    int message[8] = {1, 0, 1, 1, 0, 1, 0, 0};
-    printf("\nPlaintext bits: ");
-    for (size_t i = 0; i < 8; i++)
-        printf("%d", message[i]);
-    printf("\n");
-
-    // Step 3: Encrypt
-    mpz_t ciphertext;
-    mpz_init(ciphertext);
-    encrypt_message(&key, message, ciphertext);
-
-    printf("\nCiphertext:\n");
-    gmp_printf("C = %Zd\n", ciphertext);
+#include <stdio.h>
+#include <string.h>
+#include "app.h"
 
 
-    int decrypted[8];
-    decrypt_message(&key, ciphertext, decrypted);
+static void print_usage(const char *prog) {
+    fprintf(stderr, "Usage:\n");
+    fprintf(stderr, "  %s demo  [options]\n", prog);
+    fprintf(stderr, "  %s bench [options]\n", prog);
+}
 
-    printf("\nDecrypted bits: ");
-    for (size_t i = 0; i < key.n; i++) printf("%d", decrypted[i]);
-    printf("\n");
-
-    mpz_clear(ciphertext);
-    keygen_clear(&key);
-    return 0;
+int main(int argc, char **argv) {
+    if (argc < 2) {
+        print_usage(argv[0]);
+        return 1;
+    }
+    const char *mode = argv[1];
+    if (strcmp(mode, "demo") == 0) {
+        return run_demo(argc - 1, argv + 1);
+    }
+    if (strcmp(mode, "bench") == 0) {
+        return run_bench(argc - 1, argv + 1);
+    }
+    if (strcmp(mode, "--help") == 0 || strcmp(mode, "-h") == 0) {
+        print_usage(argv[0]);
+        return 0;
+    }
+    fprintf(stderr, "Unknown mode: %s\n", mode);
+    print_usage(argv[0]);
+    return 1;
 }

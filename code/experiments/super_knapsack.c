@@ -60,11 +60,14 @@ int main(int argc, char **argv) {
         printf("w[%d]=%d\n", i, weights[i]);
     printf("Target=%d (<= sum=%d)\n", target, sum);
 
+    clock_t start = clock();
     greedy_solve(weights, num_weights, target, solution);
+    clock_t end = clock();
 
     printf("Recovered bits: ");
     for (int i = 0; i < num_weights; i++)
         printf("%d", solution[i]);
     printf("\n");
+    printf("Time: %.6f sec\n", (double)(end - start) / CLOCKS_PER_SEC);
     return 0;
 }
