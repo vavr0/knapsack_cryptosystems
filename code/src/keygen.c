@@ -39,7 +39,6 @@ void keygen_generate(KnapsackKey *key) {
 
     mpz_clear(sum);
 
-    printf("✅ Keys generated: %zu elements\n", key->n);
 }
 
 void keygen_clear(KnapsackKey *key) {
@@ -51,4 +50,3 @@ void keygen_clear(KnapsackKey *key) {
     free(key->b);
     mpz_clears(key->m, key->n_mult, NULL);
 }
-

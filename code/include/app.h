@@ -1,3 +1,7 @@
 #pragma once
+
 int run_demo(int argc, char **argv);
 int run_bench(int argc, char **argv);
+
+void print_usage(const char *prog);
+

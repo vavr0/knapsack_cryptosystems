@@ -1,14 +1,18 @@
-#include "keygen.h"
-#include "encrypt.h"
-#include "decrypt.h"
-#include "utils.h"
 #include "app.h"
+#include "bench.h"
+#include "cli.h"
+#include "decrypt.h"
+#include "system.h"
 #include <string.h>
-#include <stdbool.h>
+#include <time.h>
 
 #define MAX_MESSAGE_BITS 128
 
-
+void print_usage(const char *prog) {
+    fprintf(stderr, "Usage:\n");
+    fprintf(stderr, "  %s demo  [options]\n", prog);
+    fprintf(stderr, "  %s bench [options]\n", prog);
+}
 
 static size_t read_message_bits(int **message_out) {
     char line[256];
@@ -48,77 +52,115 @@ static size_t read_message_bits(int **message_out) {
 }
 
 int run_bench(int argc, char **argv) {
-    // TODO
-    (void)argc;
-    (void)argv;
-    return 1;
+    BenchOptions opts;
+    int rc = parse_bench_options(argc, argv, &opts);
+    if (rc == 1) {
+        print_usage(argv[0]);   // or "knapsack" if you prefer
+        return 0;
+    }
+    if (rc < 0) {
+        print_usage(argv[0]);
+        return 1;
+    }
+    unsigned int seed = opts.has_seed ? opts.seed : (unsigned int)time(NULL);
+    srand(seed);
+    fprintf(stderr, "seed=%u\n", seed);
+    if (strcmp(opts.format, "csv") != 0) {
+        fprintf(stderr, "Unsupported format: %s\n", opts.format);
+        return 1;
+    }
+    int ok;
+    if (strcmp(opts.kind, "pipeline") == 0) {
+        printf("n,keygen_ms,encrypt_ms,decrypt_ms,total_ms,reps,seed\n");
+        ok = bench_run_pipeline_csv(opts.n_min, opts.n_max, opts.reps, seed);
+    } else if (strcmp(opts.kind, "compare") == 0) {
+        printf("n,brute_ms,super_ms,reps,seed\n");
+        ok = bench_run_compare_csv(opts.n_min, opts.n_max, opts.reps, seed);
+    } else {
+        fprintf(stderr, "Unsupported bench kind: %s\n", opts.kind);
+        return 1;
+    }
+    return ok == 0 ? 0 : 1;
 }
 
 int run_demo(int argc, char **argv) {
-    (void)argc;
-    (void)argv;
+    DemoOptions opts;
+    int rc = parse_demo_options(argc, argv, &opts);
+    if (rc == 1) {
+        print_usage(argv[0]);
+        return 0;
+    }
+    if (rc < 0) {
+        print_usage(argv[0]);
+        return 1;
+    }
+    unsigned int seed = opts.has_seed ? opts.seed : (unsigned int)time(NULL);
+    srand(seed);
+    fprintf(stderr, "seed=%u\n", seed);
+
     printf("===knapsack demo===\n");
 
     int *message = NULL;
-    size_t n = read_message_bits(&message);
-    if (n == 0) {
+    size_t n = 0;
+    if (opts.message_bits) {
+        n = strlen(opts.message_bits);
+        if (n == 0 || n > MAX_MESSAGE_BITS)
+            return 1;
+        message = malloc(n * sizeof(int));
+        if (!message)
+            return 1;
+        for (size_t i = 0; i < n; i++)
+            message[i] = opts.message_bits[i] - '0';
+    } else {
+        n = read_message_bits(&message);
+        if (n == 0)
+            return 1;
+    }
+    KnapsackRunRequest req;
+    KnapsackRunOutput out;
+    KnapsackRunMetrics metrics;
+
+    req.n = n;
+    req.message_bits = message;
+    req.show_steps = opts.show_steps;
+    req.capture_details = 1;
+
+    if (knapsack_run_once(&req, &out, &metrics) != 0) {
+        fprintf(stderr, "Roundtrip failed.\n");
+        free(message);
         return 1;
     }
 
-    KnapsackKey key;
-    keygen_init(&key, n);
-    keygen_generate(&key);
+    printf("Keys generated: %zu elements\n", out.key.n);
 
     printf("Private key (superincreasing):\n");
-    for (size_t i = 0; i < key.n; i++)
-        gmp_printf("w[%zu] = %Zd\n", i, key.w[i]);
+
+    for (size_t i = 0; i < out.key.n; i++)
+        gmp_printf("w[%zu] = %Zd\n", i, out.key.w[i]);
 
     printf("\nPublic key:\n");
-    for (size_t i = 0; i < key.n; i++)
-        gmp_printf("b[%zu] = %Zd\n", i, key.b[i]);
 
-    gmp_printf("\nm = %Zd\nn = %Zd\n", key.m, key.n_mult);
+    for (size_t i = 0; i < out.key.n; i++)
+        gmp_printf("b[%zu] = %Zd\n", i, out.key.b[i]);
+
+    gmp_printf("\nm = %Zd\nn = %Zd\n", out.key.m, out.key.n_mult);
 
     printf("\nPlaintext bits: ");
     for (size_t i = 0; i < n; i++)
         printf("%d", message[i]);
     printf("\n");
 
-    // Step 3: Encrypt
-    mpz_t ciphertext;
-    mpz_init(ciphertext);
-    encrypt_message(&key, message, ciphertext);
-
     printf("\nCiphertext:\n");
-    gmp_printf("C = %Zd\n", ciphertext);
+    gmp_printf("C = %Zd\n", out.ciphertext);
 
-
-    int *decrypted = malloc(n * sizeof(int));
-    if (!decrypted) {
-        fprintf(stderr, "Memory allocation failed.\n");
-        mpz_clear(ciphertext);
-        keygen_clear(&key);
-        free(message);
-        return 1;
-    }
-    printf("\nShow greedy steps? (y/n): ");
-    char answer[16];
-    bool show_steps = false;
-    if (fgets(answer, sizeof(answer), stdin)) {
-        show_steps = (answer[0] == 'y' || answer[0] == 'Y');
-    }
-
-    decrypt_message_verbose(&key, ciphertext, decrypted, show_steps);
+    printf("Message decrypted.\n");
 
     printf("\nDecrypted bits: ");
-    for (size_t i = 0; i < key.n; i++) printf("%d", decrypted[i]);
+    for (size_t i = 0; i < out.n; i++)
+        printf("%d", out.decrypted_bits[i]);
     printf("\n");
 
-    mpz_clear(ciphertext);
-    keygen_clear(&key);
+    knapsack_run_output_clear(&out);
     free(message);
-    free(decrypted);
     return 0;
-
-
 }

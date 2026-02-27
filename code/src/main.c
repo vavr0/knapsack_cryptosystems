@@ -3,11 +3,6 @@
 #include "app.h"
 
 
-static void print_usage(const char *prog) {
-    fprintf(stderr, "Usage:\n");
-    fprintf(stderr, "  %s demo  [options]\n", prog);
-    fprintf(stderr, "  %s bench [options]\n", prog);
-}
 
 int main(int argc, char **argv) {
     if (argc < 2) {

@@ -39,7 +39,6 @@ void decrypt_message_verbose(const KnapsackKey *key, const mpz_t ciphertext, int
     }
 
     mpz_clears(s, n_inv, NULL);
-    printf("✅ Message decrypted.\n");
 }
 
 void decrypt_message(const KnapsackKey *key, const mpz_t ciphertext, int *message) {
