@@ -114,6 +114,7 @@ int bench_run_pipeline_csv(int n_min, int n_max, int reps, unsigned int seed) {
             KnapsackRunMetrics metrics;
 
             req.n = (size_t)n;
+            req.scheme = scheme_mh_get();
             req.message_bits = message;
             req.show_steps = 0;
             req.capture_details = 0;

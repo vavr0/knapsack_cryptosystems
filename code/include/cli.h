@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct {
     const char *message_bits;   // NULL => interactive/default
     int show_steps;             // 0/1

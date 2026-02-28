@@ -1,7 +1,6 @@
 #include "app.h"
 #include "bench.h"
 #include "cli.h"
-#include "decrypt.h"
 #include "system.h"
 #include <string.h>
 #include <time.h>
@@ -121,6 +120,7 @@ int run_demo(int argc, char **argv) {
     KnapsackRunMetrics metrics;
 
     req.n = n;
+    req.scheme = scheme_mh_get();
     req.message_bits = message;
     req.show_steps = opts.show_steps;
     req.capture_details = 1;
@@ -131,19 +131,18 @@ int run_demo(int argc, char **argv) {
         return 1;
     }
 
-    printf("Keys generated: %zu elements\n", out.key.n);
+    printf("Keys generated: %zu elements\n", out.keypair.n);
 
-    printf("Private key (superincreasing):\n");
+    // printf("Private key (superincreasing):\n");
+    //for (size_t i = 0; i < out.keypair.n; i++)
+        //gmp_printf("w[%zu] = %Zd\n", i, out.keypair);
 
-    for (size_t i = 0; i < out.key.n; i++)
-        gmp_printf("w[%zu] = %Zd\n", i, out.key.w[i]);
+    // printf("\nPublic key:\n");
 
-    printf("\nPublic key:\n");
+    //for (size_t i = 0; i < out.keypair.n; i++)
+        //gmp_printf("b[%zu] = %Zd\n", i, out.key.b[i]);
 
-    for (size_t i = 0; i < out.key.n; i++)
-        gmp_printf("b[%zu] = %Zd\n", i, out.key.b[i]);
-
-    gmp_printf("\nm = %Zd\nn = %Zd\n", out.key.m, out.key.n_mult);
+    // gmp_printf("\nm = %Zd\nn = %Zd\n", out.key.m, out.key.n_mult);
 
     printf("\nPlaintext bits: ");
     for (size_t i = 0; i < n; i++)

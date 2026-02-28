@@ -1,13 +1,13 @@
 #pragma once
 
-#include "keygen.h"
-#include <stddef.h>
+#include "scheme.h"
 
 typedef struct {
     size_t n;
     const int *message_bits;
     int show_steps;
     int capture_details;
+    const SchemeOps *scheme; 
 } KnapsackRunRequest;
 
 typedef struct {
@@ -21,7 +21,8 @@ typedef struct {
     int *decrypted_bits;
     size_t n;
     int has_key;
-    KnapsackKey key;
+    SchemeKeypair keypair;
+    const SchemeOps *scheme;
     int has_ciphertext;
     mpz_t ciphertext;
 } KnapsackRunOutput;
