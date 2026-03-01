@@ -1,10 +1,15 @@
 #include "system.h"
+#include <bits/time.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 static f64 now_ms(void) {
-    return 1000.0 * (double)clock() / (double)CLOCKS_PER_SEC;
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+        return 0.0;
+    }
+    return (f64)ts.tv_sec * 1000.0 + (f64)ts.tv_nsec / 1000000.0;
 }
 
 i32 knapsack_run_once(const KnapsackRunRequest *req, KnapsackRunOutput *out,

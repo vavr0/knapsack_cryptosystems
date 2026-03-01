@@ -7,7 +7,7 @@ typedef struct {
     const i32 *message_bits;
     b8 show_steps;
     b8 capture_details;
-    const SchemeOps *scheme; 
+    const SchemeOps *scheme;
 } KnapsackRunRequest;
 
 typedef struct {
@@ -27,8 +27,7 @@ typedef struct {
     mpz_t ciphertext;
 } KnapsackRunOutput;
 
-i32 knapsack_run_once(const KnapsackRunRequest *req,
-                      KnapsackRunOutput *out,
+i32 knapsack_run_once(const KnapsackRunRequest *req, KnapsackRunOutput *out,
                       KnapsackRunMetrics *metrics);
 
 void knapsack_run_output_clear(KnapsackRunOutput *out);

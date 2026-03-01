@@ -2,19 +2,8 @@
 #include "common.h"
 #include "scheme.h"
 #include "system.h"
-#include <string.h>
+#include "utils.h"
 
-static i32 fill_message_from_bits(i32 *message, i32 n,
-                                  const char *message_bits) {
-    size_t len = strlen(message_bits);
-    if ((i32)len != n) {
-        return -1;
-    }
-    for (i32 i = 0; i < n; i++) {
-        message[i] = (message_bits[i] == '1') ? 1 : 0;
-    }
-    return 0;
-}
 static void fill_message_random(i32 *message, i32 n) {
     for (i32 i = 0; i < n; i++) {
         message[i] = rand() & 1;
@@ -41,7 +30,7 @@ i32 bench_run_pipeline_csv(i32 n_min, i32 n_max, i32 reps, u32 seed,
         }
 
         if (message_bits) {
-            if (fill_message_from_bits(message, n, message_bits) != 0) {
+            if (bits_to_array(message_bits, message, (size_t)n) != 0) {
                 fprintf(stderr, "filling msg failed\n");
                 free(message);
                 return -1;

@@ -1,19 +1,7 @@
 #include "cli.h"
+#include "utils.h"
 #include <string.h>
 #include <stdlib.h>
-
-
-static b8 is_bitstring(const char *s) {
-    if (!s || s[0] == '\0') {
-        return 0;
-    }
-    for (size_t i = 0; s[i] != '\0'; i++) {
-        if (s[i] != '0' && s[i] != '1') {
-            return 0;
-        }
-    }
-    return 1;
-}
 
 
 i32 parse_demo_options(int argc, char **argv, DemoOptions *out) {
@@ -28,7 +16,7 @@ i32 parse_demo_options(int argc, char **argv, DemoOptions *out) {
         if (strcmp(arg, "--msg") == 0) {
             if (i + 1 >= argc) return -1;
             out->message_bits = argv[++i];
-            if (!is_bitstring(out->message_bits)) {
+            if (!bits_is_valid(out->message_bits)) {
                 return -1;
             }
         } else if (strcmp(arg, "--seed") == 0) {
@@ -79,7 +67,7 @@ i32 parse_bench_options(int argc, char **argv, BenchOptions *out) {
             // TODO: make utils to make it possible to use plain text
             if (i + 1 >= argc) return -1;
             out->message_bits = argv[++i];
-            if (!is_bitstring(out->message_bits)) {
+            if (!bits_is_valid(out->message_bits)) {
                 return -1;
             }
 

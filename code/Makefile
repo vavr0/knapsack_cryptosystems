@@ -13,7 +13,7 @@ SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 DEPS := $(OBJS:.o=.d)
 
-BASE_CFLAGS := -std=c11 -Wall -Wextra
+BASE_CFLAGS := -std=c11 -Wall -Wextra -D_POSIX_C_SOURCE=200809L
 BASE_CPPFLAGS := -Iinclude
 
 MODE ?= release

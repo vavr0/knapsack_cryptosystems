@@ -2,8 +2,9 @@
 #include "bench.h"
 #include "cli.h"
 #include "system.h"
-#include <stddef.h>
+#include "utils.h"
 #include <limits.h>
+#include <stddef.h>
 #include <string.h>
 #include <time.h>
 
@@ -84,10 +85,16 @@ i32 run_bench(int argc, char **argv) {
 
         i32 n = (i32)msg_n;
         printf("n,keygen_ms,encrypt_ms,decrypt_ms,total_ms,reps,seed\n");
-        return bench_run_pipeline_csv(n, n, opts.reps, seed, opts.message_bits) == 0 ? 0 : 1;
+        return bench_run_pipeline_csv(n, n, opts.reps, seed,
+                                      opts.message_bits) == 0
+                   ? 0
+                   : 1;
     }
     printf("n,keygen_ms,encrypt_ms,decrypt_ms,total_ms,reps,seed\n");
-    return bench_run_pipeline_csv(opts.n_min, opts.n_max, opts.reps, seed, opts.message_bits) == 0 ? 0 : 1;
+    return bench_run_pipeline_csv(opts.n_min, opts.n_max, opts.reps, seed,
+                                  opts.message_bits) == 0
+               ? 0
+               : 1;
 }
 
 i32 run_demo(int argc, char **argv) {
@@ -119,12 +126,17 @@ i32 run_demo(int argc, char **argv) {
         if (!message) {
             return 1;
         }
-        for (size_t i = 0; i < n; i++)
-            message[i] = opts.message_bits[i] - '0';
+
+        if (bits_to_array(opts.message_bits, message, n) != 0) {
+            free(message);
+            return 1;
+        }
+
     } else {
         n = read_message_bits(&message);
-        if (n == 0)
+        if (n == 0) {
             return 1;
+        }
     }
     KnapsackRunRequest req;
     KnapsackRunOutput out;

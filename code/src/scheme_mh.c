@@ -1,13 +1,13 @@
 #include "scheme.h"
+#include <bits/time.h>
 
 typedef struct {
-    size_t n;            // key length
-    mpz_t *w;            // private key sequence (weight)
-    mpz_t *b;            // public key sequence (basis)
-    mpz_t m;             // modulus (m > sum(weights))
-    mpz_t n_mult;        // multiplier (no commond factor with m)
+    size_t n;     // key length
+    mpz_t *w;     // private key sequence (weight)
+    mpz_t *b;     // public key sequence (basis)
+    mpz_t m;      // modulus (m > sum(weights))
+    mpz_t n_mult; // multiplier (no commond factor with m)
 } MhKey;
-
 
 static void mh_key_init(MhKey *key, size_t n) {
     key->n = n;
@@ -20,7 +20,6 @@ static void mh_key_init(MhKey *key, size_t n) {
     mpz_inits(key->m, key->n_mult, NULL);
 }
 
-
 static void mh_key_clear(MhKey *key) {
     for (size_t i = 0; i < key->n; i++) {
         mpz_clear(key->w[i]);
@@ -30,7 +29,6 @@ static void mh_key_clear(MhKey *key) {
     free(key->b);
     mpz_clears(key->m, key->n_mult, NULL);
 }
-
 
 static void mh_key_generate(MhKey *key) {
     // Build superinceasing sequencce
@@ -61,8 +59,8 @@ static void mh_key_generate(MhKey *key) {
     mpz_clear(sum);
 }
 
-
-static void mh_encrypt_impl(const MhKey *key, const i32 *message, mpz_t ciphertext) {
+static void mh_encrypt_impl(const MhKey *key, const i32 *message,
+                            mpz_t ciphertext) {
     mpz_set_ui(ciphertext, 0);
     for (size_t i = 0; i < key->n; i++) {
         if (message[i]) {
@@ -71,15 +69,16 @@ static void mh_encrypt_impl(const MhKey *key, const i32 *message, mpz_t cipherte
     }
 }
 
-
 // TODO NOT VERBOSE
-static void mh_decrypt_impl_verbose(const MhKey *key, const mpz_t ciphertext, i32 *message, b8 show_steps) {
+static void mh_decrypt_impl_verbose(const MhKey *key, const mpz_t ciphertext,
+                                    i32 *message, b8 show_steps) {
     mpz_t s, n_inv;
     mpz_inits(s, n_inv, NULL);
 
     // Compute n_inv = n^{-1} mod m
     if (mpz_invert(n_inv, key->n_mult, key->m) == 0) {
-        fprintf(stderr, "❌ Error: n has no modular inverse mod m (not coprime)\n");
+        fprintf(stderr,
+                "❌ Error: n has no modular inverse mod m (not coprime)\n");
         mpz_clears(s, n_inv, NULL);
         return;
     }
@@ -98,7 +97,8 @@ static void mh_decrypt_impl_verbose(const MhKey *key, const mpz_t ciphertext, i3
         if (mpz_cmp(s, key->w[i]) >= 0) {
             message[i] = 1;
             if (show_steps) {
-                gmp_printf("i=%zu, s=%Zd, w[i]=%Zd -> take", (size_t)i, s, key->w[i]);
+                gmp_printf("i=%zu, s=%Zd, w[i]=%Zd -> take", (size_t)i, s,
+                           key->w[i]);
             }
             mpz_sub(s, s, key->w[i]);
             if (show_steps) {
@@ -107,14 +107,14 @@ static void mh_decrypt_impl_verbose(const MhKey *key, const mpz_t ciphertext, i3
         } else {
             message[i] = 0;
             if (show_steps) {
-                gmp_printf("i=%zu, s=%Zd, w[i]=%Zd -> skip, s=%Zd\n", (size_t)i, s, key->w[i], s);
+                gmp_printf("i=%zu, s=%Zd, w[i]=%Zd -> skip, s=%Zd\n", (size_t)i,
+                           s, key->w[i], s);
             }
         }
     }
 
     mpz_clears(s, n_inv, NULL);
 }
-
 
 static MhKey *mh_key_from_keypair(const SchemeKeypair *keypair) {
     if (!keypair || !keypair->impl) {
