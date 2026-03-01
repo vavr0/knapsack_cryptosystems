@@ -3,11 +3,11 @@
 #include <string.h>
 #include <time.h>
 
-static double now_ms(void) {
+static f64 now_ms(void) {
     return 1000.0 * (double)clock() / (double)CLOCKS_PER_SEC;
 }
 
-int knapsack_run_once(const KnapsackRunRequest *req, KnapsackRunOutput *out,
+i32 knapsack_run_once(const KnapsackRunRequest *req, KnapsackRunOutput *out,
                       KnapsackRunMetrics *metrics) {
     if (!req || !out || !req->message_bits || req->n == 0) {
         return -1;
@@ -25,14 +25,14 @@ int knapsack_run_once(const KnapsackRunRequest *req, KnapsackRunOutput *out,
         metrics->total_ms = 0.0;
     }
 
-    int *decrypted = malloc(req->n * sizeof(int));
+    i32 *decrypted = malloc(req->n * sizeof(i32));
     if (!decrypted) {
         return -1;
     }
 
     SchemeKeypair keypair = {0};
     mpz_t ciphertext;
-    double t0, t1;
+    f64 t0, t1;
 
     mpz_init(ciphertext);
 

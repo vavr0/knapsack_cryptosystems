@@ -1,117 +1,59 @@
 #include "bench.h"
+#include "common.h"
+#include "scheme.h"
 #include "system.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <string.h>
 
-typedef struct {
-    int n;
-    int *w;
-    int target;
-} CompareInstance;
-
-static double now_ms_compare(void) {
-    return 1000.0 * (double)clock() / (double)CLOCKS_PER_SEC;
-}
-
-static void free_compare_instance(CompareInstance *inst) {
-    free(inst->w);
-    inst->w = NULL;
-    inst->n = 0;
-    inst->target = 0;
-}
-
-static int generate_general_instance(CompareInstance *inst, int n, int max_w) {
-    inst->n = n;
-    inst->w = malloc((size_t)n * sizeof(int));
-    if (!inst->w) {
+static i32 fill_message_from_bits(i32 *message, i32 n,
+                                  const char *message_bits) {
+    size_t len = strlen(message_bits);
+    if ((i32)len != n) {
         return -1;
     }
-    for (int i = 0; i < n; i++) {
-        inst->w[i] = 1 + rand() % max_w;
+    for (i32 i = 0; i < n; i++) {
+        message[i] = (message_bits[i] == '1') ? 1 : 0;
     }
-    int target = 0;
-    for (int i = 0; i < n; i++) {
-        if (rand() & 1) {
-            target += inst->w[i];
-        }
-    }
-    inst->target = target;
     return 0;
 }
-static int generate_super_instance(CompareInstance *inst, int n,
-                                   int base_step) {
-    inst->n = n;
-    inst->w = malloc((size_t)n * sizeof(int));
-    if (!inst->w) {
+static void fill_message_random(i32 *message, i32 n) {
+    for (i32 i = 0; i < n; i++) {
+        message[i] = rand() & 1;
+    }
+}
+
+i32 bench_run_pipeline_csv(i32 n_min, i32 n_max, i32 reps, u32 seed,
+                           const char *message_bits) {
+    (void)seed;
+    if (n_min <= 0 || n_max < n_min || reps <= 0) {
         return -1;
     }
-    int sum = 0;
-    for (int i = 0; i < n; i++) {
-        int increment = 1 + rand() % base_step;
-        inst->w[i] = sum + increment;
-        sum += inst->w[i];
-    }
-    int target = 0;
-    for (int i = 0; i < n; i++) {
-        if (rand() & 1) {
-            target += inst->w[i];
-        }
-    }
-    inst->target = target;
-    return 0;
-}
 
-static int solve_bruteforce(const CompareInstance *inst) {
-    int n = inst->n;
-    int target = inst->target;
-    unsigned long long total_masks = 1ULL << n;
-    for (unsigned long long mask = 0; mask < total_masks; mask++) {
-        int sum = 0;
-        for (int i = 0; i < n; i++) {
-            if (mask & (1ULL << i)) {
-                sum += inst->w[i];
-            }
-        }
-        if (sum == target) {
-            return 1;
-        }
-    }
-    return 0;
-}
-static int solve_super_greedy(const CompareInstance *inst) {
-    int s = inst->target;
-    for (int i = inst->n - 1; i >= 0; i--) {
-        if (inst->w[i] <= s) {
-            s -= inst->w[i];
-        }
-    }
-    return (s == 0);
-}
+    for (i32 n = n_min; n <= n_max; n++) {
+        f64 sum_keygen = 0.0;
+        f64 sum_encrypt = 0.0;
+        f64 sum_decrypt = 0.0;
 
-int bench_run_pipeline_csv(int n_min, int n_max, int reps, unsigned int seed) {
-    for (int n = n_min; n <= n_max; n++) {
-        double sum_keygen = 0.0;
-        double sum_encrypt = 0.0;
-        double sum_decrypt = 0.0;
+        i32 *message = malloc((size_t)n * sizeof(i32));
+        if (!message) {
+            fprintf(stderr, "malloc failed\n");
+            free(message);
+            return -1;
+        }
 
-        for (int r = 0; r < reps; r++) {
-            int *message = malloc((size_t)n * sizeof(int));
-
-            if (!message) {
-                fprintf(stderr, "malloc failed\n");
+        if (message_bits) {
+            if (fill_message_from_bits(message, n, message_bits) != 0) {
+                fprintf(stderr, "filling msg failed\n");
                 free(message);
                 return -1;
             }
+        } else {
+            fill_message_random(message, n);
+        }
 
-            // create message from seed
-            for (int i = 0; i < n; i++) {
-                message[i] = rand() & 1;
-            }
-
-            KnapsackRunRequest req;
-            KnapsackRunOutput out;
-            KnapsackRunMetrics metrics;
+        for (i32 r = 0; r < reps; r++) {
+            KnapsackRunRequest req = {0};
+            KnapsackRunOutput out = {0};
+            KnapsackRunMetrics metrics = {0};
 
             req.n = (size_t)n;
             req.scheme = scheme_mh_get();
@@ -130,54 +72,14 @@ int bench_run_pipeline_csv(int n_min, int n_max, int reps, unsigned int seed) {
             sum_decrypt += metrics.decrypt_ms;
 
             knapsack_run_output_clear(&out);
-            free(message);
         }
-        double keygen_ms = sum_keygen / reps;
-        double encrypt_ms = sum_encrypt / reps;
-        double decrypt_ms = sum_decrypt / reps;
-        double total_ms = keygen_ms + encrypt_ms + decrypt_ms;
+        free(message);
+        f64 keygen_ms = sum_keygen / reps;
+        f64 encrypt_ms = sum_encrypt / reps;
+        f64 decrypt_ms = sum_decrypt / reps;
+        f64 total_ms = keygen_ms + encrypt_ms + decrypt_ms;
         printf("%d,%.6f,%.6f,%.6f,%.6f,%d,%u\n", n, keygen_ms, encrypt_ms,
                decrypt_ms, total_ms, reps, seed);
-    }
-    return 0;
-}
-
-int bench_run_compare_csv(int n_min, int n_max, int reps, unsigned int seed) {
-    if (n_max > 30) {
-        fprintf(stderr, "compare mode supports n <= 30 (bruteforce limit)\n");
-        return -1;
-    }
-    for (int n = n_min; n <= n_max; n++) {
-        double sum_brute = 0.0;
-        double sum_super = 0.0;
-        for (int r = 0; r < reps; r++) {
-            CompareInstance gen = {0};
-            CompareInstance sup = {0};
-            if (generate_general_instance(&gen, n, 20) != 0 ||
-                generate_super_instance(&sup, n, 5) != 0) {
-                fprintf(stderr, "malloc failed\n");
-                free_compare_instance(&gen);
-                free_compare_instance(&sup);
-                return -1;
-            }
-            double t0 = now_ms_compare();
-            int ok_brute = solve_bruteforce(&gen);
-            double t1 = now_ms_compare();
-            sum_brute += (t1 - t0);
-            t0 = now_ms_compare();
-            int ok_super = solve_super_greedy(&sup);
-            t1 = now_ms_compare();
-            sum_super += (t1 - t0);
-            free_compare_instance(&gen);
-            free_compare_instance(&sup);
-            if (!ok_brute || !ok_super) {
-                fprintf(stderr, "solver failed at n=%d rep=%d\n", n, r);
-                return -1;
-            }
-        }
-        double brute_ms = sum_brute / reps;
-        double super_ms = sum_super / reps;
-        printf("%d,%.6f,%.6f,%d,%u\n", n, brute_ms, super_ms, reps, seed);
     }
     return 0;
 }

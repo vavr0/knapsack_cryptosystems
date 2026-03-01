@@ -2,6 +2,8 @@
 #include "bench.h"
 #include "cli.h"
 #include "system.h"
+#include <stddef.h>
+#include <limits.h>
 #include <string.h>
 #include <time.h>
 
@@ -13,7 +15,7 @@ void print_usage(const char *prog) {
     fprintf(stderr, "  %s bench [options]\n", prog);
 }
 
-static size_t read_message_bits(int **message_out) {
+static size_t read_message_bits(i32 **message_out) {
     char line[256];
 
     printf("Enter plaintext bits (e.g. 101010): ");
@@ -36,7 +38,7 @@ static size_t read_message_bits(int **message_out) {
         }
     }
 
-    int *message = malloc(len * sizeof(int));
+    i32 *message = malloc(len * sizeof(i32));
     if (!message) {
         fprintf(stderr, "Memory allocation failed.\n");
         return 0;
@@ -50,41 +52,47 @@ static size_t read_message_bits(int **message_out) {
     return len;
 }
 
-int run_bench(int argc, char **argv) {
+i32 run_bench(int argc, char **argv) {
     BenchOptions opts;
-    int rc = parse_bench_options(argc, argv, &opts);
+    i32 rc = parse_bench_options(argc, argv, &opts);
     if (rc == 1) {
-        print_usage(argv[0]);   // or "knapsack" if you prefer
+        print_usage(argv[0]); // or "knapsack" if you prefer
         return 0;
     }
     if (rc < 0) {
         print_usage(argv[0]);
         return 1;
     }
-    unsigned int seed = opts.has_seed ? opts.seed : (unsigned int)time(NULL);
+    u32 seed = opts.has_seed ? opts.seed : (u32)time(NULL);
     srand(seed);
     fprintf(stderr, "seed=%u\n", seed);
+
     if (strcmp(opts.format, "csv") != 0) {
         fprintf(stderr, "Unsupported format: %s\n", opts.format);
         return 1;
     }
-    int ok;
-    if (strcmp(opts.kind, "pipeline") == 0) {
+    if (opts.message_bits) {
+        size_t msg_n = strlen(opts.message_bits);
+        if (msg_n == 0) {
+            fprintf(stderr, "--msg must not be empty\n");
+            return 1;
+        }
+        if (msg_n > (size_t)INT_MAX) {
+            fprintf(stderr, "--msg too long\n");
+            return 1;
+        }
+
+        i32 n = (i32)msg_n;
         printf("n,keygen_ms,encrypt_ms,decrypt_ms,total_ms,reps,seed\n");
-        ok = bench_run_pipeline_csv(opts.n_min, opts.n_max, opts.reps, seed);
-    } else if (strcmp(opts.kind, "compare") == 0) {
-        printf("n,brute_ms,super_ms,reps,seed\n");
-        ok = bench_run_compare_csv(opts.n_min, opts.n_max, opts.reps, seed);
-    } else {
-        fprintf(stderr, "Unsupported bench kind: %s\n", opts.kind);
-        return 1;
+        return bench_run_pipeline_csv(n, n, opts.reps, seed, opts.message_bits) == 0 ? 0 : 1;
     }
-    return ok == 0 ? 0 : 1;
+    printf("n,keygen_ms,encrypt_ms,decrypt_ms,total_ms,reps,seed\n");
+    return bench_run_pipeline_csv(opts.n_min, opts.n_max, opts.reps, seed, opts.message_bits) == 0 ? 0 : 1;
 }
 
-int run_demo(int argc, char **argv) {
+i32 run_demo(int argc, char **argv) {
     DemoOptions opts;
-    int rc = parse_demo_options(argc, argv, &opts);
+    i32 rc = parse_demo_options(argc, argv, &opts);
     if (rc == 1) {
         print_usage(argv[0]);
         return 0;
@@ -93,21 +101,24 @@ int run_demo(int argc, char **argv) {
         print_usage(argv[0]);
         return 1;
     }
-    unsigned int seed = opts.has_seed ? opts.seed : (unsigned int)time(NULL);
+
+    u32 seed = opts.has_seed ? opts.seed : (u32)time(NULL);
     srand(seed);
     fprintf(stderr, "seed=%u\n", seed);
 
     printf("===knapsack demo===\n");
 
-    int *message = NULL;
+    i32 *message = NULL;
     size_t n = 0;
     if (opts.message_bits) {
         n = strlen(opts.message_bits);
-        if (n == 0 || n > MAX_MESSAGE_BITS)
+        if (n == 0 || n > MAX_MESSAGE_BITS) {
             return 1;
-        message = malloc(n * sizeof(int));
-        if (!message)
+        }
+        message = malloc(n * sizeof(i32));
+        if (!message) {
             return 1;
+        }
         for (size_t i = 0; i < n; i++)
             message[i] = opts.message_bits[i] - '0';
     } else {
@@ -134,13 +145,13 @@ int run_demo(int argc, char **argv) {
     printf("Keys generated: %zu elements\n", out.keypair.n);
 
     // printf("Private key (superincreasing):\n");
-    //for (size_t i = 0; i < out.keypair.n; i++)
-        //gmp_printf("w[%zu] = %Zd\n", i, out.keypair);
+    // for (size_t i = 0; i < out.keypair.n; i++)
+    // gmp_printf("w[%zu] = %Zd\n", i, out.keypair);
 
     // printf("\nPublic key:\n");
 
-    //for (size_t i = 0; i < out.keypair.n; i++)
-        //gmp_printf("b[%zu] = %Zd\n", i, out.key.b[i]);
+    // for (size_t i = 0; i < out.keypair.n; i++)
+    // gmp_printf("b[%zu] = %Zd\n", i, out.key.b[i]);
 
     // gmp_printf("\nm = %Zd\nn = %Zd\n", out.key.m, out.key.n_mult);
 

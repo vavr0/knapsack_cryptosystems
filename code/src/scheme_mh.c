@@ -62,7 +62,7 @@ static void mh_key_generate(MhKey *key) {
 }
 
 
-static void mh_encrypt_impl(const MhKey *key, const int *message, mpz_t ciphertext) {
+static void mh_encrypt_impl(const MhKey *key, const i32 *message, mpz_t ciphertext) {
     mpz_set_ui(ciphertext, 0);
     for (size_t i = 0; i < key->n; i++) {
         if (message[i]) {
@@ -73,7 +73,7 @@ static void mh_encrypt_impl(const MhKey *key, const int *message, mpz_t cipherte
 
 
 // TODO NOT VERBOSE
-static void mh_decrypt_impl_verbose(const MhKey *key, const mpz_t ciphertext, int *message, bool show_steps) {
+static void mh_decrypt_impl_verbose(const MhKey *key, const mpz_t ciphertext, i32 *message, b8 show_steps) {
     mpz_t s, n_inv;
     mpz_inits(s, n_inv, NULL);
 
@@ -123,7 +123,7 @@ static MhKey *mh_key_from_keypair(const SchemeKeypair *keypair) {
     return (MhKey *)keypair->impl;
 }
 
-static int mh_keygen(size_t n, SchemeKeypair *out_keypair) {
+static i32 mh_keygen(size_t n, SchemeKeypair *out_keypair) {
     if (!out_keypair || n == 0) {
         return -1;
     }
@@ -140,7 +140,7 @@ static int mh_keygen(size_t n, SchemeKeypair *out_keypair) {
     return 0;
 }
 
-static int mh_encrypt(const SchemeKeypair *keypair, const int *message_bits,
+static i32 mh_encrypt(const SchemeKeypair *keypair, const i32 *message_bits,
                       size_t n, mpz_t out_ciphertext) {
     if (!keypair || !message_bits || !keypair->impl || n == 0) {
         return -1;
@@ -156,8 +156,8 @@ static int mh_encrypt(const SchemeKeypair *keypair, const int *message_bits,
     return 0;
 }
 
-static int mh_decrypt(const SchemeKeypair *keypair, const mpz_t ciphertext,
-                      int *out_message_bits, size_t n, int show_steps) {
+static i32 mh_decrypt(const SchemeKeypair *keypair, const mpz_t ciphertext,
+                      i32 *out_message_bits, size_t n, b8 show_steps) {
     if (!keypair || !out_message_bits || !keypair->impl || n == 0) {
         return -1;
     }
