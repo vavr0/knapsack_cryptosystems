@@ -51,6 +51,7 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 Makefile
+!code/Makefile
 *.make
 *.ninja
 *.ninja_deps
@@ -96,4 +97,3 @@ __pycache__/
 # .vscode/
 # .idea/
 # *.code-workspace
-

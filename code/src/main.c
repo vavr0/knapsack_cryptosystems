@@ -1,8 +1,6 @@
+#include "app.h"
 #include <stdio.h>
 #include <string.h>
-#include "app.h"
-
-
 
 int main(int argc, char **argv) {
     if (argc < 2) {
