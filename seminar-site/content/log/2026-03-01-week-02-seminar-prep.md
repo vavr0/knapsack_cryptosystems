@@ -13,7 +13,3 @@ next_steps:
   - Run one final end-to-end site check before seminar
   - Add a short post-seminar reflection entry
 ---
-
-## Notes
-
-Week 02 focused on seminar delivery: making the website reliable and preparing presentation material for tomorrow.

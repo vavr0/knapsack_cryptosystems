@@ -13,7 +13,3 @@ next_steps:
   - Polish notes and narrative for seminar demo continuity
   - Prepare Week 2 seminar-focused update
 ---
-
-## Notes
-
-Week 01 was foundation work: heavy refactor and cleanup across the codebase, followed by initial source organization for the seminar topic.
