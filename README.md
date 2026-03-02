@@ -2,6 +2,8 @@
 
 Bachelor project repository focused on the classical Merkle-Hellman knapsack cryptosystem, its cryptanalysis, and selected variants.
 
+Website: https://vavr0.github.io/knapsack_cryptosystems/
+
 ## Repository structure
 
 - `code/` - C implementation and benchmarks
