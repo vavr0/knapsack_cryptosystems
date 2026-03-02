@@ -147,6 +147,16 @@ h3 {
   max-width: 60ch;
 }
 
+.lead h3 {
+  font-size: 1.05rem;
+  margin: 1rem 0 0.45rem;
+  color: #dbe6f0;
+}
+
+.lead ol {
+  margin: 0.2rem 0 0.9rem 1.2rem;
+}
+
 .hero-actions {
   display: flex;
   gap: 0.7rem;

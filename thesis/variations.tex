@@ -1,6 +1,39 @@
 \chapter{Variations and Cryptanalysis of Knapsack Cryptosystems}
+
+
 \label{chap:variations}
 \section{Weaknesses of the Classical Merkle--Hellman Scheme}
+
+The classical Merkle--Hellman cryptosystem is based on a clear trapdoor idea:
+an easy private superincreasing subset-sum instance is transformed into a
+public instance that should look hard \cite{MerkleHellman1978}. However, in the
+basic construction, this hiding transformation is not strong enough to remove
+all useful structure. As a result, the public key does not behave like a fully
+random hard subset-sum instance, and this opens the door to efficient
+cryptanalysis. 
+
+A major result was given by Shamir, who showed a polynomial-time
+attack against the basic Merkle--Hellman scheme \cite{Shamir1982}. The attack
+demonstrates that, even without knowing the private sequence directly, an
+equivalent private structure can be reconstructed from public information. This
+breaks the intended trapdoor asymmetry and shows that the original scheme is
+insecure in its classical form. 
+
+Another important line of attacks is connected
+with low-density subset-sum instances and lattice-based methods
+\cite{LagariasOdlyzko1985,Brickell1983}. In these settings, techniques related
+to lattice reduction can recover message information more efficiently than
+exhaustive search. Although subset-sum is NP-complete in general, practical
+cryptanalytic success depends on instance structure and parameters, not only on
+worst-case complexity. 
+
+Because of this, the historical lesson from classical
+Merkle--Hellman is that NP-completeness alone does not guarantee cryptographic
+security. A public-key design must ensure that the published instances do not
+leak exploitable structure, even if the underlying problem is hard in general
+\cite{OdlyzkoRiseFall}. These weaknesses motivated many modified knapsack
+proposals, discussed in the next section
+
 \subsection{Structural Weakness of the Trapdoor Construction}
 \subsection{Shamir's Polynomial-Time Attack}
 \subsection{Low-Density Attacks and Lattice Methods}
