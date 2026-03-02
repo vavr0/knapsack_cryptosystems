@@ -1,14 +1,5 @@
 # BAKALARKA
 
-## TODO
-
-- superincreasing knapasack porovnanie z normalny preco np jeden a druhy nie
-- mnozina vah, -> jedno / viac rieseni 
-- priklad -> ilustracny priklad
-- animacie mozno
-- atacky, fixy
-- 12.november (11:30) vynimocne
-
 ## THESIS
 
 ### OUTLINE
