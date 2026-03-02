@@ -100,3 +100,8 @@ __pycache__/
 
 # local research PDFs
 sources/
+
+# local/private files
+sources/
+seminar-site/public/
+seminar-site/.hugo_build.lock
