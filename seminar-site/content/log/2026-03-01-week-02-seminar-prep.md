@@ -1,6 +1,6 @@
 ---
 title: "Week 02 - Seminar Prep: Site and Presentation"
-date: 2026-03-02
+date: 2026-03-01
 draft: false
 week: "Week 02"
 completed:

@@ -15,10 +15,14 @@ Open http://localhost:1313/
 
 ```bash
 cd seminar-site
-hugo new --kind log log/2026-03-09-week-02.md
+hugo new --kind log log/2026-03-08-week-03.md
 ```
 
 Then edit the created file in `content/log/`.
+
+Weekly cadence rule used in this site:
+- entries are dated every Sunday,
+- Week 1 starts on 2026-02-22 (first Sunday after 16.2).
 
 ## 3) Build static output
 

@@ -1,6 +1,5 @@
 {{ define "main" }}
 <section class="hero panel">
-  <p class="eyebrow">Bachelor Seminar Workspace</p>
   <h1>{{ .Title }}</h1>
   <div class="lead">{{ .Content }}</div>
   <div class="hero-actions">
@@ -29,16 +28,4 @@
   {{ end }}
 </section>
 
-<section class="quick-grid">
-  <article class="panel">
-    <h3>Topic</h3>
-    <p>Keep your annotation and current research scope in one place.</p>
-    <a class="text-link" href="{{ "topic" | relURL }}">Go to Topic</a>
-  </article>
-  <article class="panel">
-    <h3>Resources</h3>
-    <p>Track papers, books, and useful links with short commentary.</p>
-    <a class="text-link" href="{{ "resources" | relURL }}">Go to Resources</a>
-  </article>
-</section>
 {{ end }}

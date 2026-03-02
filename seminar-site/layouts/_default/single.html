@@ -1,6 +1,5 @@
 {{ define "main" }}
 <article class="panel">
-  <p class="eyebrow">{{ if eq .Section "log" }}Weekly Entry{{ else }}Page{{ end }}</p>
   <h1>{{ .Title }}</h1>
   {{ with .Date }}<p class="meta">{{ .Format "2006-01-02" }}</p>{{ end }}
 
