@@ -175,7 +175,7 @@ encrypted with the public key can only be decrypted with the corresponding
 private key, which removes the need for a secure key exchange. The security of
 these systems depends on mathematical problems that are easy to compute in one
 direction but extremely difficult to reverse without the private key.
-..
+...
 These ideas form the basis of modern public-key cryptography. Many encryption
 schemes rely on specific mathematical problems that are assumed to be hard to
 solve without the secret key. One such problem is the subset-sum, also known as
@@ -236,6 +236,16 @@ w_i > \sum_{j=1}^{i-1} w_j \qquad \forall i \ge 2.
 For such sequences, the subset--sum problem is solvable by a simple greedy algorithm
 that starts with the largest weight and works downward.
 
+For a general subset-sum instance with an arbitrary sequence of weights, the
+target value may have no solution, one solution, or multiple different
+solutions. More importantly, without additional structure, finding a valid
+subset may require exponential search in the worst case. In contrast,
+superincreasing sequences have strong structure: each decision in the greedy
+process is forced, so the solution (if it exists) is recovered efficiently and
+deterministically. This property is the key reason why superincreasing
+sequences are used as a private trapdoor in the classical Merkle--Hellman
+construction.
+
 \subsection*{Example of a superincreasing instance}
 
 Consider the sequence
@@ -275,4 +285,87 @@ This distinction forms the mathematical basis for constructions discussed in
 later chapters.
 
 \section{Knapsack Cryptosystem}
-% Merkle–Hellman, keygen, encryption, decryption
+
+The Merkle--Hellman cryptosystem was one of the earliest public-key encryption
+schemes based on the subset-sum problem \cite{MerkleHellman1978}. It was
+introduced in a model where secure communication does not require pre-shared
+secret keys. Its design uses a superincreasing private sequence as a trapdoor
+and publishes a transformed sequence that should appear computationally hard to
+solve without the private key. Although the idea was influential, later
+cryptanalysis showed that the basic construction is insecure \cite{Shamir1982}.
+The following description focuses on the classical Merkle--Hellman construction
+itself, namely key generation, encryption, and decryption.
+
+\subsection{Key Generation}
+
+The goal of key generation is to create two representations of the same
+knapsack instance: one easy for the owner and one hard-looking for everyone
+else \cite{MerkleHellman1978}. The process starts by choosing a superincreasing
+sequence \(W=(w_1,\dots,w_n)\), which will serve as the private trapdoor. Next,
+the sender chooses a modulus \(m\) larger than the sum of all private weights
+and a multiplier \(r\) that is invertible modulo \(m\). These values are used
+to hide the private sequence by modular transformation, producing a public
+sequence \(B=(b_1,\dots,b_n)\), where \[ b_i \equiv r\,w_i \pmod m. \] 
+
+In the classical description, a permutation is also applied to further obscure
+the original structure. The public key is the transformed sequence (and
+permutation, if used), while the private key consists of the superincreasing
+sequence and transformation parameters \cite{MerkleHellman1978}.
+
+\subsection{Encryption}
+After key generation, the sender uses the public sequence \[
+B=(b_1,b_2,\dots,b_n) \] to encrypt an \(n\)-bit message \[
+x=(x_1,x_2,\dots,x_n), \quad x_i \in \{0,1\}. \] The ciphertext is computed
+as \[ C=\sum_{i=1}^{n} x_i b_i. \] This means that only the public weights
+corresponding to message bits equal to 1 are added. From the sender's
+perspective, encryption is therefore straightforward and efficient, because
+it only requires additions over public values \cite{MerkleHellman1978}.
+
+\subsection{Decryption}
+To decrypt the ciphertext \(C\), the key owner uses private parameters and
+first computes
+\[
+S' \equiv r^{-1} C \pmod m,
+\]
+where \(r^{-1}\) is the modular inverse of \(r\) modulo \(m\). Because the
+public weights were constructed from the private superincreasing sequence,
+this step maps the problem back to an equivalent subset-sum instance over
+the private sequence. The resulting value \(S'\) is then solved by a greedy
+procedure, starting from the largest private weight and moving downward. At
+each step, if the current weight does not exceed the remaining sum, the
+corresponding bit is set to 1 and the weight is subtracted; otherwise the
+bit is set to 0. If permutation is used during key generation, bit positions
+are restored according to the secret key order after greedy recovery
+\cite{MerkleHellman1978}.
+
+\subsection*{Example}
+Consider a private superincreasing sequence
+\[
+W=(2,\,5,\,11,\,23),
+\]
+with \(m=47\) and \(r=9\), where \(\gcd(r,m)=1\) and \(m>\sum W=41\).
+The public key is
+\[
+B=(18,\,45,\,5,\,19),
+\]
+computed as \(b_i \equiv r w_i \pmod m\).
+For message \(x=(1,0,1,0)\), encryption gives
+\[
+C=18+5=23.
+\]
+For decryption, \(r^{-1}\equiv 21 \pmod{47}\), so
+\[
+S' \equiv r^{-1}C \equiv 21\cdot 23 \equiv 13 \pmod{47}.
+\]
+Using greedy recovery on \(W\): \(13=11+2\), so recovered bits are \(x=(1,0,1,0)\).
+
+\subsection*{Assumptions and Limitations}
+Although the classical Merkle--Hellman design provides efficient encryption and
+decryption, its security was later shown to be insufficient. The classical
+Merkle--Hellman design assumes that the transformation from the private
+superincreasing sequence to the public sequence sufficiently hides the trapdoor
+structure. In practice, this assumption is not strong enough for the basic
+construction: later cryptanalysis showed that equivalent private structure can
+be recovered efficiently in polynomial time \cite{Shamir1982}. Therefore, the
+original scheme is historically important, but not secure for real-world use,
+which motivates the analysis of weaknesses and attacks in the next chapter.

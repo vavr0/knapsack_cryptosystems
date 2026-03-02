@@ -1,0 +1,21 @@
+{{ define "main" }}
+<section class="panel">
+  <p class="eyebrow">Section</p>
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+
+  {{ if .Pages }}
+    <ul class="post-list spaced-list">
+      {{ range .Pages.ByDate.Reverse }}
+        <li>
+          <div>
+            <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+            {{ with .Summary }}<p class="list-summary">{{ . | plainify }}</p>{{ end }}
+          </div>
+          <span class="meta">{{ .Date.Format "2006-01-02" }}</span>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+</section>
+{{ end }}

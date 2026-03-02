@@ -1,0 +1,41 @@
+{{ define "main" }}
+<article class="panel">
+  <p class="eyebrow">{{ if eq .Section "log" }}Weekly Entry{{ else }}Page{{ end }}</p>
+  <h1>{{ .Title }}</h1>
+  {{ with .Date }}<p class="meta">{{ .Format "2006-01-02" }}</p>{{ end }}
+
+  {{ if eq .Section "log" }}
+    <section class="log-grid">
+      {{ with .Params.week }}
+        <div class="log-card">
+          <h2>Week/date</h2>
+          <p>{{ . }}</p>
+        </div>
+      {{ end }}
+
+      {{ with .Params.completed }}
+        <div class="log-card">
+          <h2>Completed work</h2>
+          <ul>{{ range . }}<li>{{ . }}</li>{{ end }}</ul>
+        </div>
+      {{ end }}
+
+      {{ with .Params.blockers }}
+        <div class="log-card">
+          <h2>Problems/blockers</h2>
+          <ul>{{ range . }}<li>{{ . }}</li>{{ end }}</ul>
+        </div>
+      {{ end }}
+
+      {{ with .Params.next_steps }}
+        <div class="log-card">
+          <h2>Next steps</h2>
+          <ul>{{ range . }}<li>{{ . }}</li>{{ end }}</ul>
+        </div>
+      {{ end }}
+    </section>
+  {{ end }}
+
+  <div class="prose">{{ .Content }}</div>
+</article>
+{{ end }}
