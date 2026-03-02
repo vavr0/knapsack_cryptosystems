@@ -1,6 +1,6 @@
 ---
 title: "Week 01 - API Refactor and Research Setup"
-date: 2026-03-02
+date: 2026-02-16
 draft: false
 week: "Week 01"
 completed:
