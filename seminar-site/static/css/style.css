@@ -233,26 +233,22 @@ h3 {
   text-decoration: underline;
 }
 
-.log-grid {
+.log-sections {
   margin: 0.9rem 0 0.7rem;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
 }
 
-.log-card {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #141c24;
-  padding: 0.85rem;
+.log-section {
+  border-top: 1px solid var(--border);
+  padding-top: 0.8rem;
+  margin-top: 0.8rem;
 }
 
-.log-card h2 {
+.log-section h2 {
   font-size: 1.02rem;
   margin-bottom: 0.45rem;
 }
 
-.log-card ul {
+.log-section ul {
   margin: 0;
 }
 
@@ -282,8 +278,7 @@ h3 {
     gap: 0.25rem;
   }
 
-  .quick-grid,
-  .log-grid {
+  .quick-grid {
     grid-template-columns: 1fr;
   }
 }

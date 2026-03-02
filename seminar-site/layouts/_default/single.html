@@ -5,33 +5,26 @@
   {{ with .Date }}<p class="meta">{{ .Format "2006-01-02" }}</p>{{ end }}
 
   {{ if eq .Section "log" }}
-    <section class="log-grid">
-      {{ with .Params.week }}
-        <div class="log-card">
-          <h2>Week/date</h2>
-          <p>{{ . }}</p>
-        </div>
-      {{ end }}
-
+    <section class="log-sections">
       {{ with .Params.completed }}
-        <div class="log-card">
+        <section class="log-section">
           <h2>Completed work</h2>
           <ul>{{ range . }}<li>{{ . }}</li>{{ end }}</ul>
-        </div>
+        </section>
       {{ end }}
 
       {{ with .Params.blockers }}
-        <div class="log-card">
+        <section class="log-section">
           <h2>Problems/blockers</h2>
           <ul>{{ range . }}<li>{{ . }}</li>{{ end }}</ul>
-        </div>
+        </section>
       {{ end }}
 
       {{ with .Params.next_steps }}
-        <div class="log-card">
+        <section class="log-section">
           <h2>Next steps</h2>
           <ul>{{ range . }}<li>{{ . }}</li>{{ end }}</ul>
-        </div>
+        </section>
       {{ end }}
     </section>
   {{ end }}
