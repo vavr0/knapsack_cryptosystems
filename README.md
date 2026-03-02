@@ -37,25 +37,7 @@ Clean:
 make clean
 ```
 
-## Seminar site
-
-Local preview:
-```bash
-cd seminar-site
-hugo server -D
-```
-
-Create weekly log entry:
-```bash
-cd seminar-site
-hugo new --kind log log/YYYY-MM-DD-week-XX.md
-```
-
-Build static site:
-```bash
-cd seminar-site
-hugo --minify
-```
+Seminar site usage is documented in `seminar-site/README.md`.
 
 ## Notes
 
