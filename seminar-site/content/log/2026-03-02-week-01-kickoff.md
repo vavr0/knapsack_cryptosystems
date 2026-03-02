@@ -1,18 +1,19 @@
 ---
-title: "Week 01 - Kickoff"
+title: "Week 01 - API Refactor and Research Setup"
 date: 2026-03-02
 draft: false
 week: "Week 01"
 completed:
-  - Defined seminar scope and timeline
-  - Set up project repository structure
-blockers:
-  - Need to narrow final evaluation criteria
+  - Performed major API/codebase cleanup and refactor (reduced duplicate logic and removed old scripts)
+  - Consolidated shared interfaces into common headers and aligned module boundaries
+  - Refactored utility/system/bench/CLI paths to improve maintainability
+  - Organized initial references for knapsack cryptosystem background
 next_steps:
-  - Draft first literature shortlist
-  - Finalize weekly experiment template
+  - Lock final API/module contracts after cleanup
+  - Polish notes and narrative for seminar demo continuity
+  - Prepare Week 2 seminar-focused update
 ---
 
 ## Notes
 
-Initial setup week. Focused on defining goals and constraints.
+Week 01 was foundation work: heavy refactor and cleanup across the codebase, followed by initial source organization for the seminar topic.

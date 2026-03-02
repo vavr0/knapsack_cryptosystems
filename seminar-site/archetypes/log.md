@@ -4,7 +4,6 @@ date: {{ .Date }}
 draft: true
 week: "Week XX"
 completed: []
-blockers: []
 next_steps: []
 ---
 

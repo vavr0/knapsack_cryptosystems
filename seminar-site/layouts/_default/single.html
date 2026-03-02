@@ -13,13 +13,6 @@
         </section>
       {{ end }}
 
-      {{ with .Params.blockers }}
-        <section class="log-section">
-          <h2>Problems/blockers</h2>
-          <ul>{{ range . }}<li>{{ . }}</li>{{ end }}</ul>
-        </section>
-      {{ end }}
-
       {{ with .Params.next_steps }}
         <section class="log-section">
           <h2>Next steps</h2>
