@@ -302,8 +302,9 @@ The goal of key generation is to create two representations of the same
 knapsack instance: one easy for the owner and one hard-looking for everyone
 else \cite{MerkleHellman1978}. The process starts by choosing a superincreasing
 sequence \(W=(w_1,\dots,w_n)\), which will serve as the private trapdoor. Next,
-the sender chooses a modulus \(m\) larger than the sum of all private weights
-and a multiplier \(r\) that is invertible modulo \(m\). These values are used
+the key owner chooses a modulus \(m\) larger than the sum of all private
+weights and a multiplier \(r\) that is invertible modulo \(m\). These values
+are used
 to hide the private sequence by modular transformation, producing a public
 sequence \(B=(b_1,\dots,b_n)\), where \[ b_i \equiv r\,w_i \pmod m. \] 
 
@@ -360,9 +361,8 @@ S' \equiv r^{-1}C \equiv 21\cdot 23 \equiv 13 \pmod{47}.
 Using greedy recovery on \(W\): \(13=11+2\), so recovered bits are \(x=(1,0,1,0)\).
 
 \subsection*{Assumptions and Limitations}
-Although the classical Merkle--Hellman design provides efficient encryption and
-decryption, its security was later shown to be insufficient. The classical
-Merkle--Hellman design assumes that the transformation from the private
+Although the classical Merkle--Hellman design is efficient for encryption and
+decryption, it assumes that the transformation from the private
 superincreasing sequence to the public sequence sufficiently hides the trapdoor
 structure. In practice, this assumption is not strong enough for the basic
 construction: later cryptanalysis showed that equivalent private structure can
