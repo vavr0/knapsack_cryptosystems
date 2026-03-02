@@ -1,113 +1,63 @@
-# BAKALARKA
+# Knapsack Cryptosystems
 
-## THESIS
+Bachelor project repository focused on the classical Merkle-Hellman knapsack cryptosystem, its cryptanalysis, and selected variants.
 
-### OUTLINE
-Abstract (SK/EN)
-Introduction
-1. Theoretical Background
-   1. Basics of Cryptography
-   2. Knapsack Problem
-   3. Knapsack Cryptosystem
-2. Implementation and Methodology
-   1. Choice of Language
-   2. Algorithm Design
-   3. Testing
-3. Variations and Improvements
-   1. Weaknesses
-   2. Enhanced Versions
-   3. Comparison
-4. Results and Discussion
-Conclusion
-Bibliography
-Appendices
+## Repository structure
 
-### INTRODUCTION (≈ 1–2 pages, unnumbered chapter)
+- `code/` - C implementation and benchmarks
+- `thesis/` - thesis source files
+- `seminar-site/` - Hugo site for weekly seminar progress
+- `sources/` - local reference material (private research copies)
 
-Introduce the reader to the problem and motivation:
-- Importance of cryptography and public-key systems
-- Why the Knapsack cryptosystem is interesting (historical and educational value)
-- Describe the aim and goals of your thesis
-- Outline of chapters (“The thesis is structured as follows…”)
+## Quick start (code)
 
-### THEORY 
+Requirements:
+- C compiler (`cc`)
+- `make`
+- GMP library (`libgmp`)
 
-1. Theoretical Background
-    1. Basics of Cryptography
-        -	Symmetric vs. asymmetric encryption
-        -	Mathematical foundations (modular arithmetic, one-way functions, NP problems)
+Build:
+```bash
+cd code
+make
+```
 
-    2. The Knapsack Problem
-        -	Definition and mathematical formulation (subset-sum problem)
-        -	Complexity and NP-completeness
-        -	Example with small numbers
+Run demo:
+```bash
+./build/knapsack demo
+```
 
-    3. Public Key Cryptosystems and the Merkle–Hellman Knapsack
-        -	Idea of public-key encryption
-        -	Description of the classical Merkle–Hellman cryptosystem
-        -	Key generation, encryption, decryption
-        -	Example walk-through
+Run benchmark:
+```bash
+./build/knapsack bench
+```
 
-- (You can take content from Alexander Stanoyevitch, Chapter 4.5)
+Clean:
+```bash
+make clean
+```
 
-2. Implementation and Methodology
-    1. Choice of Programming Language
-        -	Which language (Python, C++, etc.)
-        -	Why you chose it (libraries, performance, readability)
+## Seminar site
 
-    2. Design of Implementation
-        -	Data structures and algorithm design
-        -	Pseudocode of key steps (key generation, encryption, decryption)
-        -	Code snippets in listings
+Local preview:
+```bash
+cd seminar-site
+hugo server -D
+```
 
-    3. Testing and Verification
-        -	Test cases for correctness
-        -	Example encrypt/decrypt sequences
-        -	Timing or performance comparison
+Create weekly log entry:
+```bash
+cd seminar-site
+hugo new --kind log log/YYYY-MM-DD-week-XX.md
+```
 
-3. Variations and Improvements
-    1. Weaknesses of the Classical Knapsack Cryptosystem
-        -	Shamir’s attack
-        -	Density of knapsack and its effect on security
+Build static site:
+```bash
+cd seminar-site
+hugo --minify
+```
 
-    2. Improved Knapsack Schemes
-        -	Multiple superincreasing sequences
-        -	Modular transformations
-        -	Randomized permutations
-        -	Other approaches (Lattice-based variants, if you want to touch modern crypto)
+## Notes
 
-    3. Comparison
-        -	Security strength and weaknesses
-        -	Efficiency and implementation complexity
-        -	Table summarizing differences
-
-4. Results and Discussion
-	-	Present what you achieved:
-	-	Working implementation
-	-	Experimental results
-	-	Comparison of variants
-	-	Discuss limitations and what could be improved
-	-	Relate your results to existing literature
-
-### CONCLUSION
-
-- Summarize what you learned and achieved
-- Evaluate if the aims were fulfilled
-- Mention possible directions for future work
-- (e.g., post-quantum cryptography, hybrid systems)
-
-### APPENDICES
-
-- Appendix A: Source code
-- Appendix B: User guide / compilation instructions
-- Appendix C: Additional data or extended tests
-
-### BIBLIOGRAPHY
-
-- Follow FMFI BibTeX format
-- Alexander Stanoyevitch – Discrete Structures with Contemporary Applications
-- Academic papers on Merkle–Hellman, Shamir’s attack, improvements
-- Any online sources used for algorithms or libraries
-
-
-
+- Weekly log entries use Sunday dates.
+- PDFs in `sources/` are for personal research workflow; they are not hosted by the site.

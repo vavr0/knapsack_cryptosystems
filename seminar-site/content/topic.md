@@ -13,7 +13,7 @@ This project studies the classical Merkle-Hellman knapsack cryptosystem, its kno
 ## Goals
 
 1. Explain the classical scheme (key generation, encryption, decryption).
-2. Analyze cryptanalytic weaknesses, especially Shamir-style attacks.
+2. Analyze cryptanalytic weaknesses.
 3. Compare selected variations by security and implementation complexity.
 
 ## Annotation
