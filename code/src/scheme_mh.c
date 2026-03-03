@@ -1,5 +1,4 @@
 #include "scheme.h"
-#include <bits/time.h>
 
 typedef struct {
     size_t n;     // key length

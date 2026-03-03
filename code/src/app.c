@@ -6,7 +6,6 @@
 #include <limits.h>
 #include <stddef.h>
 #include <string.h>
-#include <time.h>
 
 #define MAX_MESSAGE_BITS 128
 
