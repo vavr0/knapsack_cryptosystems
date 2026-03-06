@@ -5,6 +5,8 @@
 #include "utils.h"
 #include <limits.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #define MAX_MESSAGE_BITS 128

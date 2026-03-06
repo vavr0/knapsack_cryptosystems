@@ -47,6 +47,7 @@ static void mh_key_generate(MhKey *key) {
     mpz_add_ui(key->m, sum, 100); // plus 100
 
     // Choose n coprime to m
+    // TODO
     mpz_set_ui(key->n_mult, 31); // can randomize later
 
     // Generate public key b_i = (w_i * n) mod m

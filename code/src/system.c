@@ -1,5 +1,8 @@
 #include "system.h"
 #include "common.h"
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 static f64 now_ms(void) {
     struct timespec ts;
