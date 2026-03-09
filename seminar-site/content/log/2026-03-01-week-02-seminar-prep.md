@@ -9,7 +9,7 @@ completed:
   - Fixed GitHub Pages project-path routing/deployment issues
   - Improved weekly log formatting and readability
 next_steps:
-  - Final quick polish on Week 1 and Resources page
-  - Run one final end-to-end site check before seminar
-  - Add a short post-seminar reflection entry
+  - Implement parameter-based demonstration in code showing how the classical knapsack can be broken.
+  - Draft section on knapsack variants, known attacks, and their weaknesses.
+  - Add explicit complexity notes to each discussed method/attack (time/space, polynomial vs hard cases).
 ---

@@ -4,25 +4,48 @@ CC ?= cc
 PKG_CONFIG ?= pkg-config
 
 SRC_DIR := src
+INC_DIR := include
 BUILD_DIR := build
-OBJ_DIR := $(BUILD_DIR)/obj
 TARGET := $(BUILD_DIR)/knapsack
-MODE_FILE := $(BUILD_DIR)/.build_mode
+
+MODE ?= release
+SAN ?= none
+
+VALID_MODES := debug release
+VALID_SANS := none asan
+
+ifeq ($(filter $(MODE),$(VALID_MODES)),)
+$(error MODE must be one of: $(VALID_MODES))
+endif
+
+ifeq ($(filter $(SAN),$(VALID_SANS)),)
+$(error SAN must be one of: $(VALID_SANS))
+endif
+
+FLAVOR := $(MODE)$(if $(filter asan,$(SAN)),-asan,)
+MODE_DIR := $(BUILD_DIR)/$(FLAVOR)
+OBJ_DIR := $(MODE_DIR)/obj
+BIN := $(MODE_DIR)/knapsack
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 DEPS := $(OBJS:.o=.d)
 
+BASE_CPPFLAGS := -I$(INC_DIR)
 BASE_CFLAGS := -std=c11 -Wall -Wextra -D_POSIX_C_SOURCE=200809L
-BASE_CPPFLAGS := -Iinclude
 
-MODE ?= release
 ifeq ($(MODE),debug)
 MODE_CFLAGS := -g -O0
-else ifeq ($(MODE),release)
-MODE_CFLAGS := -O2 -DNDEBUG
 else
-$(error MODE must be 'release' or 'debug')
+MODE_CFLAGS := -O2 -DNDEBUG
+endif
+
+ifeq ($(SAN),asan)
+SAN_CFLAGS := -fsanitize=address,undefined -fno-omit-frame-pointer
+SAN_LDFLAGS := -fsanitize=address,undefined
+else
+SAN_CFLAGS :=
+SAN_LDFLAGS :=
 endif
 
 GMP_CFLAGS := $(shell $(PKG_CONFIG) --cflags gmp 2>/dev/null)
@@ -46,54 +69,48 @@ endif
 endif
 
 CPPFLAGS += $(BASE_CPPFLAGS) $(GMP_CFLAGS)
-CFLAGS += $(BASE_CFLAGS) $(MODE_CFLAGS)
+CFLAGS += $(BASE_CFLAGS) $(MODE_CFLAGS) $(SAN_CFLAGS)
+LDFLAGS += $(SAN_LDFLAGS)
 LDLIBS += $(GMP_LIBS)
 
-.PHONY: all debug release clean run-demo run-bench help FORCE
+.PHONY: all debug release san clean help
 
-all: $(MODE_FILE) $(TARGET)
+all: $(TARGET)
 
-debug: MODE=debug
-debug: all
+debug:
+	$(MAKE) MODE=debug SAN=none "$(BUILD_DIR)/debug/knapsack"
+	ln -sfn "debug/knapsack" "$(TARGET)"
 
-release: MODE=release
-release: all
+release:
+	$(MAKE) MODE=release SAN=none "$(BUILD_DIR)/release/knapsack"
+	ln -sfn "release/knapsack" "$(TARGET)"
 
-$(TARGET): $(MODE_FILE) $(OBJS) | $(BUILD_DIR)
-	$(CC) $(OBJS) $(LDFLAGS) $(LDLIBS) -o $@
+san:
+	$(MAKE) MODE=debug SAN=asan "$(BUILD_DIR)/debug-asan/knapsack"
+	ln -sfn "debug-asan/knapsack" "$(TARGET)"
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(MODE_FILE) | $(OBJ_DIR)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+$(TARGET): $(BIN) | $(BUILD_DIR)
+	ln -sfn "$(FLAVOR)/knapsack" "$@"
 
-$(MODE_FILE): FORCE | $(BUILD_DIR)
-	@if [ -f "$(MODE_FILE)" ] && [ "$$(cat "$(MODE_FILE)")" != "$(MODE)" ]; then \
-		rm -rf "$(OBJ_DIR)" "$(TARGET)"; \
-	fi
-	@mkdir -p "$(OBJ_DIR)"
-	@printf "%s" "$(MODE)" > "$(MODE_FILE)"
+$(BIN): $(OBJS) | $(MODE_DIR)
+	$(CC) $(OBJS) $(LDFLAGS) $(LDLIBS) -o "$@"
 
-$(BUILD_DIR):
-	mkdir -p "$(BUILD_DIR)"
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c "$<" -o "$@"
 
-$(OBJ_DIR):
-	mkdir -p "$(OBJ_DIR)"
-
-run-demo: all
-	./$(TARGET) demo
-
-run-bench: all
-	./$(TARGET) bench
+$(BUILD_DIR) $(MODE_DIR) $(OBJ_DIR):
+	mkdir -p "$@"
 
 clean:
 	rm -rf "$(BUILD_DIR)"
 
 help:
 	@printf "Targets:\n"
-	@printf "  make [MODE=release|debug]  Build $(TARGET)\n"
-	@printf "  make debug                 Build debug binary\n"
-	@printf "  make release               Build optimized binary\n"
-	@printf "  make run-demo              Build and run demo mode\n"
-	@printf "  make run-bench             Build and run bench mode\n"
-	@printf "  make clean                 Remove build artifacts\n"
+	@printf "  make [MODE=release|debug] [SAN=none|asan]  Build selected flavor\n"
+	@printf "  make debug                                  Build debug (no sanitizer)\n"
+	@printf "  make release                                Build release (no sanitizer)\n"
+	@printf "  make san                                    Build debug with ASan/UBSan\n"
+	@printf "  make clean                                  Remove build artifacts\n"
+	@printf "  make help                                   Show this help\n"
 
 -include $(DEPS)

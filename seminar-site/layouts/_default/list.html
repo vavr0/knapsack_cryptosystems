@@ -11,7 +11,7 @@
             <a href="{{ .RelPermalink }}">{{ .Title }}</a>
             {{ with .Summary }}<p class="list-summary">{{ . | plainify }}</p>{{ end }}
           </div>
-          <span class="meta">{{ .Date.Format "2006-01-02" }}</span>
+          <span class="meta">{{ .Date.Format "02.01.2006" }}</span>
         </li>
       {{ end }}
     </ul>

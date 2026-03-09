@@ -1,7 +1,7 @@
 {{ define "main" }}
 <article class="panel">
   <h1>{{ .Title }}</h1>
-  {{ with .Date }}<p class="meta">{{ .Format "2006-01-02" }}</p>{{ end }}
+  {{ with .Date }}<p class="meta">{{ .Format "02.01.2006" }}</p>{{ end }}
 
   {{ if eq .Section "log" }}
     <section class="log-sections">

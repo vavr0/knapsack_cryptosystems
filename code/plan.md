@@ -1,98 +1,259 @@
-# Execution Sequence (Recommended)
+# Knapsack Thesis Code Plan (No-Backtrack Roadmap)
 
-## Phase 0 — Freeze interfaces + success criteria (half day)
+This plan is designed to avoid backward refactors and keep the codebase stable
+while you add new schemes, attacks, benchmarking, visualization, and better UX.
 
-  - Define what “done” means for v1 thesis engine: multi-scheme ready,
-    reproducible bench, at least one attack, demo mode, tests passing.
-  - Write short API contracts for common.h, scheme.h, attack.h
-    (pre/postconditions, invariants, error behavior).
-  - Decide one output layout for experiments (results/bench/...).
+The order matters: freeze foundations first, then extend.
 
-## Phase 1 — Complete missing foundation types (1 day)
+## 0) Non-Negotiable Rules (apply in every phase)
 
-  - Implement src/common.c for all declarations in include/common.h (I32Array, StrBuf, StrSlice).
-  - Enforce invariants (len/cap, null policy, NUL-termination for strings).
-  - Keep API minimal and stable; avoid overengineering.
+1. Keep public interfaces small and explicit (`include/*.h` is your contract).
+2. Add tests before or with every contract change.
+3. Keep reproducibility first-class (seed, build mode, metadata).
+4. Separate concerns strictly:
+   - CLI parses and validates.
+   - `app` orchestrates mode-level flow.
+   - `system` runs one full pipeline.
+   - `scheme_*` implements crypto details.
+   - future `attack_*` implements attack details.
+5. Never introduce scheme-specific logic into `app`, `cli`, `bench`, `system`.
+6. Every user-facing failure path must return a typed error code + readable message.
 
-  ### invariants 
+## 1) Immediate Known Gaps To Fix First
 
-- Valid StrBuf invariant:
-  - data != NULL
-  - cap >= 1
-  - len < cap
-  - data[len] == '\0'
-- Valid I32Array invariant:
-  - len <= cap
-  - if cap == 0 then data == NULL
-  - if cap > 0 then data != NULL
-- Operational rules:
-    - str_buf_set(s, idx, ch) allowed only for idx < len and ch != '\0'.
-    - str_buf_get(s, idx, out) allowed only for idx < len.
-    - str_buf_reserve(s, new_cap) means reserve bytes including terminator.
-    - str_buf_assign_cstr(s, src) ensures cap >= strlen(src) + 1.
-    - str_buf_append_cstr(s, suffix) ensures cap >= len + strlen(suffix) + 1.
-    - str_buf_cstr(s) always returns a valid NUL-terminated string for valid s.
+- Build flow is functional but can be simplified and made easier to reason about.
+- `include/common.h` declares containers/strings but implementation file is missing.
+- CLI numeric parsing is not fully checked (`atoi` and unchecked `strtoul` paths).
+- Help text/prog-name behavior is inconsistent between top-level and mode handlers.
+- Current MH key generation can fail for some `n` because multiplier/modulus may not be coprime.
+- Bench reproducibility is partial (seed is printed but randomness/timing contract is not fully formalized).
 
-## Phase 2 — Add testing infrastructure (1 day)
+## 2) Phase Plan (do in order)
 
-  - Add a simple C test runner (minimal custom runner is enough for thesis).
-  - Add make test target.
-  - First test sets:
-    - container tests (I32Array, StrBuf, StrSlice)
-    - utils tests (bits_is_valid, bits_to_array)
-    - roundtrip smoke (keygen->encrypt->decrypt for several n, fixed seeds).
+## Phase 1 - Build System Simplification and Hygiene (first)
 
-## Phase 3 — CLI/input hardening (0.5–1 day)
+Goal: simple, predictable build/run/test commands with no stale artifacts.
 
-  - Replace atoi paths with checked parsing (strtol/strtoul + range checks).
-  - Standardize error messages and help text.
-  - Unify mode options model so demo/bench parse similarly.
+Tasks:
+- Keep Makefile minimal and deterministic.
+- Make debug/release switching explicit and safe.
+- Add standard targets: `all`, `debug`, `release`, `clean`, `run-demo`, `run-bench`, `test`.
+- Add optional quality targets: `format`, `lint`, `san` (asan/ubsan), `check`.
+- Keep GMP detection simple (`pkg-config` first, small fallback path).
+- Ensure dependency tracking (`-MMD -MP`) stays enabled.
 
-## Phase 4 — Scheme architecture (1–2 days)
+Acceptance criteria:
+- `make`, `make debug`, `make release` always build correctly after mode switches.
+- `make clean && make` works on a fresh machine with documented requirements.
+- Help output clearly documents all targets and mode behavior.
 
-  - Add SchemeId + resolver/registry (--scheme support).
-  - Refactor SchemeOps.keygen to use SchemeKeygenParams (seed, flags, security level placeholder).
-  - Keep MH classic as reference scheme; preserve backward behavior.
+## Phase 2 - Contract Freeze for Core APIs
 
-## Phase 5 — Reproducible benchmarking (1–2 days)
+Goal: freeze stable interfaces before more features.
 
-  - Keep CSV row output for metrics.
-  - Add JSON metadata sidecar: scheme id, keygen params, seed, git commit hash, build mode/flags, timestamp.
-  - Ensure deterministic run paths with explicit seed handling.
+Contracts to freeze now:
+- `common.h` (containers/strings/slices + invariants).
+- `scheme.h` (ops, keypair, keygen params).
+- `system.h` (request/output/metrics + error behavior).
+- `cli.h` (parse result model and validation policy).
+- new `error.h` (typed status/error codes shared across modules).
 
-## Phase 6 — Attack interface early (1–2 days)
+Tasks:
+- Define preconditions/postconditions in comments for each exported function.
+- Introduce one shared error enum (not only `-1`).
+- Define ownership/lifetime rules (who allocates, who frees).
 
-  - Add AttackOps abstraction (name/id/run/result schema).
-  - Implement one baseline attack first (bruteforce on toy n).
-  - Add attack benchmark command path (attack-bench or bench --attack ...).
+Acceptance criteria:
+- No public API change without explicit plan update.
+- Contract doc is short and complete.
 
-## Phase 7 — Breakability demo mode (1 day)
+## Phase 3 - Foundation Types Implementation (`common.c`) + Tests
 
-  - Add weak parameter presets.
-  - Sweep over n and report attack success rate + runtime.
-  - Emit machine-readable outputs for plotting.
+Goal: complete and trust your base abstractions.
 
-## Phase 8 — Visualization/data pipeline (0.5–1 day)
+Tasks:
+- Implement all declarations from `include/common.h`.
+- Enforce invariants:
+  - `I32Array`: `len <= cap`, null policy consistent with `cap`.
+  - `StrBuf`: NUL-terminated, `len < cap`, bounds-checked get/set.
+  - `StrSlice`: valid pointer/length usage.
+- Add unit tests for all edge cases (empty, growth, reserve, invalid indexes, overflow checks).
 
-  - Add one reproducible plotting script (Python is fine).
-  - Generate figures directly from CSV/JSON.
-  - Keep script deterministic and thesis-friendly.
+Acceptance criteria:
+- All container/string tests pass in debug and release.
+- No leaks under sanitizer/valgrind equivalent.
 
-## Phase 9 — Thesis integration (ongoing, then final pass)
+## Phase 4 - CLI Hardening + Message Input Model (bits and plain text)
 
-  - implementation.tex: architecture, safety abstractions, API decisions, test strategy.
-  - results.tex: benchmark/attack figures, reproducibility note, interpretation.
-  - variations.tex: tie attack outcomes to theory chapter claims.
+Goal: define input behavior once and avoid future CLI refactors.
 
-Cross-cutting refactors (do gradually)
-- Remove non-portable includes like <bits/time.h> and use portable timing (time.h/clock_gettime wrappers).
-- Introduce typed error codes (not only -1) for diagnosability.
-- Keep logs structured in bench/attack paths.
-Practical milestone order
+Tasks:
+- Replace `atoi`/unchecked numeric parsing with checked `strtol`/`strtoul` and range checks.
+- Standardize parse errors (`invalid value for --reps`, etc.).
+- Fix mode help/prog name output.
+- Define message input model:
+  - `--msg-bits` for direct bit strings.
+  - `--msg-text` for plain text.
+  - explicit encoding policy (UTF-8 bytes).
+  - explicit block policy (how text becomes `n`-bit blocks).
+  - explicit padding policy and reversal on decrypt.
 
-1) Foundation + tests first  
-2) Scheme resolver + keygen params  
-3) Reproducible bench outputs  
-4) Attack API + first attack  
-5) Breakability mode + figures + thesis writeup
-If you want, next I’ll turn this into a task-by-task checklist with exact file-level changes (what to edit in include/ and src/ in order) so implementation is mechanical.
+Acceptance criteria:
+- Invalid numeric/text inputs never silently fall back.
+- Help text matches actual behavior.
+- Plain text roundtrip is deterministic and documented.
+
+## Phase 5 - Scheme Architecture Lock-In (Extensibility)
+
+Goal: add new knapsack variants without touching orchestration code.
+
+Tasks:
+- Add scheme registry/resolver (`--scheme`).
+- Add `SchemeId` and `SchemeKeygenParams` (`seed`, flags, future security level).
+- Keep `SchemeOps` stable with strict ownership/error semantics.
+- Preserve MH classic as reference implementation.
+
+Acceptance criteria:
+- Adding new scheme = add new `scheme_x.c` + register once.
+- `app/system/bench` remain unchanged for new scheme support.
+
+## Phase 6 - Correctness Stabilization (MH + Pipeline)
+
+Goal: guarantee pipeline correctness for supported parameter ranges.
+
+Tasks:
+- Fix MH keygen so modular inverse always exists.
+- Define allowed parameter range and enforce it.
+- Add roundtrip regression tests across many `n` values and seeds.
+- Ensure `system` checks/dealloc paths are complete and leak-safe.
+
+Acceptance criteria:
+- No known `n` where roundtrip randomly fails in valid range.
+- Regressions are caught by tests.
+
+## Phase 7 - Reproducible Benchmarking (Data You Can Defend in Thesis)
+
+Goal: trustworthy measurements and reproducible outputs.
+
+Tasks:
+- Keep CSV for raw rows.
+- Add JSON sidecar metadata:
+  - scheme id, keygen params, seed, timestamp, build mode, compiler flags, git commit.
+- Define timing policy:
+  - clock source,
+  - warmup policy,
+  - reps/statistics (mean + median + stddev if useful).
+- Make benchmark behavior deterministic under explicit seed.
+
+Acceptance criteria:
+- Same config + same seed => reproducible outputs.
+- Every figure can be traced to one results file + metadata.
+
+## Phase 8 - Attack API (add early, keep simple)
+
+Goal: prevent attack integration from forcing future refactors.
+
+Tasks:
+- Add `attack.h` with `AttackOps` (`id`, `name`, `run`, result struct).
+- Define attack input/result schema independent of one scheme.
+- Implement one baseline attack first (toy brute force or known simple baseline).
+- Add attack benchmark command path.
+
+Acceptance criteria:
+- New attack plugin can be added like a scheme module.
+- Attack outputs are machine-readable and benchmark-friendly.
+
+## Phase 9 - Breakability Demo Mode
+
+Goal: show educational/security behavior clearly.
+
+Tasks:
+- Add weak parameter presets.
+- Sweep `n` and report attack success rate + runtime.
+- Export data for plotting directly.
+
+Acceptance criteria:
+- Demo outputs are consistent and easy to present in thesis/seminar.
+
+## Phase 10 - Visualization and Reporting Pipeline
+
+Goal: one-command reproducible figures.
+
+Tasks:
+- Add plotting scripts (Python ok).
+- Input only from CSV/JSON outputs, no manual edits.
+- Add `make plot` target for thesis figure generation.
+
+Acceptance criteria:
+- Figures regenerate from raw data reliably.
+- Axis labels/units are consistent with benchmark definitions.
+
+## Phase 11 - CI/Quality Gates
+
+Goal: keep quality stable while project grows.
+
+Tasks:
+- Add CI jobs for build + tests (debug/release).
+- Add sanitizer job.
+- Optionally add formatting/lint check.
+
+Acceptance criteria:
+- Main branch cannot drift into broken state.
+- Failures are caught early.
+
+## Phase 12 - Thesis Integration Pass (parallel, then final)
+
+Goal: no end-stage panic writing implementation details.
+
+Tasks:
+- Continuously mirror architecture decisions into `thesis/implementation.tex`.
+- Keep results mapping table: figure -> command -> output file -> git commit.
+- Document attack findings in `thesis/variations.tex` and `thesis/results.tex`.
+
+Acceptance criteria:
+- Every major claim in thesis has reproducible artifact backing it.
+
+## 3) Suggested File/Module Evolution (minimal but scalable)
+
+Current layout can stay flat for now, but follow this logical ownership:
+
+- `include/common.h`, `src/common.c` - core reusable types/utilities
+- `include/error.h` - shared status codes
+- `include/scheme.h`, `src/scheme_*.c` - scheme modules + registry
+- `include/attack.h`, `src/attack_*.c` - attack modules + registry
+- `include/system.h`, `src/system.c` - orchestration pipeline
+- `include/cli.h`, `src/cli.c` - parsing/validation only
+- `include/bench.h`, `src/bench.c` - benchmark runner/output
+- `src/app.c`, `src/main.c` - top-level mode dispatch and UX
+
+## 4) Lock-In Checkpoints (must pass before moving on)
+
+Checkpoint A (after Phase 3):
+- Build stable + core containers implemented + unit tests passing.
+
+Checkpoint B (after Phase 5):
+- Stable API contracts + scheme registry + no hardcoded scheme in orchestrators.
+
+Checkpoint C (after Phase 7):
+- Reproducible benchmark outputs with metadata + timing policy finalized.
+
+Checkpoint D (after Phase 8/9):
+- Attack API live + one baseline attack + breakability demo data working.
+
+Checkpoint E (final):
+- CI stable + plots reproducible + thesis chapters tied to artifacts.
+
+## 5) Recommended Next 7 Work Items (strict order)
+
+1. Simplify and finalize Makefile + add `make test` scaffold.
+2. Add `error.h` and migrate key paths from raw `-1` to typed status.
+3. Implement `src/common.c` exactly to `common.h` contracts.
+4. Add minimal test runner and first unit tests (`common`, `utils`, roundtrip smoke).
+5. Harden CLI parsing/help behavior and finalize `--msg-bits`/`--msg-text` decisions.
+6. Add scheme registry + `--scheme` support + keygen params struct.
+7. Fix MH invertibility and lock roundtrip regression tests across parameter ranges.
+
+---
+
+If you follow this sequence, future additions (new schemes, attacks, visualizations,
+better UX) should mostly be additive, not refactor-heavy.
