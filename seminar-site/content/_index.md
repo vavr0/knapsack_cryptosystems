@@ -6,7 +6,7 @@ Welcome to my bachelor seminar website for the project:
 
 **Classical Knapsack Cryptosystem and its Variations**
 
-This project studies the classical Merkle-Hellman knapsack cryptosystem, its known weaknesses, and selected improved variants.
+This project studies the classical Merkle-Hellman knapsack cryptosystem, its known weaknesses, and selected improved variants, with a focus on demonstrating how specific parameter choices make the classical scheme breakable while contrasting variants and their computational complexity.
 
 ### Project goals
 
@@ -16,4 +16,6 @@ This project studies the classical Merkle-Hellman knapsack cryptosystem, its kno
 
 ### Current status
 
-I have set up the thesis structure and started collecting and annotating core sources.
+Scope refined after supervisor feedback, Makefile and repo cleaned up, and the site prepared for a live seminar walkthrough while I get ready to show the parameter-based break demo.
+
+Last updated 10.03.2026.

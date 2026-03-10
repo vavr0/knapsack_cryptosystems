@@ -1,5 +1,6 @@
 ---
 title: "Week 03 - Direction Update and Cleanup"
+slug: "week-03"
 date: 2026-03-08
 draft: false
 week: "Week 03"
