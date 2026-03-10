@@ -12,5 +12,4 @@ next_steps:
   - Implement a parameter-based demonstration in code showing how the classical knapsack can be broken.
   - Draft a section on knapsack variants, known attacks, and their weaknesses.
   - Add explicit computational complexity notes to each method/attack (time and space; polynomial vs hard cases).
-  - Prepare a concise 5-minute seminar walkthrough using the website.
 ---
