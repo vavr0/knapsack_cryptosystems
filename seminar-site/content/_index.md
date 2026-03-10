@@ -2,8 +2,6 @@
 title: "Home"
 ---
 
-Welcome to my bachelor seminar website for the project:
-
 **Classical Knapsack Cryptosystem and its Variations**
 
 This project studies the classical Merkle-Hellman knapsack cryptosystem, its known weaknesses, and selected improved variants, with a focus on demonstrating how specific parameter choices make the classical scheme breakable while contrasting variants and their computational complexity.
