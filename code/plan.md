@@ -48,6 +48,8 @@ These are the real blockers right now:
 - Benchmark reproducibility is only partial.
 - `plan.md` should no longer assume `common.h/common.c` container work, because
   the current `include/common.h` only contains primitive typedefs/macros.
+- Bit messages are still passed mostly as raw arrays plus separate lengths;
+  freeze a minimal shared bit representation before more API growth.
 
 ---
 
@@ -71,6 +73,7 @@ Goal: make all public interfaces explicit before adding new features.
 
 Tasks:
 - Add `include/error.h`.
+- Add `include/bits.h`.
 - Define one shared status enum:
   - `KNAP_OK`
   - `KNAP_STATUS_HELP`
@@ -79,6 +82,12 @@ Tasks:
   - `KNAP_ERR_CRYPTO`
   - `KNAP_ERR_INTERNAL`
 - Add status-to-string helper.
+- Freeze minimal shared bit/message types:
+  - `BitView` for read-only bit sequences with explicit length
+  - `BitBuf` for owned or writable bit buffers with explicit length
+- Add only the small helper surface needed to use these bit types safely.
+- Keep this layer narrow and domain-specific; do not introduce a broad generic
+  container/string foundation yet.
 - Convert public APIs from raw integer returns to typed statuses.
 - Document preconditions/postconditions in public headers.
 - Document ownership/lifetime rules.
@@ -87,6 +96,8 @@ Acceptance criteria:
 - No public function uses magic `-1` / `1` as its main contract.
 - All exported functions return documented typed statuses.
 - Ownership rules are short, clear, and complete.
+- Public bit-sequence contracts use explicit length-carrying types where they
+  improve safety and clarity.
 
 ## Phase 2 - Freeze Zero-Valid Outputs and Lifecycle Rules
 
@@ -120,6 +131,7 @@ Tasks:
   - optional seed
   - flags/reserved field
 - Keep `SchemeOps` small and stable.
+- Align scheme encrypt/decrypt contracts with the frozen bit/message types.
 - Remove hidden fallback behavior from lower layers.
 
 Acceptance criteria:
@@ -139,6 +151,8 @@ Tasks:
   - `--msg-bits`
   - later `--msg-text`
 - Document exact bit/text behavior.
+- Parse bit input into the frozen bit/message representation instead of ad hoc
+  raw arrays.
 - Keep parsing/validation in `cli`.
 - Keep user-facing messages in `app`.
 
@@ -298,6 +312,7 @@ Acceptance criteria:
 Keep the flat layout for now, but use this ownership model:
 
 - `include/common.h` - primitive shared typedefs/macros
+- `include/bits.h`, `src/bits.c` - minimal bit sequence view/buffer types and helpers
 - `include/error.h` - shared typed statuses
 - `include/scheme.h`, `src/scheme_*.c` - scheme API + implementations
 - `include/attack.h`, `src/attack_*.c` - attack API + implementations
@@ -365,6 +380,8 @@ Do these next, in strict order:
 - `app` is the main place that turns statuses into readable messages.
 - Outputs should be useful even when empty.
 - Fail early when validation or resource setup cannot succeed.
+- Use explicit length-carrying bit view/buffer types instead of informal raw
+  bit-pointer plus size pairs when they make contracts clearer.
 - Do not add variants or attacks until contracts are stable.
 - Seed belongs in the public keygen interface now, even if early schemes use it minimally.
 

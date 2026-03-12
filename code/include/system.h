@@ -1,13 +1,14 @@
 #pragma once
 
+#include "bitvec.h"
 #include "scheme.h"
 
 typedef struct {
-    size_t n;
-    const i32 *message_bits;
+    const SchemeOps *scheme;
+    SchemeKeygenParams params;
+    BitView message;
     b8 show_steps;
     b8 capture_details;
-    const SchemeOps *scheme;
 } KnapsackRunRequest;
 
 typedef struct {
@@ -18,11 +19,9 @@ typedef struct {
 } KnapsackRunMetrics;
 
 typedef struct {
-    i32 *decrypted_bits;
-    size_t n;
+    BitBuf decrypted_message;
     b8 has_key;
     SchemeKeypair keypair;
-    const SchemeOps *scheme;
     b8 has_ciphertext;
     mpz_t ciphertext;
 } KnapsackRunOutput;
