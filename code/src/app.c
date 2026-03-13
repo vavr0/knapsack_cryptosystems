@@ -1,12 +1,13 @@
 #include "app.h"
 #include "bench.h"
 #include "cli.h"
+#include "error.h"
 #include "system.h"
 #include "utils.h"
 #include <limits.h>
 #include <stddef.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define MAX_MESSAGE_BITS 128
@@ -15,6 +16,28 @@ void print_usage(const char *prog) {
     fprintf(stderr, "Usage:\n");
     fprintf(stderr, "  %s demo  [options]\n", prog);
     fprintf(stderr, "  %s bench [options]\n", prog);
+}
+
+KnapStatus app_run(int argc, char **argv) {
+    CliFlags flags;
+    KnapStatus status;
+
+    status = parse_args(argc, argv, &flags);
+    if (status == KNAP_STATUS_HELP) {
+        print_usage(argv[0]);
+        return KNAP_OK;
+    }
+    if (status != KNAP_OK) {
+        return status;
+    }
+
+    if (flags.mode == CLI_MODE_DEMO) {
+        // run demo TODO
+    } else {
+        // run bench TODO
+    }
+
+    return KNAP_OK;
 }
 
 static size_t read_message_bits(i32 **message_out) {

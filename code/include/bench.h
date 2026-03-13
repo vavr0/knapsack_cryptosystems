@@ -1,5 +1,6 @@
 #pragma once
+#include "cli.h"
 #include "common.h"
+#include "error.h"
 
-i32 bench_run_pipeline_csv(i32 n_min, i32 n_max, i32 reps, u32 seed,
-                           const char *message_bits);
+KnapStatus bench_run(const CliFlags *flags);

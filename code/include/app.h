@@ -1,9 +1,8 @@
 #pragma once
 
 #include "common.h"
+#include "error.h"
 
-i32 run_demo(int argc, char **argv);
-i32 run_bench(int argc, char **argv);
-
+KnapStatus app_run(int argc, char **argv);
 void print_usage(const char *prog);
 

@@ -1,24 +1,13 @@
 #include "app.h"
-#include <stdio.h>
-#include <string.h>
+#include "error.h"
 
 int main(int argc, char **argv) {
-    if (argc < 2) {
-        print_usage(argv[0]);
+    if (argc < 1 || !argv) {
         return 1;
     }
-    const char *mode = argv[1];
-    if (strcmp(mode, "demo") == 0) {
-        return run_demo(argc - 1, argv + 1);
+    KnapStatus status = app_run(argc, argv);
+    if (status != KNAP_OK) {
+        return 1;
     }
-    if (strcmp(mode, "bench") == 0) {
-        return run_bench(argc - 1, argv + 1);
-    }
-    if (strcmp(mode, "--help") == 0 || strcmp(mode, "-h") == 0) {
-        print_usage(argv[0]);
-        return 0;
-    }
-    fprintf(stderr, "Unknown mode: %s\n", mode);
-    print_usage(argv[0]);
-    return 1;
+    return 0;
 }

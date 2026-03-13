@@ -1,22 +1,23 @@
 #pragma once
 #include "common.h"
+#include "error.h"
+
+typedef enum {
+    CLI_MODE_DEMO = 0,
+    CLI_MODE_BENCH,
+} CliMode;
 
 typedef struct {
-    const char *message_bits;   // NULL => interactive/default
-    b8 show_steps;             // 0/1
-    b8 has_seed;               // 0/1
-    u32 seed;
-} DemoOptions;
-
-typedef struct {
-    i32 n_min;
-    i32 n_max;
-    i32 reps;
-    b8 has_seed;               // 0/1
-    u32 seed;
-    const char *format;         // "csv" for now
+    CliMode mode;
+    const char *scheme_id;
     const char *message_bits;
-} BenchOptions;
+    u32 seed;
+    b8 has_seed;
+    b8 show_steps;
+    u64 n;
+    u64 reps;
+    const char *format;         // "csv" for now
 
-i32 parse_demo_options(int argc, char **argv, DemoOptions *out);
-i32 parse_bench_options(int argc, char **argv, BenchOptions *out);
+} CliFlags;
+
+KnapStatus parse_args(int argc, char **argv, CliFlags *out);

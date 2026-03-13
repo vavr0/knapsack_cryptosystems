@@ -14,7 +14,7 @@ typedef struct {
     u8 has_seed;
     u32 seed;
     u32 flags;
-} SchemeKeygenParams ;
+} SchemeKeygenParams;
 
 typedef struct {
     const char *id; // e.g. "mh-classic"
@@ -23,7 +23,7 @@ typedef struct {
 
 typedef struct {
     SchemeInfo info;
-    KnapStatus (*keygen)(const SchemeKeygenParams params, SchemeKeypair *out_keypair);
+    KnapStatus (*keygen)(const SchemeKeygenParams *params, SchemeKeypair *out_keypair);
     KnapStatus (*encrypt)(const SchemeKeypair *keypair, BitView message,
                           mpz_t out_ciphertext);
     KnapStatus (*decrypt)(const SchemeKeypair *keypair, const mpz_t ciphertext,
