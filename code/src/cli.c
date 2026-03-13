@@ -65,7 +65,39 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
     }
     return KNAP_OK;
 }
-static KnapStatus validate_flags(const CliFlags *flags);
+
+static KnapStatus validate_flags(const CliFlags *flags) {
+    if (!flags) {
+        return KNAP_ERR_INVALID;
+    }
+
+    if (flags->mode != CLI_MODE_DEMO && flags->mode != CLI_MODE_BENCH) {
+        return KNAP_ERR_INVALID;
+    }
+
+    if (flags->scheme_id && strcmp(flags->scheme_id, "mh") != 0) {
+        return KNAP_ERR_INVALID;
+    }
+
+    if (flags->format) {
+        if (strcmp(flags->format, "csv") != 0) {
+            return KNAP_ERR_INVALID;
+        }
+        if (flags->mode != CLI_MODE_BENCH) {
+            return KNAP_ERR_INVALID;
+        }
+    }
+
+    if (flags->show_steps && flags->mode != CLI_MODE_DEMO) {
+        return KNAP_ERR_INVALID;
+    }
+
+    if (flags->message_bits && !bits_is_valid(flags->message_bits)) {
+        return KNAP_ERR_INVALID;
+    }
+
+    return KNAP_OK;
+}
 
 i32 parse_demo_options(int argc, char **argv, DemoOptions *out) {
     out->message_bits = NULL; // means interactive input (current behavior)
