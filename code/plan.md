@@ -6,6 +6,122 @@ benchmarks, and thesis-ready results.
 
 Main rule: freeze contracts first, then extend.
 
+## Current Refactor Direction
+
+This section is the current source of truth during the ongoing refactor. If
+older parts of this file conflict with it, follow this section.
+
+### Architecture
+
+- Parsing is centralized in `cli`.
+- `main.c` stays tiny and only calls `app_run(argc, argv)`.
+- `app.c` is the top-level dispatcher and user-facing flow.
+- `bench.c` is benchmark-only execution.
+- `scheme_*.c` is crypto only.
+- There is no intended public/shared `system` orchestration layer.
+
+### Important Decision About `system`
+
+The old `system` layer tried to serve both:
+- demo orchestration and user-facing flow
+- benchmark execution and timing
+
+We decided this was too blurry.
+
+Final direction:
+- no public/shared `system.h/.c` architecture
+- demo path is orchestrated in `app.c`
+- bench path is orchestrated in `bench.c`
+- both paths share the crypto core through `scheme.h`
+
+Accepted tradeoff:
+- a little duplicated orchestration between demo and bench is fine
+- clarity is preferred over forcing both through one universal runner/output API
+
+### What Is Being Removed
+
+The following old `system` API is planned for removal, not redesign:
+
+- `KnapsackRunRequest`
+- `KnapsackRunOutput`
+- `KnapsackRunMetrics`
+- `knapsack_run_once(...)`
+- `knapsack_run_output_clear(...)`
+
+There is intentionally no 1:1 replacement shared runner API.
+
+### What Replaces It
+
+Instead of a shared runner layer:
+
+- `app.c` directly does demo orchestration:
+  - prepare/read message
+  - call scheme keygen/encrypt/decrypt
+  - print demo output
+  - verify roundtrip correctness
+
+- `bench.c` directly does benchmark orchestration:
+  - choose defaults if needed
+  - loop repetitions
+  - time keygen/encrypt/decrypt
+  - verify roundtrip correctness
+  - print benchmark output
+
+### CLI Direction
+
+- `CliMode` only has:
+  - `CLI_MODE_DEMO`
+  - `CLI_MODE_BENCH`
+- help is not a mode
+- help is returned as `KNAP_STATUS_HELP`
+- public parser surface is one function:
+  - `parse_args(int argc, char **argv, CliFlags *out)`
+- `CliFlags` is one combined CLI struct, not separate demo/bench structs
+
+### Refactor Order
+
+1. Finish `src/cli.c`
+2. Complete `app_run(...)` as the real dispatcher
+3. Remove old `parse_demo_options(...)` / `parse_bench_options(...)`
+4. Rewrite demo path in `app.c`
+5. Rewrite `bench.c` to `bench_run(const CliFlags *flags)`
+6. Remove `system.h/.c` after no caller depends on them
+7. Later continue with MH correctness, tests, and scheme registry
+
+### Guidance For Future Agents
+
+- Do not reintroduce `system` as a shared orchestration layer.
+- Do not create a new universal run/output struct for both demo and bench.
+- Shared code should live at the crypto contract level (`scheme.h`), not at the
+  full app-flow level.
+- If demo and bench duplicate a small amount of orchestration, that is
+  expected.
+
+### Current Code State
+
+Good:
+- `main.c` is already simplified to call `app_run(...)`.
+- `app.h` matches the intended top-level architecture.
+- `cli.h` is mostly aligned with the new combined `CliFlags` direction.
+- `bench.h` already exposes `bench_run(const CliFlags *flags)`.
+- `scheme.h` is much closer to the intended contract.
+
+Still mid-refactor / inconsistent:
+- `src/cli.c` has the new parser path, but still contains old
+  `parse_demo_options(...)` / `parse_bench_options(...)`.
+- `src/app.c` has the new `app_run(...)` skeleton, but still contains old
+  parser-based `run_demo(...)` / `run_bench(...)` code.
+- `src/app.c` still includes and uses `system.h`.
+- `src/bench.c` still uses the old `system`-based flow.
+- `system` has not yet been removed from implementation.
+- `src/system.c` is stale relative to the new `scheme.h` direction and should
+  not be treated as the target architecture.
+
+Practical warning for future sessions:
+- old `system` code still exists in the repo as refactor residue
+- it is not the intended end state
+- do not spend time redesigning or repairing it as a permanent shared layer
+
 ## 0) Core Principles
 
 1. Public headers in `include/` are the contract.
