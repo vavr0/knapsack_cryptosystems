@@ -25,5 +25,6 @@ b8 bit_buf_equal(const BitBuf *a, const BitBuf *b);
 KnapStatus bit_buf_alloc(BitBuf *buf, size_t len);
 KnapStatus bit_buf_copy(BitBuf *dst, BitView src);
 KnapStatus bit_buf_from_cstr(BitBuf *out, const char *s);
-KnapStatus bit_buf_to_cstr(BitView view, char **out_str);
+KnapStatus bit_view_to_cstr(BitView view, char **out_str);
+KnapStatus bit_buf_to_cstr(const BitBuf *buf, char **out_str);
 BitView bit_buf_view(const BitBuf *buf);

@@ -1,18 +1,22 @@
 #include "bitvec.h"
+#include "common.h"
+#include "error.h"
 #include "scheme.h"
 
-
-// TODO REDO EVERYTHING
+// TODO
+// - mh_key_init(...) still does unchecked malloc for w / b
+// - keygen still does not guarantee coprime n_mult and m
+// - decrypt helper still prints steps internally
 
 typedef struct {
-    size_t n;     // key length
+    u64 n;     // key length
     mpz_t *w;     // private key sequence (weight)
     mpz_t *b;     // public key sequence (basis)
     mpz_t m;      // modulus (m > sum(weights))
     mpz_t n_mult; // multiplier (no commond factor with m)
 } MhKey;
 
-static void mh_key_init(MhKey *key, size_t n) {
+static void mh_key_init(MhKey *key, u64 n) {
     key->n = n;
     key->w = malloc(n * sizeof(mpz_t));
     key->b = malloc(n * sizeof(mpz_t));
@@ -63,19 +67,19 @@ static void mh_key_generate(MhKey *key) {
     mpz_clear(sum);
 }
 
-static void mh_encrypt_impl(const MhKey *key, const i32 *message,
+static void mh_encrypt_impl(const MhKey *key, BitView message,
                             mpz_t ciphertext) {
     mpz_set_ui(ciphertext, 0);
-    for (size_t i = 0; i < key->n; i++) {
-        if (message[i]) {
+    for (u64 i = 0; i < message.length; i++) {
+        if (message.data[i]) {
             mpz_add(ciphertext, ciphertext, key->b[i]);
         }
     }
 }
 
 // TODO NOT VERBOSE
-static void mh_decrypt_impl_verbose(const MhKey *key, const mpz_t ciphertext,
-                                    i32 *message, b8 show_steps) {
+static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
+                                    BitBuf *message, b8 show_steps) {
     mpz_t s, n_inv;
     mpz_inits(s, n_inv, NULL);
 
@@ -84,7 +88,7 @@ static void mh_decrypt_impl_verbose(const MhKey *key, const mpz_t ciphertext,
         fprintf(stderr,
                 "❌ Error: n has no modular inverse mod m (not coprime)\n");
         mpz_clears(s, n_inv, NULL);
-        return;
+        return KNAP_ERR_CRYPTO;
     }
 
     // Compute s = (C * n_inv) mod m
@@ -99,25 +103,27 @@ static void mh_decrypt_impl_verbose(const MhKey *key, const mpz_t ciphertext,
     for (size_t i = key->n; i-- > 0;) {
 
         if (mpz_cmp(s, key->w[i]) >= 0) {
-            message[i] = 1;
+            message->data[i] = 1;
             if (show_steps) {
                 gmp_printf("i=%zu, s=%Zd, w[i]=%Zd -> take", (size_t)i, s,
                            key->w[i]);
             }
+
             mpz_sub(s, s, key->w[i]);
             if (show_steps) {
                 gmp_printf(", s=%Zd\n", s);
             }
         } else {
-            message[i] = 0;
+            message->data[i] = 0;
             if (show_steps) {
                 gmp_printf("i=%zu, s=%Zd, w[i]=%Zd -> skip, s=%Zd\n", (size_t)i,
                            s, key->w[i], s);
             }
         }
     }
-
     mpz_clears(s, n_inv, NULL);
+
+    return KNAP_OK;
 }
 
 static MhKey *mh_key_from_keypair(const SchemeKeypair *keypair) {
@@ -127,60 +133,69 @@ static MhKey *mh_key_from_keypair(const SchemeKeypair *keypair) {
     return (MhKey *)keypair->impl;
 }
 
-static i32 mh_keygen(const SchemeKeygenParams, SchemeKeypair *out_keypair) {
-    if (!out_keypair || n == 0) {
-        return -1;
+static KnapStatus mh_keygen(const SchemeKeygenParams *params,
+                            SchemeKeypair *out_keypair) {
+    if (!params || !out_keypair || params->n == 0) {
+        return KNAP_ERR_INVALID;
     }
     out_keypair->impl = NULL;
     out_keypair->n = 0;
     MhKey *key = (MhKey *)malloc(sizeof(*key));
     if (!key) {
-        return -1;
+        return KNAP_ERR_ALLOC;
     }
-    mh_key_init(key, n);
+    mh_key_init(key, params->n);
     mh_key_generate(key);
     out_keypair->impl = key;
-    out_keypair->n = n;
-    return 0;
+    out_keypair->n = params->n;
+    return KNAP_OK;
 }
 
-static i32 mh_encrypt(const SchemeKeypair *keypair, BitView message,
-                      size_t n, mpz_t out_ciphertext) {
-    if (!keypair || !message_bits || !keypair->impl || n == 0) {
-        return -1;
+static KnapStatus mh_encrypt(const SchemeKeypair *keypair, BitView message,
+                             mpz_t out_ciphertext) {
+    if (!keypair || !keypair->impl || message.length == 0 || !message.data) {
+        return KNAP_ERR_INVALID;
     }
-    if (n != keypair->n) {
-        return -1;
+
+    if (message.length != keypair->n) {
+        return KNAP_ERR_INVALID;
     }
+
     MhKey *key = mh_key_from_keypair(keypair);
     if (!key) {
-        return -1;
+        return KNAP_ERR_INTERNAL;
     }
-    mh_encrypt_impl(key, message_bits, out_ciphertext);
-    return 0;
+    mh_encrypt_impl(key, message, out_ciphertext);
+    return KNAP_OK;
 }
 
-static i32 mh_decrypt(const SchemeKeypair *keypair, const mpz_t ciphertext,
-                      i32 *out_message_bits, size_t n, b8 show_steps) {
-    if (!keypair || !out_message_bits || !keypair->impl || n == 0) {
-        return -1;
+static KnapStatus mh_decrypt(const SchemeKeypair *keypair,
+                             const mpz_t ciphertext, BitBuf *out_message,
+                             b8 show_steps) {
+    KnapStatus status;
+    if (!keypair || !out_message || !keypair->impl || keypair->n == 0) {
+        return KNAP_ERR_INVALID;
     }
-    if (n != keypair->n) {
-        return -1;
-    }
+
     MhKey *key = mh_key_from_keypair(keypair);
     if (!key) {
-        return -1;
+        return KNAP_ERR_INTERNAL;
     }
-    mpz_t n_inv;
-    mpz_init(n_inv);
-    if (mpz_invert(n_inv, key->n_mult, key->m) == 0) {
-        mpz_clear(n_inv);
-        return -1;
+
+    status = bit_buf_alloc(out_message, keypair->n);
+    if (status != KNAP_OK) {
+        bit_buf_clear(out_message);
+
+        return status;
     }
-    mpz_clear(n_inv);
-    mh_decrypt_impl_verbose(key, ciphertext, out_message_bits, show_steps != 0);
-    return 0;
+
+    status = mh_decrypt_impl(key, ciphertext, out_message, show_steps != 0);
+    if (status != KNAP_OK) {
+        bit_buf_clear(out_message);
+
+        return status;
+    }
+    return KNAP_OK;
 }
 
 static void mh_keypair_clear(SchemeKeypair *keypair) {

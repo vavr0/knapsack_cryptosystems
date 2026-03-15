@@ -5,6 +5,7 @@
 #include "error.h"
 #include "scheme.h"
 #include "utils.h"
+#include <gmp.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -125,6 +126,10 @@ KnapStatus demo_run(CliFlags *flags) {
 
         return status;
     }
+
+    printf("\nCiphertext: ");
+    gmp_printf("C = %Zd\n", ciphertext);
+
     status =
         scheme->decrypt(&keypair, ciphertext, &decrypted, flags->show_steps);
     if (status != KNAP_OK) {
@@ -133,6 +138,10 @@ KnapStatus demo_run(CliFlags *flags) {
 
         return status;
     }
+
+    char *decrypted_str = NULL;
+    bit_buf_to_cstr(&decrypted, &decrypted_str);
+    printf("Decrypted:  %s", decrypted_str);
     if (!bit_buf_equal(&decrypted, &flags->message_bits)) {
         bit_buf_clear(&decrypted);
         scheme->keypair_clear(&keypair);
@@ -144,8 +153,6 @@ KnapStatus demo_run(CliFlags *flags) {
     bit_buf_clear(&decrypted);
     scheme->keypair_clear(&keypair);
     mpz_clear(ciphertext);
-    printf("yas");
 
     return status;
 }
-

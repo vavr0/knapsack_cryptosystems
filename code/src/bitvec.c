@@ -2,13 +2,9 @@
 
 // TODO check all these pls
 
-BitView bit_view(void) {
-    return (BitView){ 0 };
-}
+BitView bit_view(void) { return (BitView){0}; }
 
-BitBuf bit_buf(void) {
-    return (BitBuf){ 0 };
-}
+BitBuf bit_buf(void) { return (BitBuf){0}; }
 
 void bit_buf_clear(BitBuf *buf) {
     if (!buf) {
@@ -37,7 +33,8 @@ b8 bit_buf_is_valid(const BitBuf *buf) {
     if (!buf) {
         return 0;
     }
-    return bit_view_is_valid((BitView){ .data = buf->data, .length = buf->length });
+    return bit_view_is_valid(
+        (BitView){.data = buf->data, .length = buf->length});
 }
 
 b8 bit_view_equal(BitView a, BitView b) {
@@ -124,7 +121,7 @@ KnapStatus bit_buf_from_cstr(BitBuf *out, const char *s) {
     return KNAP_OK;
 }
 
-KnapStatus bit_buf_to_cstr(BitView view, char **out_str) {
+KnapStatus bit_view_to_cstr(BitView view, char **out_str) {
     if (!out_str || !bit_view_is_valid(view)) {
         return KNAP_ERR_INVALID;
     }
@@ -144,10 +141,16 @@ KnapStatus bit_buf_to_cstr(BitView view, char **out_str) {
     return KNAP_OK;
 }
 
+KnapStatus bit_buf_to_cstr(const BitBuf *buf, char **out_str) {
+    if (!buf) {
+        return KNAP_ERR_INVALID;
+    }
+    return bit_view_to_cstr(bit_buf_view(buf), out_str);
+}
+
 BitView bit_buf_view(const BitBuf *buf) {
     if (!buf) {
         return bit_view();
     }
-    return (BitView){ .data = buf->data, .length = buf->length };
+    return (BitView){.data = buf->data, .length = buf->length};
 }
-
