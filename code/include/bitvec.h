@@ -17,9 +17,11 @@ BitBuf bit_buf(void);
 
 void bit_buf_clear(BitBuf *buf);
 
+// TODO
 b8 bit_view_is_valid(BitView view);
 b8 bit_buf_is_valid(const BitBuf *buf);
 b8 bit_view_equal(BitView a, BitView b);
+b8 bit_buf_equal(const BitBuf *a, const BitBuf *b);
 KnapStatus bit_buf_alloc(BitBuf *buf, size_t len);
 KnapStatus bit_buf_copy(BitBuf *dst, BitView src);
 KnapStatus bit_buf_from_cstr(BitBuf *out, const char *s);

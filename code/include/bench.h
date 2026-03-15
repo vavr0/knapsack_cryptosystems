@@ -3,4 +3,4 @@
 #include "common.h"
 #include "error.h"
 
-KnapStatus bench_run(const CliFlags *flags);
+KnapStatus bench_run(CliFlags *flags);

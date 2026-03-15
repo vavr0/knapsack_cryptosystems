@@ -1,74 +1,94 @@
 #include "bench.h"
 #include "common.h"
 #include "scheme.h"
-#include "system.h"
-#include "utils.h"
 
-static void fill_message_random(i32 *message, i32 n) {
-    for (i32 i = 0; i < n; i++) {
-        message[i] = rand() & 1;
+static KnapStatus fill_message_random(BitBuf *message_bits, u64 n) {
+    if (!message_bits || n == 0) {
+        return KNAP_ERR_INVALID;
     }
+
+    KnapStatus status = bit_buf_alloc(message_bits, (size_t)n);
+    if (status != KNAP_OK) {
+        return status;
+    }
+
+    for (u64 i = 0; i < n; i++) {
+        message_bits->data[i] = (u8)(rand() & 1);
+    }
+
+    return KNAP_OK;
 }
 
-i32 bench_run_pipeline_csv(i32 n_min, i32 n_max, i32 reps, u32 seed,
-                           const char *message_bits) {
-    (void)seed;
-    if (n_min <= 0 || n_max < n_min || reps <= 0) {
-        return -1;
+static f64 now_ms(void) {
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
+        return 0.0;
+    }
+    return (f64)ts.tv_sec * 1000.0 + (f64)ts.tv_nsec / 1000000.0;
+}
+
+
+KnapStatus bench_run(CliFlags *flags) {
+    KnapStatus status;
+    const SchemeOps *scheme;
+    SchemeKeypair keypair = {0};
+    SchemeKeygenParams params = {0};
+    BitBuf decrypted = {0};
+    mpz_t ciphertext;
+    u32 seed = flags->has_seed ? flags->seed : (u32)time(NULL);
+    srand(seed);
+    fprintf(stderr, "seed=%u\n", seed);
+
+    if (flags->message_bits.length == 0) {
+        status = fill_message_random(&flags->message_bits, flags->n);
+        if (status != KNAP_OK) {
+            return status;
+        }
     }
 
-    for (i32 n = n_min; n <= n_max; n++) {
-        f64 sum_keygen = 0.0;
-        f64 sum_encrypt = 0.0;
-        f64 sum_decrypt = 0.0;
+    scheme = scheme_mh_get();
+    params.n = flags->message_bits.length;
+    params.has_seed = flags->has_seed;
+    params.seed = flags->seed;
+    params.flags = 0;
+    mpz_init(ciphertext);
 
-        i32 *message = malloc((size_t)n * sizeof(i32));
-        if (!message) {
-            fprintf(stderr, "malloc failed\n");
-            free(message);
-            return -1;
-        }
+    status = scheme->keygen(&params, &keypair);
+    if (status != KNAP_OK) {
+        mpz_clear(ciphertext);
 
-        if (message_bits) {
-            if (bits_to_array(message_bits, message, (size_t)n) != 0) {
-                fprintf(stderr, "filling msg failed\n");
-                free(message);
-                return -1;
-            }
-        } else {
-            fill_message_random(message, n);
-        }
-
-        for (i32 r = 0; r < reps; r++) {
-            KnapsackRunRequest req = {0};
-            KnapsackRunOutput out = {0};
-            KnapsackRunMetrics metrics = {0};
-
-            req.n = (size_t)n;
-            req.scheme = scheme_mh_get();
-            req.message_bits = message;
-            req.show_steps = 0;
-            req.capture_details = 0;
-
-            if (knapsack_run_once(&req, &out, &metrics) != 0) {
-                fprintf(stderr, "roundtrip failed at n=%d rep=%d\n", n, r);
-                free(message);
-                return -1;
-            }
-
-            sum_keygen += metrics.keygen_ms;
-            sum_encrypt += metrics.encrypt_ms;
-            sum_decrypt += metrics.decrypt_ms;
-
-            knapsack_run_output_clear(&out);
-        }
-        free(message);
-        f64 keygen_ms = sum_keygen / reps;
-        f64 encrypt_ms = sum_encrypt / reps;
-        f64 decrypt_ms = sum_decrypt / reps;
-        f64 total_ms = keygen_ms + encrypt_ms + decrypt_ms;
-        printf("%d,%.6f,%.6f,%.6f,%.6f,%d,%u\n", n, keygen_ms, encrypt_ms,
-               decrypt_ms, total_ms, reps, seed);
+        return status;
     }
-    return 0;
+
+    status = scheme->encrypt(&keypair, bit_buf_view(&flags->message_bits),
+                             ciphertext);
+    if (status != KNAP_OK) {
+        scheme->keypair_clear(&keypair);
+        mpz_clear(ciphertext);
+
+        return status;
+    }
+    status =
+        scheme->decrypt(&keypair, ciphertext, &decrypted, flags->show_steps);
+    if (status != KNAP_OK) {
+        scheme->keypair_clear(&keypair);
+        mpz_clear(ciphertext);
+
+        return status;
+    }
+    if (!bit_buf_equal(&decrypted, &flags->message_bits)) {
+        bit_buf_clear(&decrypted);
+        scheme->keypair_clear(&keypair);
+        mpz_clear(ciphertext);
+
+        return KNAP_ERR_CRYPTO;
+    }
+
+    bit_buf_clear(&decrypted);
+    scheme->keypair_clear(&keypair);
+    mpz_clear(ciphertext);
+    printf("yas");
+
+    return status;
+
 }

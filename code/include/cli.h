@@ -1,4 +1,5 @@
 #pragma once
+#include "bitvec.h"
 #include "common.h"
 #include "error.h"
 
@@ -10,7 +11,7 @@ typedef enum {
 typedef struct {
     CliMode mode;
     const char *scheme_id;
-    const char *message_bits;
+    BitBuf message_bits;
     u32 seed;
     b8 has_seed;
     b8 show_steps;

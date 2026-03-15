@@ -1,4 +1,8 @@
+#include "bitvec.h"
 #include "scheme.h"
+
+
+// TODO REDO EVERYTHING
 
 typedef struct {
     size_t n;     // key length
@@ -123,7 +127,7 @@ static MhKey *mh_key_from_keypair(const SchemeKeypair *keypair) {
     return (MhKey *)keypair->impl;
 }
 
-static i32 mh_keygen(size_t n, SchemeKeypair *out_keypair) {
+static i32 mh_keygen(const SchemeKeygenParams, SchemeKeypair *out_keypair) {
     if (!out_keypair || n == 0) {
         return -1;
     }
@@ -140,7 +144,7 @@ static i32 mh_keygen(size_t n, SchemeKeypair *out_keypair) {
     return 0;
 }
 
-static i32 mh_encrypt(const SchemeKeypair *keypair, const i32 *message_bits,
+static i32 mh_encrypt(const SchemeKeypair *keypair, BitView message,
                       size_t n, mpz_t out_ciphertext) {
     if (!keypair || !message_bits || !keypair->impl || n == 0) {
         return -1;
