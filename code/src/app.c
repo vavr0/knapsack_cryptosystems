@@ -111,7 +111,7 @@ static KnapStatus demo_run(CliFlags *flags) {
             return status;
         }
     }
-    scheme = scheme_mh_get();
+    scheme = scheme_resolve(flags->scheme_id);
     params.n = flags->message_bits.length;
     params.seed = seed;
     params.flags = 0;
