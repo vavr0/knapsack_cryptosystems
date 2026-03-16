@@ -4,7 +4,6 @@
 #include "cli.h"
 #include "error.h"
 #include "scheme.h"
-#include "utils.h"
 #include <gmp.h>
 #include <limits.h>
 #include <stddef.h>
@@ -14,7 +13,6 @@
 
 static KnapStatus read_message_bits(BitBuf *message_out) {
     char line[256];
-
     if (!message_out) {
         return KNAP_ERR_INVALID;
     }
@@ -26,7 +24,6 @@ static KnapStatus read_message_bits(BitBuf *message_out) {
 
     size_t len = strcspn(line, "\n");
     line[len] = '\0';
-
     if (len == 0) {
         fprintf(stderr, "Invalid length. Use 1... bits.\n");
         return KNAP_ERR_INVALID;
@@ -48,10 +45,42 @@ static KnapStatus read_message_bits(BitBuf *message_out) {
     for (size_t i = 0; i < len; i++) {
         bits[i] = (u8)(line[i] - '0');
     }
-
     bit_buf_clear(message_out);
     message_out->data = bits;
     message_out->length = (u64)len;
+
+    return KNAP_OK;
+}
+
+static KnapStatus print_demo_result(const BitBuf *message_bits,
+                                    const mpz_t ciphertext,
+                                    const BitBuf *decrypted_bits) {
+    KnapStatus status;
+    char *message_str = NULL;
+    char *decrypted_str = NULL;
+
+    if (!message_bits || !decrypted_bits) {
+        return KNAP_ERR_INVALID;
+    }
+
+    status = bit_buf_to_cstr(message_bits, &message_str);
+    if (status != KNAP_OK) {
+        return status;
+    }
+
+    status = bit_buf_to_cstr(decrypted_bits, &decrypted_str);
+    if (status != KNAP_OK) {
+        free(message_str);
+        return status;
+    }
+
+    printf("Plaintext:  %s\n", message_str);
+    printf("Ciphertext: ");
+    gmp_printf("C = %Zd\n", ciphertext);
+    printf("Decrypted:  %s\n", decrypted_str);
+
+    free(message_str);
+    free(decrypted_str);
     return KNAP_OK;
 }
 
@@ -61,29 +90,7 @@ void print_usage(const char *prog) {
     fprintf(stderr, "  %s bench [options]\n", prog);
 }
 
-KnapStatus app_run(int argc, char **argv) {
-    CliFlags flags = {0};
-    KnapStatus status = parse_args(argc, argv, &flags);
-    if (status == KNAP_STATUS_HELP) {
-        print_usage(argv[0]);
-
-        return KNAP_OK;
-    }
-    if (status != KNAP_OK) {
-
-        return status;
-    }
-    if (flags.mode == CLI_MODE_DEMO) {
-        status = demo_run(&flags);
-    } else {
-        status = bench_run(&flags);
-    }
-    bit_buf_clear(&flags.message_bits);
-
-    return status;
-}
-
-KnapStatus demo_run(CliFlags *flags) {
+static KnapStatus demo_run(CliFlags *flags) {
     KnapStatus status;
     const SchemeOps *scheme;
     SchemeKeypair keypair = {0};
@@ -106,8 +113,7 @@ KnapStatus demo_run(CliFlags *flags) {
     }
     scheme = scheme_mh_get();
     params.n = flags->message_bits.length;
-    params.has_seed = flags->has_seed;
-    params.seed = flags->seed;
+    params.seed = seed;
     params.flags = 0;
     mpz_init(ciphertext);
 
@@ -127,9 +133,6 @@ KnapStatus demo_run(CliFlags *flags) {
         return status;
     }
 
-    printf("\nCiphertext: ");
-    gmp_printf("C = %Zd\n", ciphertext);
-
     status =
         scheme->decrypt(&keypair, ciphertext, &decrypted, flags->show_steps);
     if (status != KNAP_OK) {
@@ -139,9 +142,6 @@ KnapStatus demo_run(CliFlags *flags) {
         return status;
     }
 
-    char *decrypted_str = NULL;
-    bit_buf_to_cstr(&decrypted, &decrypted_str);
-    printf("Decrypted:  %s", decrypted_str);
     if (!bit_buf_equal(&decrypted, &flags->message_bits)) {
         bit_buf_clear(&decrypted);
         scheme->keypair_clear(&keypair);
@@ -150,9 +150,40 @@ KnapStatus demo_run(CliFlags *flags) {
         return KNAP_ERR_CRYPTO;
     }
 
+    status = print_demo_result(&flags->message_bits, ciphertext, &decrypted);
+    if (status != KNAP_OK) {
+        bit_buf_clear(&decrypted);
+        scheme->keypair_clear(&keypair);
+        mpz_clear(ciphertext);
+
+        return status;
+    }
+
     bit_buf_clear(&decrypted);
     scheme->keypair_clear(&keypair);
     mpz_clear(ciphertext);
+
+    return status;
+}
+
+KnapStatus app_run(int argc, char **argv) {
+    CliFlags flags = {0};
+    KnapStatus status = parse_args(argc, argv, &flags);
+    if (status == KNAP_STATUS_HELP) {
+        print_usage(argv[0]);
+
+        return KNAP_OK;
+    }
+    if (status != KNAP_OK) {
+
+        return status;
+    }
+    if (flags.mode == CLI_MODE_DEMO) {
+        status = demo_run(&flags);
+    } else {
+        status = bench_run(&flags);
+    }
+    bit_buf_clear(&flags.message_bits);
 
     return status;
 }

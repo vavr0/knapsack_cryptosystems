@@ -148,7 +148,6 @@ KnapStatus bench_run(CliFlags *flags) {
 
     scheme = scheme_mh_get();
     params.n = flags->message_bits.length;
-    params.has_seed = 1;
     params.seed = seed;
     params.flags = 0;
 
