@@ -82,3 +82,15 @@
 
 - Less progress was made on thesis writing itself than on code architecture.
 - However, the recent work was mainly foundational: it reduces future rewrite cost and makes upcoming experimental/thesis work much more systematic.
+
+- Za posledny cas som sa viac sustredil na implementacnu cast ako na samotny
+  text. Mam rozpracovany funkcny prototyp klasickeho Merkle--Hellman systemu v
+  C, vratane demo/benchmark casti, co mi pomohlo lepsie pochopit key
+  generation, encryption a decryption. V texte mam uz rozumny zaklad
+  teoretickej kapitoly, ale najvacsia diera je teraz kapitola o slabinach,
+  utokoch a variaciach, dalej implementacna metodika, vysledky a citacie. Dalsi
+  krok je preklopit tuto pracu z kodu do textu a doplnit kryptoanalyzu a
+  porovnanie variantov.
+  - Chcel som mat najprv nieco konkretne funkcne, aby metodika a vysledky
+    neboli len vseobecny text. Implementacia mi aj pomohla lepsie pochopit
+    samotny cryptosystem.
