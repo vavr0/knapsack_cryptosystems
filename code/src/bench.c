@@ -147,6 +147,9 @@ KnapStatus bench_run(CliFlags *flags) {
     reps = flags->reps > 0 ? flags->reps : 10;
 
     scheme = scheme_resolve(flags->scheme_id);
+    if (!scheme) {
+        return KNAP_ERR_INVALID;
+    }
     params.n = flags->message_bits.length;
     params.seed = seed;
     params.flags = 0;

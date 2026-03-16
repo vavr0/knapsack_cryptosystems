@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static KnapStatus read_message_bits(BitBuf *message_out) {
     char line[256];
@@ -112,6 +113,9 @@ static KnapStatus demo_run(CliFlags *flags) {
         }
     }
     scheme = scheme_resolve(flags->scheme_id);
+    if (!scheme) {
+        return KNAP_ERR_INVALID;
+    }
     params.n = flags->message_bits.length;
     params.seed = seed;
     params.flags = 0;

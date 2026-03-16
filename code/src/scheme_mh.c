@@ -2,31 +2,47 @@
 #include "common.h"
 #include "error.h"
 #include "scheme.h"
+#include <gmp.h>
 
 // TODO
 // - mh_key_init(...) still does unchecked malloc for w / b
-// - keygen still does not guarantee coprime n_mult and m
 // - decrypt helper still prints steps internally
 
 typedef struct {
-    u64 n;     // key length
+    u64 n;        // key length
     mpz_t *w;     // private key sequence (weight)
     mpz_t *b;     // public key sequence (basis)
     mpz_t m;      // modulus (m > sum(weights))
     mpz_t n_mult; // multiplier (no commond factor with m)
+    mpz_t n_inv;  // inverse
 } MhKey;
 
-static void mh_key_init(MhKey *key, u64 n) {
+static KnapStatus mh_key_init(MhKey *key, u64 n) {
+    u64 i;
+    if (!key || n == 0) {
+        return KNAP_ERR_INVALID;
+    }
+    key->n = 0;
+    key->w = NULL;
+    key->b = NULL;
+    key->w = malloc((size_t)n * sizeof(*key->w));
+    if (!key->w) {
+        return KNAP_ERR_ALLOC;
+    }
+    key->b = malloc((size_t)n * sizeof(*key->b));
+    if (!key->b) {
+        free(key->w);
+        key->w = NULL;
+        return KNAP_ERR_ALLOC;
+    }
     key->n = n;
-    key->w = malloc(n * sizeof(mpz_t));
-    key->b = malloc(n * sizeof(mpz_t));
-    for (size_t i = 0; i < n; i++) {
+    for (i = 0; i < n; i++) {
         mpz_init(key->w[i]);
         mpz_init(key->b[i]);
     }
-    mpz_inits(key->m, key->n_mult, NULL);
+    mpz_inits(key->m, key->n_mult, key->n_inv, NULL);
+    return KNAP_OK;
 }
-
 static void mh_key_clear(MhKey *key) {
     for (size_t i = 0; i < key->n; i++) {
         mpz_clear(key->w[i]);
@@ -34,10 +50,10 @@ static void mh_key_clear(MhKey *key) {
     }
     free(key->w);
     free(key->b);
-    mpz_clears(key->m, key->n_mult, NULL);
+    mpz_clears(key->m, key->n_mult, key->n_inv, NULL);
 }
 
-static void mh_key_generate(MhKey *key) {
+static KnapStatus mh_key_generate(MhKey *key) {
     // Build superinceasing sequencce
     mpz_set_ui(key->w[0], 2);
     for (size_t i = 1; i < key->n; i++) {
@@ -51,20 +67,25 @@ static void mh_key_generate(MhKey *key) {
     for (size_t i = 0; i < key->n; i++)
         mpz_add(sum, sum, key->w[i]);
 
-    // Choose mod > sum(W)
-    mpz_add_ui(key->m, sum, 100); // plus 100
+    // Choose prime mod > sum(W)
+    mpz_nextprime(key->m, sum);
+    // Choose multiplier coprime to m
+    mpz_set_ui(key->n_mult, 2);
 
-    // Choose n coprime to m
-    // TODO
-    mpz_set_ui(key->n_mult, 31); // can randomize later
+    if (mpz_invert(key->n_inv, key->n_mult, key->m) == 0) {
+        mpz_clear(sum);
+
+        return KNAP_ERR_CRYPTO;
+    }
 
     // Generate public key b_i = (w_i * n) mod m
     for (size_t i = 0; i < key->n; i++) {
         mpz_mul(key->b[i], key->w[i], key->n_mult);
         mpz_mod(key->b[i], key->b[i], key->m);
     }
-
     mpz_clear(sum);
+
+    return KNAP_OK;
 }
 
 static void mh_encrypt_impl(const MhKey *key, BitView message,
@@ -79,20 +100,12 @@ static void mh_encrypt_impl(const MhKey *key, BitView message,
 
 // TODO NOT VERBOSE
 static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
-                                    BitBuf *message, b8 show_steps) {
-    mpz_t s, n_inv;
-    mpz_inits(s, n_inv, NULL);
-
-    // Compute n_inv = n^{-1} mod m
-    if (mpz_invert(n_inv, key->n_mult, key->m) == 0) {
-        fprintf(stderr,
-                "❌ Error: n has no modular inverse mod m (not coprime)\n");
-        mpz_clears(s, n_inv, NULL);
-        return KNAP_ERR_CRYPTO;
-    }
+                                  BitBuf *message, b8 show_steps) {
+    mpz_t s;
+    mpz_init(s);
 
     // Compute s = (C * n_inv) mod m
-    mpz_mul(s, ciphertext, n_inv);
+    mpz_mul(s, ciphertext, key->n_inv);
     mpz_mod(s, s, key->m);
 
     if (show_steps) {
@@ -121,7 +134,7 @@ static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
             }
         }
     }
-    mpz_clears(s, n_inv, NULL);
+    mpz_clear(s);
 
     return KNAP_OK;
 }
@@ -144,10 +157,22 @@ static KnapStatus mh_keygen(const SchemeKeygenParams *params,
     if (!key) {
         return KNAP_ERR_ALLOC;
     }
-    mh_key_init(key, params->n);
-    mh_key_generate(key);
+    KnapStatus status = mh_key_init(key, params->n);
+    if (status != KNAP_OK) {
+        free(key);
+        return status;
+    }
+
+    status = mh_key_generate(key);
+    if (status != KNAP_OK) {
+        mh_key_clear(key);
+        free(key);
+
+        return status;
+    }
     out_keypair->impl = key;
     out_keypair->n = params->n;
+
     return KNAP_OK;
 }
 
