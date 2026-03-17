@@ -15,5 +15,3 @@ This project studies the classical Merkle-Hellman knapsack cryptosystem, its kno
 ### Current status
 
 Scope refined after supervisor feedback, Makefile and repo cleaned up, and the site prepared for a live seminar walkthrough while I get ready to show the parameter-based break demo.
-
-Last updated 10.03.2026.

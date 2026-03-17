@@ -2,11 +2,7 @@
 title: "Topic"
 ---
 
-## Seminar title
-
-Classical Knapsack Cryptosystem and its Variations
-
-## One-sentence focus
+## Focus
 
 This project studies the classical Merkle-Hellman knapsack cryptosystem, its known weaknesses, and selected improved variants.
 
