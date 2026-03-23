@@ -57,6 +57,8 @@ Makefile
 *.ninja_deps
 *.ninja_log
 
+compile_commands.json
+
 # Object and binary files
 *.o
 *.obj
