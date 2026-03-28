@@ -1,6 +1,7 @@
 #include "cli.h"
 #include "bitvec.h"
 #include "error.h"
+#include "scheme.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -127,8 +128,7 @@ static KnapStatus validate_flags(const CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
 
-    if (flags->scheme_id && strcmp(flags->scheme_id, "mh") != 0 &&
-        strcmp(flags->scheme_id, "mh-classic") != 0) {
+    if (flags->scheme_id && scheme_resolve(flags->scheme_id) == NULL) {
         return KNAP_ERR_INVALID;
     }
 

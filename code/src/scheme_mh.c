@@ -153,6 +153,7 @@ static KnapStatus mh_keygen(const SchemeKeygenParams *params,
     }
     out_keypair->impl = NULL;
     out_keypair->n = 0;
+
     MhKey *key = (MhKey *)malloc(sizeof(*key));
     if (!key) {
         return KNAP_ERR_ALLOC;
