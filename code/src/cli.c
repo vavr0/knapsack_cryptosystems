@@ -72,17 +72,15 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
             out->scheme_id = argv[++i];
         } else if (strcmp(flag, "--seed") == 0) {
             u64 value;
-
             if (i + 1 >= argc) {
                 return KNAP_ERR_INVALID;
             }
-
             status = parse_u64_str(argv[++i], &value, 1);
-            if (status != KNAP_OK || value > UINT32_MAX) {
+
+            if (status != KNAP_OK || value > UINT64_MAX) {
                 return KNAP_ERR_INVALID;
             }
-
-            out->seed = (u32)value;
+            out->seed = value;
             out->has_seed = 1;
         } else if (strcmp(flag, "--format") == 0) {
             if (i + 1 >= argc) {

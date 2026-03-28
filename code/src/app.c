@@ -99,7 +99,7 @@ static KnapStatus demo_run(CliFlags *flags) {
     BitBuf decrypted = {0};
     mpz_t ciphertext;
 
-    u32 seed = flags->has_seed ? flags->seed : (u32)time(NULL);
+    u64 seed = flags->has_seed ? flags->seed : (u32)time(NULL);
     srand(seed);
     fprintf(stderr, "seed=%u\n", seed);
 

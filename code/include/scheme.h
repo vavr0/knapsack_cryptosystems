@@ -11,7 +11,7 @@ typedef struct {
 
 typedef struct {
     u64 n;
-    u32 seed;
+    u64 seed;
     u32 flags;
 } SchemeKeygenParams;
 

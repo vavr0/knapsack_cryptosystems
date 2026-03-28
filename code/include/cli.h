@@ -12,7 +12,7 @@ typedef struct {
     CliMode mode;
     const char *scheme_id;
     BitBuf message_bits;
-    u32 seed;
+    u64 seed;
     b8 has_seed;
     b8 show_steps;
     u64 n;

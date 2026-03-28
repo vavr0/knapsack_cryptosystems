@@ -122,7 +122,6 @@ KnapStatus bench_run(CliFlags *flags) {
     SchemeKeygenParams params = {0};
     BenchSample sample = {0};
     BenchSample avg = {0};
-    u32 seed;
     u64 reps;
     u64 warmup_reps = 3;
 
@@ -130,7 +129,7 @@ KnapStatus bench_run(CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
 
-    seed = flags->has_seed ? flags->seed : (u32)time(NULL);
+    u64 seed = flags->has_seed ? flags->seed : (u32)time(NULL);
     srand(seed);
     fprintf(stderr, "seed=%u\n", seed);
 
