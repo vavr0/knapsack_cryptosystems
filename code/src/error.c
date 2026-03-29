@@ -1,6 +1,5 @@
 #include "bitvec.h"
 
-// TODO
 const char *knap_status_str(KnapStatus status) {
     switch (status) {
     case KNAP_OK:

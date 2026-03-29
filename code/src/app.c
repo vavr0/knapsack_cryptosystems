@@ -2,15 +2,16 @@
 #include "bench.h"
 #include "bitvec.h"
 #include "cli.h"
+#include "common.h"
 #include "error.h"
 #include "scheme.h"
+#include "seed.h"
 #include <gmp.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 static KnapStatus read_message_bits(BitBuf *message_out) {
     char line[256];
@@ -99,9 +100,8 @@ static KnapStatus demo_run(CliFlags *flags) {
     BitBuf decrypted = {0};
     mpz_t ciphertext;
 
-    u64 seed = flags->has_seed ? flags->seed : (u32)time(NULL);
-    srand(seed);
-    fprintf(stderr, "seed=%u\n", seed);
+    u64 seed_pair[2];
+    seed_resolve_pair(flags->has_seed, flags->seed, seed_pair);
 
     printf("===knapsack demo===\n");
 
@@ -117,7 +117,8 @@ static KnapStatus demo_run(CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
     params.n = flags->message_bits.length;
-    params.seed = seed;
+    params.initstate = seed_pair[0];
+    params.initseq = seed_pair[1];
     params.flags = 0;
     mpz_init(ciphertext);
 

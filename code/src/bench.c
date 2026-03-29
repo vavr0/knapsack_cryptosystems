@@ -3,6 +3,7 @@
 #include "common.h"
 #include "error.h"
 #include "scheme.h"
+#include "seed.h"
 
 typedef struct {
     f64 keygen_ms;
@@ -24,6 +25,7 @@ static void bench_sample_div(BenchSample *sample, u64 reps) {
     sample->total_ms /= (f64)reps;
 }
 
+// TODO
 static KnapStatus fill_message_random(BitBuf *message_bits, u64 n) {
     if (!message_bits || n == 0) {
         return KNAP_ERR_INVALID;
@@ -129,9 +131,9 @@ KnapStatus bench_run(CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
 
-    u64 seed = flags->has_seed ? flags->seed : (u32)time(NULL);
-    srand(seed);
-    fprintf(stderr, "seed=%u\n", seed);
+    u64 seed_pair[2];
+    seed_resolve_pair(flags->has_seed, flags->seed, seed_pair);
+
 
     if (flags->message_bits.length == 0) {
         if (flags->n == 0) {
@@ -150,7 +152,8 @@ KnapStatus bench_run(CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
     params.n = flags->message_bits.length;
-    params.seed = seed;
+    params.initstate= seed_pair[0];
+    params.initseq = seed_pair[1];
     params.flags = 0;
 
     printf("scheme,n,reps,warmup_reps,seed,keygen_ms,encrypt_ms,decrypt_ms,"
