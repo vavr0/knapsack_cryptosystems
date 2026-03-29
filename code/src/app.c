@@ -31,7 +31,7 @@ static KnapStatus read_message_bits(BitBuf *message_out) {
         return KNAP_ERR_INVALID;
     }
 
-    for (size_t i = 0; i < len; i++) {
+    for (u64 i = 0; i < len; i++) {
         if (line[i] != '0' && line[i] != '1') {
             fprintf(stderr, "Invalid bit '%c'. Use only 0 or 1.\n", line[i]);
             return KNAP_ERR_INVALID;
@@ -44,7 +44,7 @@ static KnapStatus read_message_bits(BitBuf *message_out) {
         return KNAP_ERR_ALLOC;
     }
 
-    for (size_t i = 0; i < len; i++) {
+    for (u64 i = 0; i < len; i++) {
         bits[i] = (u8)(line[i] - '0');
     }
     bit_buf_clear(message_out);
@@ -95,13 +95,16 @@ void print_usage(const char *prog) {
 static KnapStatus demo_run(CliFlags *flags) {
     KnapStatus status;
     const SchemeOps *scheme;
-    SchemeKeypair keypair = {0};
+    SchemeKey scheme_key = {0};
     SchemeKeygenParams params = {0};
     BitBuf decrypted = {0};
     mpz_t ciphertext;
-
     u64 seed_pair[2];
-    seed_resolve_pair(flags->has_seed, flags->seed, seed_pair);
+
+    status = seed_resolve_pair(flags->has_seed, flags->seed, seed_pair);
+    if (status != KNAP_OK) {
+        return status;
+    }
 
     printf("===knapsack demo===\n");
 
@@ -122,26 +125,26 @@ static KnapStatus demo_run(CliFlags *flags) {
     params.flags = 0;
     mpz_init(ciphertext);
 
-    status = scheme->keygen(&params, &keypair);
+    status = scheme->keygen(&params, &scheme_key);
     if (status != KNAP_OK) {
         mpz_clear(ciphertext);
 
         return status;
     }
 
-    status = scheme->encrypt(&keypair, bit_buf_view(&flags->message_bits),
+    status = scheme->encrypt(&scheme_key, bit_buf_view(&flags->message_bits),
                              ciphertext);
     if (status != KNAP_OK) {
-        scheme->keypair_clear(&keypair);
+        scheme->scheme_key_clear(&scheme_key);
         mpz_clear(ciphertext);
 
         return status;
     }
 
     status =
-        scheme->decrypt(&keypair, ciphertext, &decrypted, flags->show_steps);
+        scheme->decrypt(&scheme_key, ciphertext, &decrypted, flags->show_steps);
     if (status != KNAP_OK) {
-        scheme->keypair_clear(&keypair);
+        scheme->scheme_key_clear(&scheme_key);
         mpz_clear(ciphertext);
 
         return status;
@@ -149,7 +152,7 @@ static KnapStatus demo_run(CliFlags *flags) {
 
     if (!bit_buf_equal(&decrypted, &flags->message_bits)) {
         bit_buf_clear(&decrypted);
-        scheme->keypair_clear(&keypair);
+        scheme->scheme_key_clear(&scheme_key);
         mpz_clear(ciphertext);
 
         return KNAP_ERR_CRYPTO;
@@ -158,14 +161,14 @@ static KnapStatus demo_run(CliFlags *flags) {
     status = print_demo_result(&flags->message_bits, ciphertext, &decrypted);
     if (status != KNAP_OK) {
         bit_buf_clear(&decrypted);
-        scheme->keypair_clear(&keypair);
+        scheme->scheme_key_clear(&scheme_key);
         mpz_clear(ciphertext);
 
         return status;
     }
 
     bit_buf_clear(&decrypted);
-    scheme->keypair_clear(&keypair);
+    scheme->scheme_key_clear(&scheme_key);
     mpz_clear(ciphertext);
 
     return status;

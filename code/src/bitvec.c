@@ -1,4 +1,5 @@
 #include "bitvec.h"
+#include "common.h"
 
 // TODO check all these pls
 
@@ -107,7 +108,7 @@ KnapStatus bit_buf_from_cstr(BitBuf *out, const char *s) {
         return status;
     }
 
-    for (size_t i = 0; i < len; i++) {
+    for (u64 i = 0; i < len; i++) {
         if (s[i] == '0') {
             out->data[i] = 0;
         } else if (s[i] == '1') {
@@ -132,7 +133,7 @@ KnapStatus bit_view_to_cstr(BitView view, char **out_str) {
         return KNAP_ERR_ALLOC;
     }
 
-    for (size_t i = 0; i < len; i++) {
+    for (u64 i = 0; i < len; i++) {
         s[i] = view.data[i] ? '1' : '0';
     }
     s[len] = '\0';

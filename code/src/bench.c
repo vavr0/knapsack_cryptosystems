@@ -2,6 +2,7 @@
 #include "bitvec.h"
 #include "common.h"
 #include "error.h"
+#include "rand.h"
 #include "scheme.h"
 #include "seed.h"
 
@@ -26,7 +27,7 @@ static void bench_sample_div(BenchSample *sample, u64 reps) {
 }
 
 // TODO
-static KnapStatus fill_message_random(BitBuf *message_bits, u64 n) {
+static KnapStatus fill_message_random(BitBuf *message_bits, u64 n, PrngState *rng) {
     if (!message_bits || n == 0) {
         return KNAP_ERR_INVALID;
     }
@@ -37,7 +38,7 @@ static KnapStatus fill_message_random(BitBuf *message_bits, u64 n) {
     }
 
     for (u64 i = 0; i < n; i++) {
-        message_bits->data[i] = (u8)(rand() & 1);
+        message_bits->data[i] = (u8)(prng_rand(rng) & 1);
     }
 
     return KNAP_OK;
@@ -54,7 +55,7 @@ static f64 now_ms(void) {
 static KnapStatus bench_measure_once(const SchemeOps *scheme, BitView message,
                                      const SchemeKeygenParams *params,
                                      BenchSample *out) {
-    SchemeKeypair keypair = {0};
+    SchemeKey keypair = {0};
     BitBuf decrypted = {0};
     mpz_t ciphertext;
     KnapStatus status;
@@ -126,20 +127,25 @@ KnapStatus bench_run(CliFlags *flags) {
     BenchSample avg = {0};
     u64 reps;
     u64 warmup_reps = 3;
+    PrngState rng = {0};
+    u64 seed[2];
 
     if (!flags) {
         return KNAP_ERR_INVALID;
     }
 
-    u64 seed_pair[2];
-    seed_resolve_pair(flags->has_seed, flags->seed, seed_pair);
+    status = seed_resolve_pair(flags->has_seed, flags->seed, seed);
+    if (status != KNAP_OK) {
+        return status;
+    }
+    prng_seed(&rng, seed[0], seed[1]);
 
 
     if (flags->message_bits.length == 0) {
         if (flags->n == 0) {
             return KNAP_ERR_INVALID;
         }
-        status = fill_message_random(&flags->message_bits, flags->n);
+        status = fill_message_random(&flags->message_bits, flags->n, &rng);
         if (status != KNAP_OK) {
             return status;
         }
@@ -152,12 +158,10 @@ KnapStatus bench_run(CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
     params.n = flags->message_bits.length;
-    params.initstate= seed_pair[0];
-    params.initseq = seed_pair[1];
+    params.initstate= seed[0];
+    params.initseq = seed[1];
     params.flags = 0;
 
-    printf("scheme,n,reps,warmup_reps,seed,keygen_ms,encrypt_ms,decrypt_ms,"
-           "total_ms\n");
 
     for (u64 i = 0; i < warmup_reps; i++) {
         status = bench_measure_once(scheme, bit_buf_view(&flags->message_bits),
@@ -177,9 +181,12 @@ KnapStatus bench_run(CliFlags *flags) {
     }
     bench_sample_div(&avg, reps);
 
-    printf("%s,%llu,%llu,%llu,%u,%.6f,%.6f,%.6f,%.6f\n", scheme->info.id,
+    printf("scheme,n,reps,warmup_reps,initstate,initseq,keygen_ms,encrypt_ms,decrypt_ms,"
+           "total_ms\n");
+
+    printf("%s,%llu,%llu,%llu,%lu,%lu,%.6f,%.6f,%.6f,%.6f\n", scheme->info.id,
            (unsigned long long)flags->message_bits.length,
-           (unsigned long long)reps, (unsigned long long)warmup_reps, seed,
+           (unsigned long long)reps, (unsigned long long)warmup_reps, seed[0],seed[1],
            avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms, avg.total_ms);
 
     return KNAP_OK;

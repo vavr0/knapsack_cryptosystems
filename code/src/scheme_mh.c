@@ -1,6 +1,7 @@
 #include "bitvec.h"
 #include "common.h"
 #include "error.h"
+#include "rand.h"
 #include "scheme.h"
 #include <gmp.h>
 
@@ -10,78 +11,79 @@
 
 typedef struct {
     u64 n;        // key length
-    mpz_t *w;     // private key sequence (weight)
-    mpz_t *b;     // public key sequence (basis)
-    mpz_t m;      // modulus (m > sum(weights))
-    mpz_t n_mult; // multiplier (no commond factor with m)
-    mpz_t n_inv;  // inverse
+    mpz_t *priv_weights;     // private key sequence (weight)
+    mpz_t *pub_weights;     // public key sequence (basis)
+    mpz_t mod;      // modulus (m > sum(weights))
+    mpz_t mult; // multiplier (no commond factor with m)
+    mpz_t mult_inv;  // inverse
 } MhKey;
 
-static KnapStatus mh_key_init(MhKey *key, u64 n) {
+static KnapStatus mh_key_alloc(MhKey *key, u64 n) {
     u64 i;
     if (!key || n == 0) {
         return KNAP_ERR_INVALID;
     }
     key->n = 0;
-    key->w = NULL;
-    key->b = NULL;
-    key->w = malloc((size_t)n * sizeof(*key->w));
-    if (!key->w) {
+    key->priv_weights = NULL;
+    key->pub_weights = NULL;
+    key->priv_weights = malloc((size_t)n * sizeof(*key->priv_weights));
+    if (!key->priv_weights) {
         return KNAP_ERR_ALLOC;
     }
-    key->b = malloc((size_t)n * sizeof(*key->b));
-    if (!key->b) {
-        free(key->w);
-        key->w = NULL;
+    key->pub_weights = malloc((size_t)n * sizeof(*key->pub_weights));
+    if (!key->pub_weights) {
+        free(key->priv_weights);
+        key->priv_weights = NULL;
         return KNAP_ERR_ALLOC;
     }
     key->n = n;
     for (i = 0; i < n; i++) {
-        mpz_init(key->w[i]);
-        mpz_init(key->b[i]);
+        mpz_init(key->priv_weights[i]);
+        mpz_init(key->pub_weights[i]);
     }
-    mpz_inits(key->m, key->n_mult, key->n_inv, NULL);
+    mpz_inits(key->mod, key->mult, key->mult_inv, NULL);
     return KNAP_OK;
 }
 static void mh_key_clear(MhKey *key) {
-    for (size_t i = 0; i < key->n; i++) {
-        mpz_clear(key->w[i]);
-        mpz_clear(key->b[i]);
+    for (u64 i = 0; i < key->n; i++) {
+        mpz_clear(key->priv_weights[i]);
+        mpz_clear(key->pub_weights[i]);
     }
-    free(key->w);
-    free(key->b);
-    mpz_clears(key->m, key->n_mult, key->n_inv, NULL);
+    free(key->priv_weights);
+    free(key->pub_weights);
+    mpz_clears(key->mod, key->mult, key->mult_inv, NULL);
 }
 
-static KnapStatus mh_key_generate(MhKey *key) {
+static KnapStatus mh_key_build(MhKey *key, PrngState *rng) {
     // Build superinceasing sequencce
-    mpz_set_ui(key->w[0], 2);
-    for (size_t i = 1; i < key->n; i++) {
-        mpz_mul_ui(key->w[i], key->w[i - 1], 2); // times 2
-        mpz_add_ui(key->w[i], key->w[i], 1);     // plus 1
+    mpz_t sum;
+    mpz_init(sum);
+    mpz_set_ui(key->priv_weights[0], 2u + (prng_rand(rng) % 16u));    // first number of sequence
+    // TODO
+    for (u64 i = 1; i < key->n; i++) {
+        mpz_mul_ui(key->priv_weights[i], key->priv_weights[i - 1], 2); // times 2
+        mpz_add_ui(key->priv_weights[i], key->priv_weights[i], 1);     // plus 1
     }
 
     // Compute sum(W)
-    mpz_t sum;
-    mpz_init(sum);
-    for (size_t i = 0; i < key->n; i++)
-        mpz_add(sum, sum, key->w[i]);
+    for (u64 i = 0; i < key->n; i++)
+        mpz_add(sum, sum, key->priv_weights[i]);
 
     // Choose prime mod > sum(W)
-    mpz_nextprime(key->m, sum);
+    mpz_nextprime(key->mod, sum);
     // Choose multiplier coprime to m
-    mpz_set_ui(key->n_mult, 2);
+    mpz_set_ui(key->mult, 2);
 
-    if (mpz_invert(key->n_inv, key->n_mult, key->m) == 0) {
+    if (mpz_invert(key->mult_inv, key->mult, key->mod) == 0) {
         mpz_clear(sum);
 
         return KNAP_ERR_CRYPTO;
     }
 
     // Generate public key b_i = (w_i * n) mod m
-    for (size_t i = 0; i < key->n; i++) {
-        mpz_mul(key->b[i], key->w[i], key->n_mult);
-        mpz_mod(key->b[i], key->b[i], key->m);
+    for (u64 i = 0; i < key->n; i++) {
+        mpz_mul(key->pub_weights[i], key->priv_weights[i], key->mult);
+        mpz_mod(key->pub_weights[i], key->pub_weights[i], key->mod);
     }
     mpz_clear(sum);
 
@@ -93,7 +95,7 @@ static void mh_encrypt_impl(const MhKey *key, BitView message,
     mpz_set_ui(ciphertext, 0);
     for (u64 i = 0; i < message.length; i++) {
         if (message.data[i]) {
-            mpz_add(ciphertext, ciphertext, key->b[i]);
+            mpz_add(ciphertext, ciphertext, key->pub_weights[i]);
         }
     }
 }
@@ -105,24 +107,24 @@ static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
     mpz_init(s);
 
     // Compute s = (C * n_inv) mod m
-    mpz_mul(s, ciphertext, key->n_inv);
-    mpz_mod(s, s, key->m);
+    mpz_mul(s, ciphertext, key->mult_inv);
+    mpz_mod(s, s, key->mod);
 
     if (show_steps) {
         printf("\nGreedy decryption steps:\n");
     }
 
     // Greedy algorithm: recover bits from largest to smallest
-    for (size_t i = key->n; i-- > 0;) {
+    for (u64 i = key->n; i-- > 0;) {
 
-        if (mpz_cmp(s, key->w[i]) >= 0) {
+        if (mpz_cmp(s, key->priv_weights[i]) >= 0) {
             message->data[i] = 1;
             if (show_steps) {
-                gmp_printf("i=%zu, s=%Zd, w[i]=%Zd -> take", (size_t)i, s,
-                           key->w[i]);
+                gmp_printf("i=%llu, s=%Zd, w[i]=%Zd -> take", (unsigned long long)i, s,
+                           key->priv_weights[i]);
             }
 
-            mpz_sub(s, s, key->w[i]);
+            mpz_sub(s, s, key->priv_weights[i]);
             if (show_steps) {
                 gmp_printf(", s=%Zd\n", s);
             }
@@ -130,7 +132,7 @@ static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
             message->data[i] = 0;
             if (show_steps) {
                 gmp_printf("i=%zu, s=%Zd, w[i]=%Zd -> skip, s=%Zd\n", (size_t)i,
-                           s, key->w[i], s);
+                           s, key->priv_weights[i], s);
             }
         }
     }
@@ -139,55 +141,57 @@ static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
     return KNAP_OK;
 }
 
-static MhKey *mh_key_from_keypair(const SchemeKeypair *keypair) {
-    if (!keypair || !keypair->impl) {
+static MhKey *mh_key_from_scheme_key(const SchemeKey *scheme_key) {
+    if (!scheme_key || !scheme_key->data) {
         return NULL;
     }
-    return (MhKey *)keypair->impl;
+    return (MhKey *)scheme_key->data;
 }
 
 static KnapStatus mh_keygen(const SchemeKeygenParams *params,
-                            SchemeKeypair *out_keypair) {
-    if (!params || !out_keypair || params->n == 0) {
+                            SchemeKey *out_scheme_key) {
+    if (!params || !out_scheme_key || params->n == 0) {
         return KNAP_ERR_INVALID;
     }
-    out_keypair->impl = NULL;
-    out_keypair->n = 0;
+    PrngState rng = {0};
+    prng_seed(&rng, params->initstate, params->initseq);
+    out_scheme_key->data = NULL;
+    out_scheme_key->n = 0;
 
     MhKey *key = (MhKey *)malloc(sizeof(*key));
     if (!key) {
         return KNAP_ERR_ALLOC;
     }
-    KnapStatus status = mh_key_init(key, params->n);
+    KnapStatus status = mh_key_alloc(key, params->n);
     if (status != KNAP_OK) {
         free(key);
         return status;
     }
 
-    status = mh_key_generate(key);
+    status = mh_key_build(key, &rng);
     if (status != KNAP_OK) {
         mh_key_clear(key);
         free(key);
 
         return status;
     }
-    out_keypair->impl = key;
-    out_keypair->n = params->n;
+    out_scheme_key->data = key;
+    out_scheme_key->n = params->n;
 
     return KNAP_OK;
 }
 
-static KnapStatus mh_encrypt(const SchemeKeypair *keypair, BitView message,
+static KnapStatus mh_encrypt(const SchemeKey *scheme_key, BitView message,
                              mpz_t out_ciphertext) {
-    if (!keypair || !keypair->impl || message.length == 0 || !message.data) {
+    if (!scheme_key || !scheme_key->data || message.length == 0 || !message.data) {
         return KNAP_ERR_INVALID;
     }
 
-    if (message.length != keypair->n) {
+    if (message.length != scheme_key->n) {
         return KNAP_ERR_INVALID;
     }
 
-    MhKey *key = mh_key_from_keypair(keypair);
+    MhKey *key = mh_key_from_scheme_key(scheme_key);
     if (!key) {
         return KNAP_ERR_INTERNAL;
     }
@@ -195,20 +199,20 @@ static KnapStatus mh_encrypt(const SchemeKeypair *keypair, BitView message,
     return KNAP_OK;
 }
 
-static KnapStatus mh_decrypt(const SchemeKeypair *keypair,
+static KnapStatus mh_decrypt(const SchemeKey *scheme_key,
                              const mpz_t ciphertext, BitBuf *out_message,
                              b8 show_steps) {
     KnapStatus status;
-    if (!keypair || !out_message || !keypair->impl || keypair->n == 0) {
+    if (!scheme_key || !out_message || !scheme_key->data || scheme_key->n == 0) {
         return KNAP_ERR_INVALID;
     }
 
-    MhKey *key = mh_key_from_keypair(keypair);
+    MhKey *key = mh_key_from_scheme_key(scheme_key);
     if (!key) {
         return KNAP_ERR_INTERNAL;
     }
 
-    status = bit_buf_alloc(out_message, keypair->n);
+    status = bit_buf_alloc(out_message, scheme_key->n);
     if (status != KNAP_OK) {
         bit_buf_clear(out_message);
 
@@ -224,17 +228,17 @@ static KnapStatus mh_decrypt(const SchemeKeypair *keypair,
     return KNAP_OK;
 }
 
-static void mh_keypair_clear(SchemeKeypair *keypair) {
-    if (!keypair) {
+static void mh_scheme_key_clear(SchemeKey *scheme_key) {
+    if (!scheme_key) {
         return;
     }
-    if (keypair->impl) {
-        MhKey *key = (MhKey *)keypair->impl;
+    if (scheme_key->data) {
+        MhKey *key = (MhKey *)scheme_key->data;
         mh_key_clear(key);
         free(key);
     }
-    keypair->impl = NULL;
-    keypair->n = 0;
+    scheme_key->data = NULL;
+    scheme_key->n = 0;
 }
 
 const SchemeOps *scheme_mh_get(void) {
@@ -247,7 +251,7 @@ const SchemeOps *scheme_mh_get(void) {
         .keygen = mh_keygen,
         .encrypt = mh_encrypt,
         .decrypt = mh_decrypt,
-        .keypair_clear = mh_keypair_clear,
+        .scheme_key_clear = mh_scheme_key_clear,
     };
     return &ops;
 }

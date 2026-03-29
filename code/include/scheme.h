@@ -5,9 +5,9 @@
 #include <gmp.h>
 
 typedef struct {
-    void *impl; // scheme-specific keypair/context
+    void *data; // scheme-specific keypair/context
     u64 n;   // key/message length
-} SchemeKeypair;
+} SchemeKey;
 
 typedef struct {
     u64 n;
@@ -23,12 +23,12 @@ typedef struct {
 
 typedef struct {
     SchemeInfo info;
-    KnapStatus (*keygen)(const SchemeKeygenParams *params, SchemeKeypair *out_keypair);
-    KnapStatus (*encrypt)(const SchemeKeypair *keypair, BitView message,
+    KnapStatus (*keygen)(const SchemeKeygenParams *params, SchemeKey *out_keypair);
+    KnapStatus (*encrypt)(const SchemeKey *keypair, BitView message,
                           mpz_t out_ciphertext);
-    KnapStatus (*decrypt)(const SchemeKeypair *keypair, const mpz_t ciphertext,
+    KnapStatus (*decrypt)(const SchemeKey *keypair, const mpz_t ciphertext,
                           BitBuf *out_message, b8 show_steps);
-    void (*keypair_clear)(SchemeKeypair *keypair);
+    void (*scheme_key_clear)(SchemeKey *keypair);
 } SchemeOps;
 
 const SchemeOps *scheme_mh_get(void);

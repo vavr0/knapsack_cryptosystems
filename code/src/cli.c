@@ -77,7 +77,7 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
             }
             status = parse_u64_str(argv[++i], &value, 1);
 
-            if (status != KNAP_OK || value > UINT64_MAX) {
+            if (status != KNAP_OK) {
                 return KNAP_ERR_INVALID;
             }
             out->seed = value;
