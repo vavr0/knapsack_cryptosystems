@@ -27,7 +27,7 @@ typedef struct {
     KnapStatus (*encrypt)(const SchemeKey *keypair, BitView message,
                           mpz_t out_ciphertext);
     KnapStatus (*decrypt)(const SchemeKey *keypair, const mpz_t ciphertext,
-                          BitBuf *out_message, b8 show_steps);
+                          BitBuf *out_message);
     void (*scheme_key_clear)(SchemeKey *keypair);
 } SchemeOps;
 

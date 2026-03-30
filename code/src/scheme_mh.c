@@ -4,10 +4,7 @@
 #include "scheme.h"
 #include <gmp.h>
 #include <stddef.h>
-
-// TODO
-// - decrypt helper still prints steps internally
-// in key_alloc check malloc calls (might overflow on cast)
+#include <time.h>
 
 typedef struct {
     u64 n;               // key length
@@ -58,6 +55,7 @@ static KnapStatus mh_key_alloc(MhKey *key, u64 n) {
     return KNAP_OK;
 }
 
+// TODO assumes fully initialized objects
 static void mh_key_clear(MhKey *key) {
     for (u64 i = 0; i < key->n; i++) {
         mpz_clear(key->priv_weights[i]);
@@ -73,9 +71,9 @@ static KnapStatus mh_key_build(MhKey *key, PrngState *rng) {
         return KNAP_ERR_INVALID;
     }
     mpz_t delta;
-    mpz_init(delta);
     mpz_t sum;
-    mpz_init(sum);
+    mpz_t margin;
+    mpz_inits(delta, sum, margin, NULL);
 
     // Build superinceasing sequencce
     // larger delta -> lower density -> easier for lattice-style attacks
@@ -86,16 +84,21 @@ static KnapStatus mh_key_build(MhKey *key, PrngState *rng) {
         mpz_add(sum, sum, key->priv_weights[i]);
     }
 
-    // Choose prime mod > sum(W)
-    mpz_nextprime(key->mod, sum);
+    // Choose mod > sum(W)
+    u64 margin_u64 = 1 + (prng_rand_u64(rng) % (64u * key->n));
+    mpz_set_ui(margin, margin_u64);
+    mpz_add(key->mod, sum, margin);
+
     // Choose multiplier coprime to m
-    mpz_set_ui(key->mult, 2);
-
-    if (mpz_invert(key->mult_inv, key->mult, key->mod) == 0) {
-        mpz_clear(sum);
-        mpz_clear(delta);
-
-        return KNAP_ERR_CRYPTO;
+    for (;;) {
+        mpz_set_ui(key->mult, prng_rand_u64(rng));
+        mpz_mod(key->mult, key->mult, key->mod);
+        if (mpz_cmp_ui(key->mult, 2u) < 0) {
+            continue;
+        }
+        if (mpz_invert(key->mult_inv, key->mult, key->mod) != 0) {
+            break;
+        }
     }
 
     // Generate public key b_i = (w_i * n) mod m
@@ -103,8 +106,7 @@ static KnapStatus mh_key_build(MhKey *key, PrngState *rng) {
         mpz_mul(key->pub_weights[i], key->priv_weights[i], key->mult);
         mpz_mod(key->pub_weights[i], key->pub_weights[i], key->mod);
     }
-    mpz_clear(sum);
-    mpz_clear(delta);
+    mpz_clears(delta, sum, margin, NULL);
 
     return KNAP_OK;
 }
@@ -121,7 +123,7 @@ static void mh_encrypt_impl(const MhKey *key, BitView message,
 
 // TODO NOT VERBOSE
 static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
-                                  BitBuf *message, b8 show_steps) {
+                                  BitBuf *message) {
     mpz_t s;
     mpz_init(s);
 
@@ -129,31 +131,21 @@ static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
     mpz_mul(s, ciphertext, key->mult_inv);
     mpz_mod(s, s, key->mod);
 
-    if (show_steps) {
-        printf("\nGreedy decryption steps:\n");
-    }
-
     // Greedy algorithm: recover bits from largest to smallest
     for (u64 i = key->n; i-- > 0;) {
 
         if (mpz_cmp(s, key->priv_weights[i]) >= 0) {
             message->data[i] = 1;
-            if (show_steps) {
-                gmp_printf("i=%llu, s=%Zd, w[i]=%Zd -> take",
-                           (unsigned long long)i, s, key->priv_weights[i]);
-            }
 
             mpz_sub(s, s, key->priv_weights[i]);
-            if (show_steps) {
-                gmp_printf(", s=%Zd\n", s);
-            }
         } else {
             message->data[i] = 0;
-            if (show_steps) {
-                gmp_printf("i=%zu, s=%Zd, w[i]=%Zd -> skip, s=%Zd\n", (size_t)i,
-                           s, key->priv_weights[i], s);
-            }
         }
+    }
+
+    if (mpz_cmp_ui(s, 0) != 0) {
+        mpz_clear(s);
+        return KNAP_ERR_CRYPTO;
     }
     mpz_clear(s);
 
@@ -200,6 +192,7 @@ static KnapStatus mh_keygen(const SchemeKeygenParams *params,
     return KNAP_OK;
 }
 
+// TODO should check ciphertext validity ig
 static KnapStatus mh_encrypt(const SchemeKey *scheme_key, BitView message,
                              mpz_t out_ciphertext) {
     if (!scheme_key || !scheme_key->data || message.length == 0 ||
@@ -220,8 +213,7 @@ static KnapStatus mh_encrypt(const SchemeKey *scheme_key, BitView message,
 }
 
 static KnapStatus mh_decrypt(const SchemeKey *scheme_key,
-                             const mpz_t ciphertext, BitBuf *out_message,
-                             b8 show_steps) {
+                             const mpz_t ciphertext, BitBuf *out_message) {
     KnapStatus status;
     if (!scheme_key || !out_message || !scheme_key->data ||
         scheme_key->n == 0) {
@@ -240,7 +232,7 @@ static KnapStatus mh_decrypt(const SchemeKey *scheme_key,
         return status;
     }
 
-    status = mh_decrypt_impl(key, ciphertext, out_message, show_steps != 0);
+    status = mh_decrypt_impl(key, ciphertext, out_message);
     if (status != KNAP_OK) {
         bit_buf_clear(out_message);
 

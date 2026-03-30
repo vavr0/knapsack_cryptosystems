@@ -23,3 +23,9 @@ u32 prng_rand(PrngState *rng) {
     u32 rot = oldstate >> 59u;
     return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
+
+u64 prng_rand_u64(PrngState *rng) {
+    u64 hi = (u64)prng_rand(rng);
+    u64 lo = (u64)prng_rand(rng);
+    return (hi << 32) | lo;
+}

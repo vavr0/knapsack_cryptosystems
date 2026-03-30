@@ -93,7 +93,7 @@ static KnapStatus bench_measure_once(const SchemeOps *scheme, BitView message,
     out->encrypt_ms = t1 - t0;
 
     t0 = now_ms();
-    status = scheme->decrypt(&keypair, ciphertext, &decrypted, 0);
+    status = scheme->decrypt(&keypair, ciphertext, &decrypted);
     t1 = now_ms();
     if (status != KNAP_OK) {
         bit_buf_clear(&decrypted);

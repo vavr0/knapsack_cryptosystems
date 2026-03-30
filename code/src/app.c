@@ -142,7 +142,7 @@ static KnapStatus demo_run(CliFlags *flags) {
     }
 
     status =
-        scheme->decrypt(&scheme_key, ciphertext, &decrypted, flags->show_steps);
+        scheme->decrypt(&scheme_key, ciphertext, &decrypted);
     if (status != KNAP_OK) {
         scheme->scheme_key_clear(&scheme_key);
         mpz_clear(ciphertext);

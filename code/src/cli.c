@@ -87,9 +87,7 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
                 return KNAP_ERR_INVALID;
             }
             out->format = argv[++i];
-        } else if (strcmp(flag, "--show-steps") == 0) {
-            out->show_steps = 1;
-        } else if (strcmp(flag, "--n") == 0) {
+        }  else if (strcmp(flag, "--n") == 0) {
             if (i + 1 >= argc) {
                 return KNAP_ERR_INVALID;
             }
@@ -137,10 +135,6 @@ static KnapStatus validate_flags(const CliFlags *flags) {
         if (flags->mode != CLI_MODE_BENCH) {
             return KNAP_ERR_INVALID;
         }
-    }
-
-    if (flags->show_steps && flags->mode != CLI_MODE_DEMO) {
-        return KNAP_ERR_INVALID;
     }
 
     if (flags->mode == CLI_MODE_DEMO) {

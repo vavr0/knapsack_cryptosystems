@@ -17,6 +17,4 @@ typedef struct {
 
 void prng_seed(PrngState *rng, u64 initstate, u64 initseq);
 u32 prng_rand(PrngState *rng);
-// u64 prng_rand_u64(PrngState *rng);
-// u32 prng_bounded_u32(PrngState *state, u32 bound);
-// u8 prng_bit(PrngState *state);
+u64 prng_rand_u64(PrngState *rng);

@@ -14,7 +14,6 @@ typedef struct {
     BitBuf message_bits;
     u64 seed;
     b8 has_seed;
-    b8 show_steps;
     u64 n;
     u64 reps;
     const char *format;         // "csv" for now
