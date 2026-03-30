@@ -84,7 +84,7 @@ static KnapStatus bench_measure_once(const SchemeOps *scheme, BitView message,
     status = scheme->encrypt(&keypair, message, ciphertext);
     t1 = now_ms();
     if (status != KNAP_OK) {
-        scheme->keypair_clear(&keypair);
+        scheme->scheme_key_clear(&keypair);
         mpz_clear(ciphertext);
 
         return status;
@@ -97,7 +97,7 @@ static KnapStatus bench_measure_once(const SchemeOps *scheme, BitView message,
     t1 = now_ms();
     if (status != KNAP_OK) {
         bit_buf_clear(&decrypted);
-        scheme->keypair_clear(&keypair);
+        scheme->scheme_key_clear(&keypair);
         mpz_clear(ciphertext);
 
         return status;
@@ -107,14 +107,14 @@ static KnapStatus bench_measure_once(const SchemeOps *scheme, BitView message,
 
     if (!bit_view_equal(message, bit_buf_view(&decrypted))) {
         bit_buf_clear(&decrypted);
-        scheme->keypair_clear(&keypair);
+        scheme->scheme_key_clear(&keypair);
         mpz_clear(ciphertext);
 
         return KNAP_ERR_CRYPTO;
     }
 
     bit_buf_clear(&decrypted);
-    scheme->keypair_clear(&keypair);
+    scheme->scheme_key_clear(&keypair);
     mpz_clear(ciphertext);
     return KNAP_OK;
 }

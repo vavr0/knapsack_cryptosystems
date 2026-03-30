@@ -1,28 +1,41 @@
-#include "bitvec.h"
 #include "common.h"
 #include "error.h"
 #include "rand.h"
 #include "scheme.h"
 #include <gmp.h>
+#include <stddef.h>
 
 // TODO
-// - mh_key_init(...) still does unchecked malloc for w / b
 // - decrypt helper still prints steps internally
+// in key_alloc check malloc calls (might overflow on cast)
 
 typedef struct {
-    u64 n;        // key length
-    mpz_t *priv_weights;     // private key sequence (weight)
-    mpz_t *pub_weights;     // public key sequence (basis)
-    mpz_t mod;      // modulus (m > sum(weights))
-    mpz_t mult; // multiplier (no commond factor with m)
-    mpz_t mult_inv;  // inverse
+    u64 n;               // key length
+    mpz_t *priv_weights; // private key sequence (weight)
+    mpz_t *pub_weights;  // public key sequence (basis)
+    mpz_t mod;           // modulus (m > sum(weights))
+    mpz_t mult;          // multiplier (no commond factor with m)
+    mpz_t mult_inv;      // inverse
 } MhKey;
 
 static KnapStatus mh_key_alloc(MhKey *key, u64 n) {
     u64 i;
+    size_t count;
+
     if (!key || n == 0) {
         return KNAP_ERR_INVALID;
     }
+
+    if (n > (u64)SIZE_MAX) {
+        return KNAP_ERR_ALLOC;
+    }
+    count = (size_t)n;
+    if (count > SIZE_MAX / sizeof(*key->priv_weights) ||
+        count > SIZE_MAX / sizeof(*key->pub_weights)) {
+
+        return KNAP_ERR_ALLOC;
+    }
+
     key->n = 0;
     key->priv_weights = NULL;
     key->pub_weights = NULL;
@@ -44,6 +57,7 @@ static KnapStatus mh_key_alloc(MhKey *key, u64 n) {
     mpz_inits(key->mod, key->mult, key->mult_inv, NULL);
     return KNAP_OK;
 }
+
 static void mh_key_clear(MhKey *key) {
     for (u64 i = 0; i < key->n; i++) {
         mpz_clear(key->priv_weights[i]);
@@ -55,19 +69,22 @@ static void mh_key_clear(MhKey *key) {
 }
 
 static KnapStatus mh_key_build(MhKey *key, PrngState *rng) {
-    // Build superinceasing sequencce
+    if (!key || !rng || key->n == 0) {
+        return KNAP_ERR_INVALID;
+    }
+    mpz_t delta;
+    mpz_init(delta);
     mpz_t sum;
     mpz_init(sum);
-    mpz_set_ui(key->priv_weights[0], 2u + (prng_rand(rng) % 16u));    // first number of sequence
-    // TODO
-    for (u64 i = 1; i < key->n; i++) {
-        mpz_mul_ui(key->priv_weights[i], key->priv_weights[i - 1], 2); // times 2
-        mpz_add_ui(key->priv_weights[i], key->priv_weights[i], 1);     // plus 1
-    }
 
-    // Compute sum(W)
-    for (u64 i = 0; i < key->n; i++)
+    // Build superinceasing sequencce
+    // larger delta -> lower density -> easier for lattice-style attacks
+    for (u64 i = 0; i < key->n; i++) {
+        mpz_set_ui(delta, 1 + (prng_rand(rng) % 16u));
+        mpz_add(delta, delta, sum);
+        mpz_set(key->priv_weights[i], delta);
         mpz_add(sum, sum, key->priv_weights[i]);
+    }
 
     // Choose prime mod > sum(W)
     mpz_nextprime(key->mod, sum);
@@ -76,6 +93,7 @@ static KnapStatus mh_key_build(MhKey *key, PrngState *rng) {
 
     if (mpz_invert(key->mult_inv, key->mult, key->mod) == 0) {
         mpz_clear(sum);
+        mpz_clear(delta);
 
         return KNAP_ERR_CRYPTO;
     }
@@ -86,6 +104,7 @@ static KnapStatus mh_key_build(MhKey *key, PrngState *rng) {
         mpz_mod(key->pub_weights[i], key->pub_weights[i], key->mod);
     }
     mpz_clear(sum);
+    mpz_clear(delta);
 
     return KNAP_OK;
 }
@@ -120,8 +139,8 @@ static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
         if (mpz_cmp(s, key->priv_weights[i]) >= 0) {
             message->data[i] = 1;
             if (show_steps) {
-                gmp_printf("i=%llu, s=%Zd, w[i]=%Zd -> take", (unsigned long long)i, s,
-                           key->priv_weights[i]);
+                gmp_printf("i=%llu, s=%Zd, w[i]=%Zd -> take",
+                           (unsigned long long)i, s, key->priv_weights[i]);
             }
 
             mpz_sub(s, s, key->priv_weights[i]);
@@ -183,7 +202,8 @@ static KnapStatus mh_keygen(const SchemeKeygenParams *params,
 
 static KnapStatus mh_encrypt(const SchemeKey *scheme_key, BitView message,
                              mpz_t out_ciphertext) {
-    if (!scheme_key || !scheme_key->data || message.length == 0 || !message.data) {
+    if (!scheme_key || !scheme_key->data || message.length == 0 ||
+        !message.data) {
         return KNAP_ERR_INVALID;
     }
 
@@ -203,7 +223,8 @@ static KnapStatus mh_decrypt(const SchemeKey *scheme_key,
                              const mpz_t ciphertext, BitBuf *out_message,
                              b8 show_steps) {
     KnapStatus status;
-    if (!scheme_key || !out_message || !scheme_key->data || scheme_key->n == 0) {
+    if (!scheme_key || !out_message || !scheme_key->data ||
+        scheme_key->n == 0) {
         return KNAP_ERR_INVALID;
     }
 
