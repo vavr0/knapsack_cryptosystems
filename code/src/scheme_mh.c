@@ -121,7 +121,6 @@ static void mh_encrypt_impl(const MhKey *key, BitView message,
     }
 }
 
-// TODO NOT VERBOSE
 static KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
                                   BitBuf *message) {
     mpz_t s;
@@ -192,7 +191,6 @@ static KnapStatus mh_keygen(const SchemeKeygenParams *params,
     return KNAP_OK;
 }
 
-// TODO should check ciphertext validity ig
 static KnapStatus mh_encrypt(const SchemeKey *scheme_key, BitView message,
                              mpz_t out_ciphertext) {
     if (!scheme_key || !scheme_key->data || message.length == 0 ||
