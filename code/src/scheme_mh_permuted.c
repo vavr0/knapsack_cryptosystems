@@ -144,9 +144,7 @@ static KnapStatus mh_permuted_key_build(MhPermutedKey *key, PrngState *rng) {
     }
 
     for (;;) {
-        mpz_set_ui(key->mult, (unsigned long)prng_rand(rng));
-        mpz_mul_2exp(key->mult, key->mult, 32);
-        mpz_add_ui(key->mult, key->mult, (unsigned long)prng_rand(rng));
+        mpz_set_ui(key->mult, prng_rand_u64(rng));
         mpz_mod(key->mult, key->mult, key->mod);
 
         if (mpz_cmp_ui(key->mult, 2u) < 0) {
@@ -181,7 +179,7 @@ static void mh_permuted_encrypt_impl(const MhPermutedKey *key, BitView message,
     mpz_set_ui(ciphertext, 0);
 
     for (u64 i = 0; i < key->n; i++) {
-        if (message.data[key->perm[i]]) {
+        if (message.data[i]) {
             mpz_add(ciphertext, ciphertext, key->pub_weights[i]);
         }
     }
@@ -196,15 +194,14 @@ static KnapStatus mh_permuted_decrypt_impl(const MhPermutedKey *key,
     mpz_mul(s, ciphertext, key->mult_inv);
     mpz_mod(s, s, key->mod);
 
-    for (u64 i = key->n; i-- > 0;) {
-        u64 orig_index = key->perm[i];
+    for (u64 j = key->n; j-- > 0;) {
         u8 bit = 0;
 
-        if (mpz_cmp(s, key->priv_weights[orig_index]) >= 0) {
+        if (mpz_cmp(s, key->priv_weights[j]) >= 0) {
             bit = 1;
-            mpz_sub(s, s, key->priv_weights[orig_index]);
+            mpz_sub(s, s, key->priv_weights[j]);
         }
-        message->data[orig_index] = bit;
+        message->data[key->inv_perm[j]] = bit;
     }
 
     if (mpz_cmp_ui(s, 0) != 0) {

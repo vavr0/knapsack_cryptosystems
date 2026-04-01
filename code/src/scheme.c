@@ -1,5 +1,4 @@
 #include "scheme.h"
-// TODO
 #include <string.h>
 
 const SchemeOps *scheme_resolve(const char *id) {
