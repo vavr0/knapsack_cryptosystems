@@ -100,10 +100,10 @@ Záver:
 
 Subset sum:
 
-- ❌ nie:
+-  nie:
   - praktické PKC
 
-- ✅ áno:
+-  áno:
   - kryptanalýza
   - teória
   - výskum algoritmov
@@ -115,6 +115,7 @@ teoretický problém a nástroj kryptanalýzy; moderná post-quantum kryptografi
 založená najmä na lattice a code-based prístupoch.
 
 ## LINKS
+
 - https://www.iacr.org/archive/tcc2010/59780380/59780380.pdf
 - https://eprint.iacr.org/2015/1223.pdf?utm_source=chatgpt.com
 - https://arxiv.org/pdf/2408.16108 https://eprint.iacr.org/2022/679.pdf
