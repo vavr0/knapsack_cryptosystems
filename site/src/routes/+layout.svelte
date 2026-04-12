@@ -79,6 +79,14 @@
             >
                 Presentation
             </a>
+            <span aria-hidden="true">·</span>
+            <a
+                href={resolveHref("/zadanie-en.pdf")}
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Thesis assignment
+            </a>
         </p>
     </div>
 </footer>
