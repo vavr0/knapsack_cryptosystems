@@ -1,42 +1,40 @@
-# sv
+# Seminar Site (SvelteKit)
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+This folder contains the SvelteKit version of the seminar website.
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
+## Local development
 
 ```sh
-# create a new project
-npx sv create my-app
+bun install
+bun run dev
 ```
 
-To recreate this project with the same configuration:
+## Typecheck
 
 ```sh
-# recreate this project
-bun x sv@0.15.1 create --template minimal --types ts --install bun .
+bun run check
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Production build
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun run build
 ```
 
-## Building
+The static output is generated in `site/build/`.
 
-To create a production version of your app:
+## GitHub Pages
 
-```sh
-npm run build
-```
+This site is built with `@sveltejs/adapter-static` and deployed by `.github/workflows/svelte-pages.yml`.
 
-You can preview the production build with `npm run preview`.
+Because the repository is published as a project page, production links use the `/knapsack_cryptosystems` base path.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Content structure
+
+- `src/routes/+page.svelte`: home page
+- `src/routes/topic/+page.svelte`: topic notes
+- `src/routes/resources/+page.svelte`: bibliography/resources
+- `src/routes/log/+page.svelte`: weekly log index
+- `src/routes/log/[slug]/+page.svelte`: weekly log detail page
+- `src/lib/logs.ts`: weekly log data
+- `static/`: PDFs and other static files
