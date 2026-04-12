@@ -1,47 +1,42 @@
-# Knapsack Cryptosystems
+# sv
 
-Bachelor project repository focused on the classical Merkle-Hellman knapsack cryptosystem, its cryptanalysis, and selected variants.
+Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
-Website: https://vavr0.github.io/knapsack_cryptosystems/
+## Creating a project
 
-## Repository structure
+If you're seeing this, you've probably already done this step. Congrats!
 
-- `code/` - C implementation and benchmarks
-- `thesis/` - thesis source files
-- `seminar-site/` - Hugo site for weekly seminar progress
-- `sources/` - local reference material (private research copies)
-
-## Quick start (code)
-
-Requirements:
-- C compiler (`cc`)
-- `make`
-- GMP library (`libgmp`)
-
-Build:
-```bash
-cd code
-make
+```sh
+# create a new project
+npx sv create my-app
 ```
 
-Run demo:
-```bash
-./build/knapsack demo
+To recreate this project with the same configuration:
+
+```sh
+# recreate this project
+bun x sv@0.15.1 create --template minimal --types ts --install bun .
 ```
 
-Run benchmark:
-```bash
-./build/knapsack bench
+## Developing
+
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
+```sh
+npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
 ```
 
-Clean:
-```bash
-make clean
+## Building
+
+To create a production version of your app:
+
+```sh
+npm run build
 ```
 
-Seminar site usage is documented in `seminar-site/README.md`.
+You can preview the production build with `npm run preview`.
 
-## Notes
-
-- Weekly log entries use Sunday dates.
-- PDFs in `sources/` are for personal research workflow; they are not hosted by the site.
+> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.

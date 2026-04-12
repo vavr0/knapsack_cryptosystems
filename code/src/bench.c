@@ -27,7 +27,8 @@ static void bench_sample_div(BenchSample *sample, u64 reps) {
 }
 
 // TODO
-static KnapStatus fill_message_random(BitBuf *message_bits, u64 n, PrngState *rng) {
+static KnapStatus fill_message_random(BitBuf *message_bits, u64 n,
+                                      PrngState *rng) {
     if (!message_bits || n == 0) {
         return KNAP_ERR_INVALID;
     }
@@ -140,7 +141,6 @@ KnapStatus bench_run(CliFlags *flags) {
     }
     prng_seed(&rng, seed[0], seed[1]);
 
-
     if (flags->message_bits.length == 0) {
         if (flags->n == 0) {
             return KNAP_ERR_INVALID;
@@ -158,10 +158,9 @@ KnapStatus bench_run(CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
     params.n = flags->message_bits.length;
-    params.initstate= seed[0];
+    params.initstate = seed[0];
     params.initseq = seed[1];
     params.flags = 0;
-
 
     for (u64 i = 0; i < warmup_reps; i++) {
         status = bench_measure_once(scheme, bit_buf_view(&flags->message_bits),
@@ -181,13 +180,15 @@ KnapStatus bench_run(CliFlags *flags) {
     }
     bench_sample_div(&avg, reps);
 
-    printf("scheme,n,reps,warmup_reps,initstate,initseq,keygen_ms,encrypt_ms,decrypt_ms,"
+    printf("scheme,n,reps,warmup_reps,initstate,initseq,keygen_ms,encrypt_ms,"
+           "decrypt_ms,"
            "total_ms\n");
 
-    printf("%s,%llu,%llu,%llu,%lu,%lu,%.6f,%.6f,%.6f,%.6f\n", scheme->info.id,
+    printf("%s,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f\n", scheme->info.id,
            (unsigned long long)flags->message_bits.length,
-           (unsigned long long)reps, (unsigned long long)warmup_reps, seed[0],seed[1],
-           avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms, avg.total_ms);
+           (unsigned long long)reps, (unsigned long long)warmup_reps, seed[0],
+           seed[1], avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms,
+           avg.total_ms);
 
     return KNAP_OK;
 }

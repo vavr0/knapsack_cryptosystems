@@ -1,3 +1,6 @@
+#if defined(__APPLE__)
+#define _DARWIN_C_SOURCE
+#endif
 #include "seed.h"
 #include "common.h"
 #include "error.h"

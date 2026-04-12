@@ -2,9 +2,7 @@
 #include "error.h"
 #include "rand.h"
 #include "scheme.h"
-#include <gmp.h>
 #include <stddef.h>
-#include <time.h>
 
 typedef struct {
     u64 n;               // key length
