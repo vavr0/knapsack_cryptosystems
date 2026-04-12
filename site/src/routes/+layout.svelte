@@ -1,7 +1,7 @@
 <script lang="ts">
     import "../app.css";
 
-    import { base } from "$app/paths";
+    import { asset, resolve } from "$app/paths";
     import { page } from "$app/state";
     import favicon from "$lib/assets/favicon.svg";
 
@@ -12,13 +12,15 @@
         { label: "Topic", href: "/topic/" },
         { label: "Log", href: "/log/" },
         { label: "Resources", href: "/resources/" },
-    ];
+    ] as const;
 
-    function resolveHref(path: string) {
-        return `${base}${path}`;
+    type MenuHref = (typeof menuItems)[number]["href"];
+
+    function resolveHref(path: MenuHref) {
+        return resolve(path);
     }
 
-    function isCurrent(path: string) {
+    function isCurrent(path: MenuHref) {
         const href = resolveHref(path);
 
         if (path === "/") {
@@ -73,7 +75,7 @@
             </a>
             <span aria-hidden="true">·</span>
             <a
-                href={resolveHref("/knapsack_presentation.pdf")}
+                href={asset("/knapsack_presentation.pdf")}
                 target="_blank"
                 rel="noopener noreferrer"
             >
@@ -81,7 +83,7 @@
             </a>
             <span aria-hidden="true">·</span>
             <a
-                href={resolveHref("/zadanie-en.pdf")}
+                href={asset("/zadanie-en.pdf")}
                 target="_blank"
                 rel="noopener noreferrer"
             >

@@ -1,10 +1,6 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import { logs } from '$lib/logs';
-
-	function resolveHref(path: string) {
-		return `${base}${path}`;
-	}
 </script>
 
 <section class="hero panel">
@@ -32,8 +28,8 @@
 	</div>
 
 	<div class="hero-actions">
-		<a class="button" href={resolveHref('/log/')}>View Weekly Log</a>
-		<a class="button button-secondary" href={resolveHref('/topic/')}>Open Topic Notes</a>
+		<a class="button" href={resolve('/log/')}>View Weekly Log</a>
+		<a class="button button-secondary" href={resolve('/topic/')}>Open Topic Notes</a>
 	</div>
 </section>
 
@@ -43,7 +39,7 @@
 		{#each logs as entry}
 			<li>
 				<div>
-					<a href={resolveHref(`/log/${entry.slug}/`)}>{entry.title}</a>
+					<a href={resolve('/log/[slug]', { slug: entry.slug })}>{entry.title}</a>
 					<p class="list-summary">{entry.summary}</p>
 				</div>
 				<span class="meta">{entry.date.split('-').reverse().join('.')}</span>
