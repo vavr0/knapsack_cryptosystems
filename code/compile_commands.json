@@ -1,0 +1,178 @@
+[
+  {
+    "file": "src/app.c",
+    "arguments": [
+      "cc",
+      "-Iinclude",
+      "-I/opt/homebrew/Cellar/gmp/6.3.0/include",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-D_POSIX_C_SOURCE=200809L",
+      "-g",
+      "-O0",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/app.c",
+      "-o",
+      "build/debug/obj/app.o"
+    ],
+    "directory": "/Users/vavro/school/knapsack/code",
+    "output": "build/debug/obj/app.o"
+  },
+  {
+    "file": "src/bench.c",
+    "arguments": [
+      "cc",
+      "-Iinclude",
+      "-I/opt/homebrew/Cellar/gmp/6.3.0/include",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-D_POSIX_C_SOURCE=200809L",
+      "-g",
+      "-O0",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/bench.c",
+      "-o",
+      "build/debug/obj/bench.o"
+    ],
+    "directory": "/Users/vavro/school/knapsack/code",
+    "output": "build/debug/obj/bench.o"
+  },
+  {
+    "file": "src/bitvec.c",
+    "arguments": [
+      "cc",
+      "-Iinclude",
+      "-I/opt/homebrew/Cellar/gmp/6.3.0/include",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-D_POSIX_C_SOURCE=200809L",
+      "-g",
+      "-O0",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/bitvec.c",
+      "-o",
+      "build/debug/obj/bitvec.o"
+    ],
+    "directory": "/Users/vavro/school/knapsack/code",
+    "output": "build/debug/obj/bitvec.o"
+  },
+  {
+    "file": "src/cli.c",
+    "arguments": [
+      "cc",
+      "-Iinclude",
+      "-I/opt/homebrew/Cellar/gmp/6.3.0/include",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-D_POSIX_C_SOURCE=200809L",
+      "-g",
+      "-O0",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/cli.c",
+      "-o",
+      "build/debug/obj/cli.o"
+    ],
+    "directory": "/Users/vavro/school/knapsack/code",
+    "output": "build/debug/obj/cli.o"
+  },
+  {
+    "file": "src/error.c",
+    "arguments": [
+      "cc",
+      "-Iinclude",
+      "-I/opt/homebrew/Cellar/gmp/6.3.0/include",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-D_POSIX_C_SOURCE=200809L",
+      "-g",
+      "-O0",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/error.c",
+      "-o",
+      "build/debug/obj/error.o"
+    ],
+    "directory": "/Users/vavro/school/knapsack/code",
+    "output": "build/debug/obj/error.o"
+  },
+  {
+    "file": "src/main.c",
+    "arguments": [
+      "cc",
+      "-Iinclude",
+      "-I/opt/homebrew/Cellar/gmp/6.3.0/include",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-D_POSIX_C_SOURCE=200809L",
+      "-g",
+      "-O0",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/main.c",
+      "-o",
+      "build/debug/obj/main.o"
+    ],
+    "directory": "/Users/vavro/school/knapsack/code",
+    "output": "build/debug/obj/main.o"
+  },
+  {
+    "file": "src/scheme_mh.c",
+    "arguments": [
+      "cc",
+      "-Iinclude",
+      "-I/opt/homebrew/Cellar/gmp/6.3.0/include",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-D_POSIX_C_SOURCE=200809L",
+      "-g",
+      "-O0",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/scheme_mh.c",
+      "-o",
+      "build/debug/obj/scheme_mh.o"
+    ],
+    "directory": "/Users/vavro/school/knapsack/code",
+    "output": "build/debug/obj/scheme_mh.o"
+  },
+  {
+    "file": "src/scheme.c",
+    "arguments": [
+      "cc",
+      "-Iinclude",
+      "-I/opt/homebrew/Cellar/gmp/6.3.0/include",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-D_POSIX_C_SOURCE=200809L",
+      "-g",
+      "-O0",
+      "-MMD",
+      "-MP",
+      "-c",
+      "src/scheme.c",
+      "-o",
+      "build/debug/obj/scheme.o"
+    ],
+    "directory": "/Users/vavro/school/knapsack/code",
+    "output": "build/debug/obj/scheme.o"
+  }
+]

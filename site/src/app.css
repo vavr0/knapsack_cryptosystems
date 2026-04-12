@@ -1,0 +1,279 @@
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600;6..72,700&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+	--bg: #0f141a;
+	--surface: #161d25;
+	--surface-2: #1c2631;
+	--text: #e7eef5;
+	--muted: #9fb0c0;
+	--accent: #7ec3ff;
+	--accent-2: #163149;
+	--border: #2b3642;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	min-height: 100%;
+}
+
+body {
+	font-family: "Inter", "Segoe UI", sans-serif;
+	line-height: 1.65;
+	color: var(--text);
+	background: var(--bg);
+}
+
+h1,
+h2,
+h3 {
+	font-family: "Newsreader", Georgia, serif;
+	line-height: 1.25;
+	margin-top: 0;
+}
+
+a {
+	color: var(--accent);
+}
+
+p {
+	margin-top: 0;
+}
+
+.container {
+	width: min(900px, 92%);
+	margin: 0 auto;
+}
+
+.site-header {
+	position: sticky;
+	top: 0;
+	z-index: 40;
+	background: rgba(15, 20, 26, 0.92);
+	border-bottom: 1px solid var(--border);
+	backdrop-filter: blur(8px);
+}
+
+.header-inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.85rem 0;
+}
+
+.brand {
+	text-decoration: none;
+	color: var(--text);
+	font-family: "Newsreader", Georgia, serif;
+	font-size: 1.12rem;
+	font-weight: 700;
+}
+
+.menu {
+	list-style: none;
+	display: flex;
+	gap: 0.4rem;
+	margin: 0;
+	padding: 0;
+}
+
+.menu a {
+	display: inline-block;
+	text-decoration: none;
+	color: var(--text);
+	padding: 0.38rem 0.7rem;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	font-size: 0.95rem;
+}
+
+.menu a:hover {
+	border-color: var(--border);
+	background: #1a222c;
+}
+
+.menu a[aria-current='page'] {
+	border-color: #315271;
+	background: var(--accent-2);
+}
+
+main.container {
+	padding: 1.1rem 0;
+}
+
+.panel {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 1.2rem;
+	margin: 1rem 0;
+}
+
+.hero {
+	background: linear-gradient(180deg, var(--surface-2), var(--surface));
+}
+
+h1 {
+	font-size: clamp(2.1rem, 4.8vw, 3rem);
+	margin-bottom: 0.6rem;
+}
+
+h2 {
+	font-size: clamp(1.22rem, 3vw, 1.6rem);
+	margin-bottom: 0.55rem;
+}
+
+h3 {
+	font-size: 1.15rem;
+	margin-bottom: 0.4rem;
+}
+
+.lead {
+	color: #c7d4e0;
+	max-width: 60ch;
+}
+
+.lead h3 {
+	font-size: 1.05rem;
+	margin: 1rem 0 0.45rem;
+	color: #dbe6f0;
+}
+
+.lead ol {
+	margin: 0.2rem 0 0.9rem 1.2rem;
+}
+
+.hero-actions {
+	display: flex;
+	gap: 0.7rem;
+	flex-wrap: wrap;
+}
+
+.button {
+	display: inline-block;
+	text-decoration: none;
+	padding: 0.5rem 0.9rem;
+	border-radius: 8px;
+	border: 1px solid #3f77a0;
+	background: #235070;
+	color: #f3f9ff;
+	font-weight: 600;
+}
+
+.button:hover {
+	background: #2c5f84;
+}
+
+.button-secondary {
+	background: transparent;
+	border-color: var(--border);
+	color: var(--text);
+}
+
+.button-secondary:hover {
+	background: #1a222c;
+}
+
+.post-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.post-list li {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.75rem 0;
+	border-bottom: 1px solid var(--border);
+}
+
+.post-list li:last-child {
+	border-bottom: none;
+}
+
+.list-summary {
+	margin: 0.3rem 0 0;
+	color: var(--muted);
+	font-size: 0.92rem;
+}
+
+.meta {
+	color: var(--muted);
+	font-size: 0.92rem;
+	white-space: nowrap;
+}
+
+.log-sections {
+	margin: 0.9rem 0 0.7rem;
+}
+
+.log-section {
+	border-top: 1px solid var(--border);
+	padding-top: 0.8rem;
+	margin-top: 0.8rem;
+}
+
+.log-section h2 {
+	font-size: 1.02rem;
+	margin-bottom: 0.45rem;
+}
+
+.log-section ul {
+	margin: 0;
+	padding-left: 1.25rem;
+}
+
+.prose {
+	margin-top: 0.9rem;
+}
+
+.site-footer {
+	padding: 0.8rem 0 2rem;
+	color: var(--muted);
+	font-size: 0.92rem;
+}
+
+.footer-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.45rem;
+	align-items: center;
+	margin: 0;
+}
+
+.footer-links a {
+	color: var(--muted);
+	text-decoration: none;
+}
+
+.footer-links a:hover {
+	color: var(--text);
+	text-decoration: underline;
+}
+
+@media (max-width: 760px) {
+	.header-inner {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.menu {
+		flex-wrap: wrap;
+	}
+
+	.post-list li {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.25rem;
+	}
+
+	.footer-links {
+		gap: 0.35rem;
+	}
+}
