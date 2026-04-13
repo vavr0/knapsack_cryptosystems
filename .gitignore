@@ -91,3 +91,4 @@ __pycache__/
 # *.code-workspace
 # local research PDFs
 sources/
+/.svelte-kit
