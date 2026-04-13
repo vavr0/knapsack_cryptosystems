@@ -1,5 +1,5 @@
 #include "app.h"
-#include "error.h"
+#include <stdint.h>
 
 int main(int argc, char **argv) {
     if (argc < 1 || !argv) {
