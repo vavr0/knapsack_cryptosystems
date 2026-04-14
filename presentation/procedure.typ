@@ -1,46 +1,118 @@
 #import "@preview/touying:0.7.1": *
 #import themes.metropolis: *
 
-
 #show: metropolis-theme.with(
   aspect-ratio: "16-9",
   footer: self => self.info.institution,
   config-info(
     title: [Postup práce],
-    subtitle: [Knapsack cryptosystems and its variations],
-    author: [David Vavrinek],
-    //date: datetime.today(),
-    // institution: [Institution],
-    // contact: [varinek1\@uniba.sk],
-    // logo: emoji.city,
+    subtitle: [Classical Knapsack Cryptosystem and its Variations],
+    author: [David Vavřinek],
   ),
 )
 
-#set heading()
+#show raw: set text(font: "SauceCodePro NF")
+#show raw.where(block: true): set text(size: 0.85em)
+#set heading(numbering: none)
 
 #title-slide()
 
-== Aktuálny stav
-- návrhovú fázu práce mám uzavretú
-- teoretický základ a štruktúru práce mám rozpracované
-- teraz sa presúvam od opisu schém k ich analýze a porovnaniu
+== Stav práce
 
-== Ako mám prácu rozdelenú
-- teoretická časť pokrýva klasický Merkle-Hellman, jeho slabiny a vybrané varianty
-- implementačná časť sa sústreďuje na keygen, encrypt a decrypt
-- záverečná časť bude porovnávať bezpečnosť, zložitosť a praktickú realizáciu
+- implementovaný `mh-classic`
+- implementovaný `mh-permuted` ako ďalší experimentálny variant
+- hotové spoločné rozhranie schém a CLI režimy `demo` a `bench`
+- ďalší krok: attack/demo časť a systematické experimenty
 
-== Čo už funguje
-- klasický Merkle-Hellman mám implementovaný
-- permutovaný variant mám implementovaný
-- seedované spúšťanie a základ pre experimenty fungujú
+== Rozšíriteľnosť riešenia
 
-== Čo ešte chýba
-- chýba mi dokončiť názornú demonštráciu útoku na klasickú schému
-- potrebujem dopracovať porovnanie variantov a ich slabín
-- ešte musím dopísať implementačnú, výsledkovú a záverečnú časť práce
+- všetky varianty schémy sú skryté za spoločným API
+- návrh je zameraný na jednoduché pridávanie nových variantov
+- aplikácia potom volá len `keygen`, `encrypt`, `decrypt`
 
-== Ďalší postup
-- dokončím attack/demo časť pre klasický Merkle-Hellman
-- doplním porovnávacie experimenty a priebežné výsledky
-- zapracujem tieto výstupy do textu práce a na web
+```c
+typedef struct {
+  KnapStatus (*keygen)(...);
+  KnapStatus (*encrypt)(...);
+  KnapStatus (*decrypt)(...);
+} SchemeOps;
+
+const SchemeOps *scheme_resolve(const char *id) {
+  if (!id || strcmp(id, "mh-classic") == 0) return scheme_mh_get();
+  if (strcmp(id, "mh-permuted") == 0) return scheme_mh_permuted_get();
+  // planned next step
+  if (strcmp(id, "mh-iterated") == 0) return scheme_mh_iterated_get();
+  return NULL;
+}
+```
+
+== MH classic: tvorba kľúča
+
+- privátne váhy generované ako superincreasing sekvenciu
+- používam *GMP* (`mpz_t`) na veľké celé čísla
+- verejný kľúč vzniká ako `b_i = (w_i * r) mod m`
+
+```c
+u64 margin_u64 = 1 + (prng_rand_u64(rng) % (64u * key->n));
+mpz_set_ui(margin, margin_u64);
+mpz_add(key->mod, sum, margin);
+
+for (;;) {
+  mpz_set_ui(key->mult, prng_rand_u64(rng));
+  mpz_mod(key->mult, key->mult, key->mod);
+  if (mpz_invert(key->mult_inv, key->mult, key->mod) != 0) break;
+}
+
+for (u64 i = 0; i < key->n; i++) {
+  mpz_mul(key->pub_weights[i], key->priv_weights[i], key->mult);
+  mpz_mod(key->pub_weights[i], key->pub_weights[i], key->mod);
+}
+```
+
+== Beh schémy a chybové stavy
+
+- flow je rovnaký pre všetky varianty implementácie
+- `KnapStatus` rozlišuje `INVALID`, `ALLOC`, `CRYPTO`, `INTERNAL`
+- jednotné spracovanie chýb naprieč implementáciou
+
+```c
+typedef enum {
+  KNAP_OK, KNAP_ERR_INVALID, KNAP_ERR_ALLOC,
+  KNAP_ERR_CRYPTO, KNAP_ERR_INTERNAL
+} KnapStatus;
+
+status = scheme->keygen(&params, &scheme_key);
+if (status != KNAP_OK) return status;
+
+status = scheme->encrypt(&scheme_key, bit_buf_view(&flags->message_bits),
+                         ciphertext);
+if (status != KNAP_OK) return status;
+
+status = scheme->decrypt(&scheme_key, ciphertext, &decrypted);
+if (status != KNAP_OK) return status;
+```
+
+== Demo a benchmark režim
+
+- `demo`: end-to-end keygen / encrypt / decrypt na konkrétnej bitovej správe
+- `bench`: opakované meranie `keygen`, `encrypt`, `decrypt`
+- CSV výstup slúži ako základ pre porovnanie variantov a parametrov
+
+```bash
+./code/build/knapsack demo --scheme mh-classic --msg 101010 --seed 123
+./code/build/knapsack bench --scheme mh-classic --n 128 --reps 10 \
+  --seed 123 --format csv
+```
+
+== Písanie a literárny prieskum
+
+- preštudoval som literatúru k moderným prístupom v oblasti knapsack kryptografie
+- popri implementácii priebežne dopĺňam text práce
+- spracúvam, ako sa klasické schémy postupne prelamovali a ako na to reagovali ďalšie varianty
+
+== Čo ešte treba urobiť
+
+- dokončiť attack/demo časť pre klasickú schému
+- doplniť rozdelenie spravy na bloky a plaintext input
+- pripraviť `mh-iterated`
+- spraviť porovnávacie experimenty a dopísať *Implementation and Methodology* a *Results*
