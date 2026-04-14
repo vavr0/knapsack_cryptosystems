@@ -8,5 +8,5 @@ const SchemeOps *scheme_resolve(const char *id) {
     if (strcmp(id, "mh-permuted") == 0) {
         return scheme_mh_permuted_get();
     }
-    return NULL;
+    return scheme_mh_get();
 }

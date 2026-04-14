@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 static KnapStatus read_message_bits(BitBuf *message_out) {
     char line[256];
     if (!message_out) {
@@ -142,8 +141,7 @@ static KnapStatus demo_run(CliFlags *flags) {
         return status;
     }
 
-    status =
-        scheme->decrypt(&scheme_key, ciphertext, &decrypted);
+    status = scheme->decrypt(&scheme_key, ciphertext, &decrypted);
     if (status != KNAP_OK) {
         scheme->scheme_key_clear(&scheme_key);
         mpz_clear(ciphertext);
