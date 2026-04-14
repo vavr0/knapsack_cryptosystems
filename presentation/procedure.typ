@@ -48,11 +48,18 @@ const SchemeOps *scheme_resolve(const char *id) {
 
 == MH classic: tvorba kľúča
 
-- privátne váhy generované ako superincreasing sekvencia
+- privátny základ tvorím ako superincreasing sekvenciu
 - používam *GMP* (`mpz_t`) na veľké celé čísla
-- verejný kľúč vzniká ako `b_i = (w_i * r) mod m`
+- z tejto sekvencie potom určím modulus a invertibilný multiplier
 
 ```c
+for (u64 i = 0; i < key->n; i++) {
+  mpz_set_ui(delta, 1 + (prng_rand(rng) % 16u));
+  mpz_add(delta, delta, sum);
+  mpz_set(key->priv_weights[i], delta);
+  mpz_add(sum, sum, key->priv_weights[i]);
+}
+
 u64 margin_u64 = 1 + (prng_rand_u64(rng) % (64u * key->n));
 mpz_set_ui(margin, margin_u64);
 mpz_add(key->mod, sum, margin);
@@ -61,11 +68,6 @@ for (;;) {
   mpz_set_ui(key->mult, prng_rand_u64(rng));
   mpz_mod(key->mult, key->mult, key->mod);
   if (mpz_invert(key->mult_inv, key->mult, key->mod) != 0) break;
-}
-
-for (u64 i = 0; i < key->n; i++) {
-  mpz_mul(key->pub_weights[i], key->priv_weights[i], key->mult);
-  mpz_mod(key->pub_weights[i], key->pub_weights[i], key->mod);
 }
 ```
 
