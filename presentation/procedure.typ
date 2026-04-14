@@ -48,7 +48,7 @@ const SchemeOps *scheme_resolve(const char *id) {
 
 == MH classic: tvorba kľúča
 
-- privátne váhy generované ako superincreasing sekvenciu
+- privátne váhy generované ako superincreasing sekvencia
 - používam *GMP* (`mpz_t`) na veľké celé čísla
 - verejný kľúč vzniká ako `b_i = (w_i * r) mod m`
 
@@ -104,15 +104,17 @@ if (status != KNAP_OK) return status;
   --seed 123 --format csv
 ```
 
-== Písanie a literárny prieskum
+== Smerovanie práce
 
-- preštudoval som literatúru k moderným prístupom v oblasti knapsack kryptografie
-- popri implementácii priebežne dopĺňam text práce
-- spracúvam, ako sa klasické schémy postupne prelamovali a ako na to reagovali ďalšie varianty
+- preštudoval som literatúru k variantom a útokom na knapsack kryptosystémy
+- moderný výskum som si prešiel skôr pre kontext, nie ako hlavnú časť práce
+- väčšina novších výsledkov sa zameriava skôr na kryptanalýzu než návrh nových schém
+- knapsack prístupy sa dnes pri návrhu reálnych kryptosystémov nepoužívajú
+- jadrom práce zostáva implementácia variantov a ich porovnanie
 
 == Čo ešte treba urobiť
 
 - dokončiť attack/demo časť pre klasickú schému
-- doplniť rozdelenie spravy na bloky a plaintext input
+- doplniť spracovanie správ (bloky, plaintext input)
 - pripraviť `mh-iterated`
 - spraviť porovnávacie experimenty a dopísať *Implementation and Methodology* a *Results*

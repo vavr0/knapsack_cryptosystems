@@ -74,18 +74,26 @@
                 GitHub repository
             </a>
             <span aria-hidden="true">·</span>
-            <a
-                href={asset("/knapsack_presentation.pdf")}
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Presentation
-            </a>
-            <span aria-hidden="true">·</span>
-            <a
-                href={asset("/zadanie-en.pdf")}
-                target="_blank"
-                rel="noopener noreferrer"
+			<a
+				href={asset("/knapsack_presentation.pdf")}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				Presentation
+			</a>
+			<span aria-hidden="true">·</span>
+			<a
+				href={asset("/procedure.pdf")}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				Presentation 2
+			</a>
+			<span aria-hidden="true">·</span>
+			<a
+				href={asset("/zadanie-en.pdf")}
+				target="_blank"
+				rel="noopener noreferrer"
             >
                 Thesis assignment
             </a>
