@@ -1,84 +1,44 @@
 \chapter{Theoretical Background}
 
-\section{Basics of Cryptography} Cryptography is a part of computer science and
-mathematics that focuses on protecting contents of transmitted data through
-insecure channels like the Internet, from unauthorized parties. Its name is
-derived from the greek word "kryptos" meaning hidden and "graphein" meaning
-writing so we could literally translate it as hidden writing. In today's world
-it is possible to hide any type of digital communication from text to video. 
+\section{Basics of Cryptography} 
 
-The need for secret communication came much earlier. One of the first
-implementations of cryptography was found in the use of non-standard
-hieroglyphs carved into the wall of a tomb from the Old Kingdom of
-Egypt~\cite{ibmCryptographyHistory}. This is an example of a classical cipher.
-Classical ciphers came before the invention of computers and for that reason
-they operate on letters rather than bits. In ancient times or even during the
+Cryptography, derived from Greek words meaning "hidden writing", is the study
+and practice of mathematical methods for secure communication over insecure
+channels. In modern systems, however, it is no longer limited to
+confidentiality alone, but also addresses integrity, authentication, and
+non-repudiation. More broadly, modern cryptography is concerned not only with
+secrecy, but also with detecting modification and verifying
+authenticity.\cite{diffie1976newDirections,ibm2023cryptography}
 
-First World War, cryptography had to be performed manually using only pen and
-paper~\cite{aumasson2017serious}. The most famous classical cipher is Caesar
-cipher. It is named after Julius Caesar, who used it during his rule of Roman
-Empire to protect his military communications. It works by shifting each letter
-in message by a number of positions in alphabet. The number of the shifted
-letters must be agreed upon in advance between communicating parties and can be
-considered as key. Even though this worked well in times of Roman Empire, it's
-very easy to break. There are only 26 letters in English alphabet, hence only
-26 keys possible. An attacker can simply try all possible shifts to quickly
-recover the plaintext. This weakness later motivated the development of more
-secure systems. 
+The need for secret communication predates modern computing by thousands of
+years. One early example is the use of unusual hieroglyphs carved into the wall
+of a tomb from the Old Kingdom of Egypt, often cited as one of the earliest
+known uses of cryptography.~\cite{schneider2024ibmhistory}
 
-Another popular classical cipher is the Vigenère cipher which came around 1500
-years after the invention of Caesar cipher. The Vigenère cipher became popular
-and was later used during the American Civil War by Confederate forces and
-during the First World War by the Swiss Army, among
-others~\cite{aumasson2017serious}. It works similarly to the Caesar cipher, but
-rather than shifting every letter by a constant number of positions it shifts
-by values defined by key. In this context, the key is a word in which each
-letter represents numerical value derived from their position in alphabet.
-During encryption, the key is repeated until it matches the length of the
-message. Then, each letter of the message is shifted forward in the alphabet by
-the value corresponding to the matching letter of the key. 
+Before computers, cryptography relied on classical ciphers that operated on
+letters rather than bits. One of the most popular examples is the Caesar
+cipher, which shifts each letter by a fixed number of positions in the
+alphabet. Because the number of possible shifts is small, the cipher is easy to
+break by trying all possibilities.~\cite{aumasson2017serious}
 
-Despite the improvements, it's still quite easy to break with frequency
-analysis techniques which exploit the uneven distribution of letters in
-languages. Classical ciphers are insecure because they rely on basic operations
-that can be done manually and modern computers can break them with basic
-programs analysing letter frequencies or even brute force testing all possible
-keys.
+A more advanced classical cipher is the Vigen\`ere cipher, which uses a keyword
+to vary the shift applied to each letter. This makes it stronger than the
+Caesar cipher, but it remains vulnerable to frequency analysis. Classical
+ciphers were historically important, yet their security was too weak for modern
+communication systems.~\cite{aumasson2017serious}
 
-As the need for secure communications grew, more sophisticated systems were
-developed, including mechanical rotor machines such as the Enigma and Lorenz
-ciphers used during the Second World War. These devices implemented rapidly
-changing substitution alphabets and, at the time, were considered as secure.
+As the need for secure communication grew, more sophisticated systems were
+developed, including mechanical rotor machines such as the Enigma machine.
+These devices used changing substitutions, which made them harder to break than
+earlier hand ciphers.~\cite{schneider2024ibmhistory}
 
-Their eventual breaking showed a primary flaw of classical cryptography.
-Security of classical and mechanical ciphers depended on complicated
-substitutions but they lacked computational hardness.
+Their eventual defeat showed that security could not rely only on increasingly
+complicated substitutions. From the 1970s onward, cryptography began to move
+toward mathematically defined constructions whose security depended on the
+difficulty of underlying computational problems. This shift marks the beginning
+of modern cryptography and motivates the discussion in the next section.
+~\cite{diffie1976newDirections}
 
-During the 1970s and 1980s cryptography progressed into a modern era. New
-theory based on well-defined mathematical principles appeared, which led
-researchers to realize that long-term security could not rely on secrecy or
-complicated mechanical design, but instead on problems that are fundamentally
-hard to solve. Modern cryptography is therefore built upon mathematically
-defined functions that are easy to compute in one direction but infeasible to
-reverse without secret information, called a key. These ideas led to the
-development of both symmetric and asymmetric cryptosystems. The next section
-introduces the computational principles underlying these constructions.
-
-% To achieve this it relies on hard mathematical problems and algorithms such as
-% integer factorization, discrete logarithms, or the subset-sum (knapsack)
-% problem. These problems belong to a class known as NP-complete which means it
-% is very difficult to find a solution within reasonable time without any
-% information about input even with vast computational power. On the other hand
-% verifying that the solution is correct is easy. All NP-complete problems are
-% decision problems that for any input the output is yes or no. For that reason
-% they form the foundation of modern cryptosystems. 
-% 
-% Because solving these problems directly is practically impossible, modern
-% cryptography uses mathematical functions that depend on secret information
-% called keys. With knowledge of the key the computation becomes simple, but
-% without it the problem remains computationally infeasible. This idea sparked
-% development of wide range of encryption methods and eventualy to both symmetric
-% and asymetric cryptosystems.
 \section{P, NP, and Computational Hardness}
 
 In cryptography, the security of many systems depends on problems that are
