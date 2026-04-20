@@ -87,15 +87,14 @@ A related notion is $\mathcal{NP}$-hard. Informally, a problem is
 $\mathcal{NP}$-hard if it is at least as difficult as the
 $\mathcal{NP}$-complete problems under polynomial reductions. The
 $\mathcal{NP}$-complete problems form the part of this broader category that
-also belongs to
-$\mathcal{NP}$.~\cite[pp.~34--35, 37]{garey1979computers}
+also belongs to $\mathcal{NP}$.~\cite[pp.~34--35, 37]{garey1979computers}
 
 Modern cryptography often relies on mathematical problems for which no
-efficient algorithm is known. This is especially important in
-public-key cryptography, where security depends on assumptions about
-computational hardness rather than on keeping the method secret. Different
-cryptosystems rely on different hardness assumptions, such as integer
-factorization, discrete logarithms, or subset-sum.
+efficient algorithm is known. This is especially important in public-key
+cryptography, where security depends on assumptions about computational
+hardness rather than on keeping the method secret. Different cryptosystems rely
+on different hardness assumptions, such as integer factorization, discrete
+logarithms, or subset-sum.
 
 One problem especially relevant for this thesis is the subset-sum problem,
 which is among the $\mathcal{NP}$-complete
@@ -124,36 +123,43 @@ decryption. All communicating parties must use the same key and keep it secret.
 This means that the key must be established and exchanged before communication.
 Because of this limitation, symmetric systems are often not practical when two
 parties have never communicated before or do not have a secure channel for
-exchanging the key. Despite this it's still widely used in practice and
+exchanging the key. Despite this, it is still widely used in practice and
 especially useful for encrypting large amounts of data efficiently. Modern
 symmetric encryption commonly uses block ciphers or stream ciphers, with AES
-being a well-known example of a block cipher.~\cite{ibm2023cryptography}
+being a well-known block cipher example.~\cite{ibm2023cryptography}
 
-This problem motivated the development of a different approach, where the
+This problem motivated the development of a different approach, in which the
 parties do not need to share a secret beforehand. This idea led to public-key
 cryptography. It works with a pair of keys, a public key that can be shared
 with anyone and a private key that must remain secret. Messages encrypted with
 the public key can only be decrypted with the corresponding private key, which
-removes the need for a secure key exchange. 
+removes the need for a secure key exchange. Diffie and Hellman also described a
+public-key distribution approach in which two users communicating over a public
+channel can obtain a shared secret key, which can then be used in a
+conventional symmetric cryptosystem.  This shows that symmetric and asymmetric
+cryptography do not replace one another, but can be used together, with
+public-key methods establishing a shared key and symmetric cryptography then
+protecting the actual message.~\cite[pp.~644,
+648--649]{diffie1976newDirections}
 
-The security of such systems relies on mathematical problems for which the
-forward computation is easy, while reversing it without the private key is
-believed to be computationally hard. Many public-key encryption schemes are
-built on this type of hardness assumption.~\cite{aumasson2017serious}
-In the cryptosystem studied in this thesis, the underlying problem is
-subset-sum, also known as the knapsack problem. The following sections
-introduce this problem and explain how it can be used to construct a public-key
-encryption scheme.
+The security of asymmetric systems is based on the idea of one-way and trapdoor
+functions. Diffie and Hellman described these as functions that are easy to
+compute, but difficult to invert without additional secret information, and
+suggested the knapsack problem as one possible foundation for such
+systems.~\cite[pp.~650, 652--654]{diffie1976newDirections} In the cryptosystem
+studied in this thesis, the underlying problem is subset-sum, also known as the
+knapsack problem. The following sections introduce this problem and explain how
+it can be used to construct a public-key encryption scheme.
 
-\section{The Knapsack Problem}
+\section{The Subset-Sum Problem}
 
-The knapsack problem, also known as the subset--sum problem, is a fundamental
-combinatorial decision problem. Given a sequence of positive integers
+The subset-sum problem, often also referred to in the cryptographic literature
+as the knapsack problem, is defined as follows. Given a sequence of positive
+integers
 \[
 W = (w_1, w_2, \dots, w_n)
 \]
-and a target value \(s \in \mathbb{N}\), the task is to determine whether there exists
-a binary vector
+and a target value \(s \in \mathbb{N}\), the goal is to find a binary vector
 \[
 x = (x_1, x_2, \dots, x_n) \in \{0,1\}^n
 \]
@@ -161,12 +167,12 @@ such that
 \[
 \sum_{i=1}^{n} x_i w_i = s.
 \]
-In this formulation, each variable \(x_i\) indicates whether the weight \(w_i\) is
-included in the subset. The problem is NP--complete: verifying a proposed solution
-is efficient, but no polynomial--time algorithm is known for solving arbitrary
-instances.
+Here, each variable \(x_i\) indicates whether the weight \(w_i\) is included in
+the subset. The related decision problem asks whether such a vector exists. In
+that form, subset-sum is \(\mathcal{NP}\)-complete.~\cite[p.~223]{garey1979computers}
 
-\subsection*{Example of a general instance}
+\subsection*{Example}
+
 Consider the sequence
 \[
 W = (3,\, 8,\, 12,\, 19)
@@ -175,158 +181,122 @@ and the target value
 \[
 s = 27.
 \]
-To decide whether a subset sums to \(27\), one must explore combinations of the
-weights. In this case, a valid solution exists:
+To determine whether some subset sums to \(27\), one must consider possible
+combinations of the weights. In this case, one valid solution is
 \[
 8 + 19 = 27,
 \]
-corresponding to the vector
+which corresponds to the vector
 \[
 x = (0,\,1,\,0,\,1).
 \]
-For a general instance, systematically finding such a vector may require testing
-an exponential number of subsets in the worst case.
+For arbitrary instances, finding such a vector may require examining an
+exponential number of subsets in the worst case.
 
 \subsection*{Superincreasing sequences}
 
-A sequence \(W\) is called \emph{superincreasing} if every element is strictly larger
-than the sum of all previous ones:
+A sequence $W$ is called \emph{superincreasing} if every element is strictly
+larger than the sum of all previous ones:
 \[
 w_i > \sum_{j=1}^{i-1} w_j \qquad \forall i \ge 2.
 \]
-For such sequences, the subset--sum problem is solvable by a simple greedy algorithm
-that starts with the largest weight and works downward.
+For such sequences, the subset-sum problem can be solved efficiently by a
+greedy procedure that starts with the largest weight and works downward. In
+contrast to general instances, which may have no solution, one solution, or
+several different solutions, a superincreasing instance has at most one
+solution, and if it exists, the greedy procedure recovers it. This
+special structure is what makes superincreasing sequences useful as the private
+trapdoor in the classical Merkle--Hellman
+cryptosystem.~\cite[pp.~525--526]{MerkleHellman1978}
 
-For a general subset-sum instance with an arbitrary sequence of weights, the
-target value may have no solution, one solution, or multiple different
-solutions. More importantly, without additional structure, finding a valid
-subset may require exponential search in the worst case. In contrast,
-superincreasing sequences have strong structure: each decision in the greedy
-process is forced, so the solution (if it exists) is recovered efficiently and
-deterministically. This property is the key reason why superincreasing
-sequences are used as a private trapdoor in the classical Merkle--Hellman
-construction.
-
-\subsection*{Example of a superincreasing instance}
-
-Consider the sequence
-\[
-W = (2,\, 5,\, 11,\, 23),
-\]
-which satisfies
-\[
-5 > 2,\quad 11 > 2+5,\quad 23 > 2+5+11.
-\]
-Let the target value be
-\[
-s = 28.
-\]
-The greedy procedure proceeds as follows:
-\begin{enumerate}
-    \item \(23 \le s\), include it: \(x_4 = 1\), new \(s = 5\).
-    \item \(11 > 5\), skip it: \(x_3 = 0\).
-    \item \(5 \le 5\), include it: \(x_2 = 1\), new \(s = 0\).
-    \item \(2 > 0\), skip it: \(x_1 = 0\).
-\end{enumerate}
-The algorithm terminates with the unique solution
-\[
-x = (0,\,1,\,0,\,1),
-\]
-corresponding to
-\[
-23 + 5 = 28.
-\]
-
-\subsection*{Summary}
-
-The essential feature of the knapsack problem is the strong contrast between
-general instances, which appear computationally intractable, and structured
-instances such as superincreasing sequences, which admit efficient solutions.
-This distinction forms the mathematical basis for constructions discussed in
-later chapters.
-
-\section{Knapsack Cryptosystem}
+\section{The Merkle--Hellman Knapsack Cryptosystem}
 
 The Merkle--Hellman cryptosystem was one of the earliest public-key encryption
-schemes based on the subset-sum problem \cite{MerkleHellman1978}. It was
-introduced in a model where secure communication does not require pre-shared
-secret keys. Its design uses a superincreasing private sequence as a trapdoor
-and publishes a transformed sequence that should appear computationally hard to
-solve without the private key. Although the idea was influential, later
-cryptanalysis showed that the basic construction is insecure \cite{Shamir1982}.
-The following description focuses on the classical Merkle--Hellman construction
-itself, namely key generation, encryption, and decryption.
+schemes. It is based on the subset-sum problem.~\cite{MerkleHellman1978} Its
+design uses a superincreasing sequence as part of the private key. This easy
+instance is then transformed into a public sequence that is intended to look
+like a hard general subset-sum instance. Although the idea was influential,
+later cryptanalysis showed that the basic construction is
+insecure.~\cite{Shamir1982}
 
 \subsection{Key Generation}
 
 The goal of key generation is to create two representations of the same
-knapsack instance: one easy for the owner and one hard-looking for everyone
-else \cite{MerkleHellman1978}. The process starts by choosing a superincreasing
-sequence \(W=(w_1,\dots,w_n)\), which will serve as the private trapdoor. Next,
-the key owner chooses a modulus \(m\) larger than the sum of all private
-weights and a multiplier \(r\) that is invertible modulo \(m\). These values
-are used
-to hide the private sequence by modular transformation, producing a public
-sequence \(B=(b_1,\dots,b_n)\), where \[ b_i \equiv r\,w_i \pmod m. \] 
-
-In the classical description, a permutation is also applied to further obscure
-the original structure. The public key is the transformed sequence (and
-permutation, if used), while the private key consists of the superincreasing
-sequence and transformation parameters \cite{MerkleHellman1978}.
+knapsack instance: one that is easy for the owner to solve and one that appears
+hard to solve for everyone else. First, a superincreasing sequence
+$W=(w_1,\dots,w_n)$ is chosen as the private sequence. Then a modulus $m$
+larger than $\sum_{i=1}^n w_i$ and a multiplier $r$ satisfying $\gcd(r,m)=1$
+are selected. The public sequence $B=(b_1,\dots,b_n)$ is computed from the
+private sequence using the multiplier $r$ modulo $m$, where
+\[
+b_i \equiv r w_i \pmod m.
+\]
+In the original description, the order of the transformed sequence may also be
+permuted to further obscure its structure.~\cite[p.~526]{MerkleHellman1978}
+The public key is the final transformed sequence, while the private key
+consists of the original superincreasing sequence together with the secret
+modulus $m$, multiplier $r$, and, if scrambling is used, the corresponding
+permutation.
 
 \subsection{Encryption}
-After key generation, the sender uses the public sequence \[
-B=(b_1,b_2,\dots,b_n) \] to encrypt an \(n\)-bit message \[
-x=(x_1,x_2,\dots,x_n), \quad x_i \in \{0,1\}. \] The ciphertext is computed
-as \[ C=\sum_{i=1}^{n} x_i b_i. \] This means that only the public weights
-corresponding to message bits equal to 1 are added. From the sender's
-perspective, encryption is therefore straightforward and efficient, because
-it only requires additions over public values \cite{MerkleHellman1978}.
+
+After key generation, the sender uses the public sequence
+\[
+B=(b_1,b_2,\dots,b_n)
+\]
+to encrypt an $n$-bit message
+\[
+x=(x_1,x_2,\dots,x_n), \quad x_i \in \{0,1\}.
+\]
+The length $n$ of the public sequence determines the block size of the scheme,
+so one application of the encryption algorithm encrypts one $n$-bit block.
+Longer messages must therefore be divided into blocks of this length.
+The ciphertext is computed as
+\[
+C=\sum_{i=1}^{n} x_i b_i.
+\]
+In other words, only those public weights corresponding to message bits equal
+to $1$ are added. Encryption is therefore straightforward and efficient, since
+it requires only additions over public weights.~\cite{MerkleHellman1978}
 
 \subsection{Decryption}
-To decrypt the ciphertext \(C\), the key owner uses private parameters and
-first computes
+To decrypt a ciphertext $C$, the receiver first computes
 \[
 S' \equiv r^{-1} C \pmod m,
 \]
-where \(r^{-1}\) is the modular inverse of \(r\) modulo \(m\). Because the
-public weights were constructed from the private superincreasing sequence,
-this step maps the problem back to an equivalent subset-sum instance over
-the private sequence. The resulting value \(S'\) is then solved by a greedy
-procedure, starting from the largest private weight and moving downward. At
-each step, if the current weight does not exceed the remaining sum, the
-corresponding bit is set to 1 and the weight is subtracted; otherwise the
-bit is set to 0. If permutation is used during key generation, bit positions
-are restored according to the secret key order after greedy recovery
-\cite{MerkleHellman1978}.
+where $r^{-1}$ is the modular inverse of $r$ modulo $m$. Because the public
+weights were constructed from the private superincreasing sequence, this step
+maps the problem back to an equivalent subset-sum instance over the private
+sequence. The resulting value $S'$ is then solved by a greedy procedure,
+starting from the largest private weight and moving downward. At each step, if
+the current weight does not exceed the remaining sum, the corresponding bit is
+set to 1 and the weight is subtracted; otherwise the bit is set to 0. If
+permutation is used during key generation, bit positions are restored according
+to the secret key order after greedy
+recovery.~\cite[pp.~525--526]{MerkleHellman1978}
 
 \subsection*{Example}
 Consider a private superincreasing sequence
 \[
 W=(2,\,5,\,11,\,23),
 \]
-with \(m=47\) and \(r=9\), where \(\gcd(r,m)=1\) and \(m>\sum W=41\).
+with $m=47$ and $r=9$, where $\gcd(r,m)=1$ and $m > 2+5+11+23 = 41$.
 The public key is
 \[
 B=(18,\,45,\,5,\,19),
 \]
-computed as \(b_i \equiv r w_i \pmod m\).
-For message \(x=(1,0,1,0)\), encryption gives
+computed as $b_i \equiv r w_i \pmod m$.
+For message $x=(1,0,1,0)$, encryption gives
 \[
 C=18+5=23.
 \]
-For decryption, \(r^{-1}\equiv 21 \pmod{47}\), so
+For decryption, $r^{-1}\equiv 21 \pmod{47}$, so
 \[
 S' \equiv r^{-1}C \equiv 21\cdot 23 \equiv 13 \pmod{47}.
 \]
-Using greedy recovery on \(W\): \(13=11+2\), so recovered bits are \(x=(1,0,1,0)\).
+Using greedy recovery on $W$: $13=11+2$, so recovered bits are $x=(1,0,1,0)$.
 
-\subsection*{Assumptions and Limitations}
-Although the classical Merkle--Hellman design is efficient for encryption and
-decryption, it assumes that the transformation from the private
-superincreasing sequence to the public sequence sufficiently hides the trapdoor
-structure. In practice, this assumption is not strong enough for the basic
-construction: later cryptanalysis showed that equivalent private structure can
-be recovered efficiently in polynomial time \cite{Shamir1982}. Therefore, the
-original scheme is historically important, but not secure for real-world use,
-which motivates the analysis of weaknesses and attacks in the next chapter.
+The basic construction does not hide the superincreasing structure well enough,
+and later cryptanalysis showed that an equivalent private key can be recovered
+in polynomial time.~\cite{Shamir1982} The attacks behind this result are
+discussed in the next chapter.

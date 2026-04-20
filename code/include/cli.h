@@ -8,9 +8,22 @@ typedef enum {
     CLI_MODE_BENCH,
 } CliMode;
 
+typedef enum {
+    CLI_INPUT_NONE = 0,
+    CLI_INPUT_BITS,
+    CLI_INPUT_TEXT,
+} CliInputMode;
+
+typedef struct {
+    char *data;
+    u64 length;
+} TextBuf;
+
 typedef struct {
     CliMode mode;
+    CliInputMode input_mode;
     const char *scheme_id;
+    TextBuf message_text;
     BitBuf message_bits;
     u64 seed;
     b8 has_seed;
