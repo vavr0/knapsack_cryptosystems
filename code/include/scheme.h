@@ -1,5 +1,5 @@
 #pragma once
-#include "bitvec.h"
+#include "buffer.h"
 #include "common.h"
 #include "error.h"
 #include <gmp.h>

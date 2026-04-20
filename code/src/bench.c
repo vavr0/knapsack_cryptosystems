@@ -1,5 +1,5 @@
 #include "bench.h"
-#include "bitvec.h"
+#include "buffer.h"
 #include "common.h"
 #include "error.h"
 #include "rand.h"

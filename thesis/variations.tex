@@ -99,27 +99,74 @@ correct solution corresponds to an unusually short vector. Lattice basis
 reduction methods, especially those based on the LLL algorithm, can then
 recover this vector much more efficiently than brute-force search.~\cite{LenstraLenstraLovasz1982,LagariasOdlyzko1985}
 
-The breakthrough in this area was formalized by Lagarias and Odlyzko. They
-demonstrated how to embed the public subset-sum instance into a specially
-constructed lattice. They proved that if the density is strictly bounded by
-$d<0.6463$, the shortest non-zero vector in this lattice almost always
-corresponds to the hidden message vector \cite{LagariasOdlyzko1985}. Later,
-Coster et al. improved this theoretical threshold, showing that subset-sum
-instances with a density of $d<0.9408$ can almost always be solved given access
-to a lattice oracle \cite{Coster1992}.
+% add lll explanation
 
-In practice, because the LLL algorithm and its stronger variants (such as Block
-Korkine-Zolotarev, or BKZ) are highly effective at finding approximately
-shortest vectors, low-density public keys are routinely broken. This creates a
-severe design dilemma. Either to resist lattice-based attacks, a knapsack cryptosystem
-must maintain a high density, ideally $d \leq 1$. On the other hand, high-density knapsacks
-utilize smaller weights relative to the number of items, which drastically
-increases the likelihood of multiple valid subset-sums for a given ciphertext,
-leading to ambiguous decryption.
+Lagarias and Odlyzko gave a general theoretical framework for this type of
+attack. They showed that sufficiently low-density subset-sum instances can
+often be solved in polynomial time by lattice-based methods, without any need
+to reconstruct the original trapdoor. For knapsack cryptography, this was an
+important shift in perspective: even if the private structure is not recovered,
+the public instance may still be weak simply because its parameters place it in
+a regime where lattice reduction is effective.~\cite{LagariasOdlyzko1985}
+Low-density attacks complement Shamir's result. Instead of
+recovering an equivalent secret structure, they show that the public knapsack
+itself may already be directly solvable.
 
 \subsection{Why NP-Completeness Does Not Guarantee Security Here}
+
+The NP-completeness of subset-sum is a statement about the worst-case
+complexity of the general decision problem. A cryptosystem, however, does not
+publish arbitrary instances of this problem. It generates highly structured
+instances that must remain easy for the legitimate user to solve with the help
+of secret information. Because of this, worst-case hardness alone does not say
+enough about the security of the concrete public keys used in practice. As
+Diffie and Hellman already observed, complexity theory gives no indication of
+the difficulty of a particular knapsack instance.~\cite[p.~654]{diffie1976newDirections}
+The history of knapsack cryptography illustrates this limitation clearly. The
+Merkle--Hellman scheme was motivated by the NP-completeness of subset-sum, yet
+Shamir's structural attack and later low-density attacks showed that the
+generated public instances could be much easier than arbitrary subset-sum
+instances. The central question is therefore not whether subset-sum is hard in
+general, but whether the specific family of instances produced by the
+cryptosystem avoids exploitable structure. In the case of knapsack
+cryptosystems, this turned out to be very difficult to
+achieve.~\cite[pp.~81--83]{OdlyzkoRiseFall}
+
 \section{Selected Variations of Knapsack Cryptosystems}
 \subsection{Iterated and Modified Merkle--Hellman Variants}
+
+After Shamir's break of the basic scheme, a natural response was not to
+abandon the Merkle--Hellman idea immediately, but to try to hide the private
+superincreasing sequence more thoroughly. The main proposal was to repeat the
+modular multiplication step several times instead of applying it only once. In
+a $Y$-times iterated Merkle--Hellman knapsack, one starts with an easy private
+sequence and produces the public weights through a chain of modular
+transformations, so that each stage is intended to further obscure the
+structure inherited from the previous one. The hope was that repeated
+disguising would hide the original trapdoor more effectively than the
+single-iteration construction.~\cite[pp.~342--344]{Brickell1984}
+
+This modification, however, did not remove the underlying weakness. Brickell
+described an attack that applies lattice basis reduction to carefully chosen
+subsets of the public weights and extracts short vectors that reflect the
+hidden modular relations created by the successive iterations. From these
+relations, the attacker can recover enough information about the order of the
+weights and about an equivalent superincreasing structure to solve the
+corresponding subset-sum instances efficiently. The attack is more involved
+than Shamir's original one, but its main conclusion is similar: repeated
+modular multiplication still leaves enough arithmetic structure for efficient
+cryptanalysis.~\cite[pp.~344--356]{Brickell1984}
+
+Although Brickell did not claim a proof that the attack succeeds for every
+parameter choice, he reported successful attacks on examples with $n=100$ and
+with $Y=5$, $10$, and $20$, which showed that iteration was not only
+theoretically questionable but also practically fragile.~\cite[pp.~343,
+356--357]{Brickell1984} At the same time, Brickell noted that each iteration
+reduces the information rate, that is, the density of the public knapsack,
+which makes lattice-based attacks more relevant rather than less. Iteration
+therefore did not repair the Merkle--Hellman idea. It only changed the form of
+the weakness and confirmed that simple repeated transformations were not enough
+to restore security.~\cite[p.~344]{Brickell1984}\cite[p.~8]{OdlyzkoRiseFall}
 \subsection{Permutation and Modular Transformation Enhancements}
 \subsection{Chor--Rivest Knapsack-Type Cryptosystem}
 \subsection{Other Historical Proposals (Brief Overview)}

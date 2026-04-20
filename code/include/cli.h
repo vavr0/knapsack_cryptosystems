@@ -1,5 +1,5 @@
 #pragma once
-#include "bitvec.h"
+#include "buffer.h"
 #include "common.h"
 #include "error.h"
 
@@ -13,11 +13,6 @@ typedef enum {
     CLI_INPUT_BITS,
     CLI_INPUT_TEXT,
 } CliInputMode;
-
-typedef struct {
-    char *data;
-    u64 length;
-} TextBuf;
 
 typedef struct {
     CliMode mode;

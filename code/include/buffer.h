@@ -12,6 +12,11 @@ typedef struct {
     u64 length;
 } BitBuf;
 
+typedef struct {
+    char *data;
+    u64 length;
+} TextBuf;
+
 BitView bit_view(void);
 BitBuf bit_buf(void);
 

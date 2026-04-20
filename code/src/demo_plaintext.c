@@ -1,5 +1,5 @@
 #include "demo_plaintext.h"
-#include "bitvec.h"
+#include "buffer.h"
 #include "common.h"
 #include <limits.h>
 #include <stddef.h>

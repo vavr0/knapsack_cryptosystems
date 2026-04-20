@@ -1,6 +1,6 @@
 #include "app.h"
 #include "bench.h"
-#include "bitvec.h"
+#include "buffer.h"
 #include "cli.h"
 #include "common.h"
 #include "error.h"
