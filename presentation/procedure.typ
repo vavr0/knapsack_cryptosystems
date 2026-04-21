@@ -43,7 +43,6 @@ typedef struct {
 
 - implementácia používa `GMP` (`mpz_t`) na prácu s veľkými číslami
 - na ukážke je časť generovania kľúča pre `mh-classic`
-- `GMP` používam pri práci so superincreasing sekvenciou, modulom a multiplikátorom
 
 ```c
 for (u64 i = 0; i < key->n; i++) {
@@ -55,12 +54,6 @@ for (u64 i = 0; i < key->n; i++) {
 u64 margin_u64 = 1 + (prng_rand_u64(rng) % (64u * key->n));
 mpz_set_ui(margin, margin_u64);
 mpz_add(key->mod, sum, margin);
-
-for (;;) {
-  mpz_set_ui(key->mult, prng_rand_u64(rng));
-  mpz_mod(key->mult, key->mult, key->mod);
-  if (mpz_invert(key->mult_inv, key->mult, key->mod) != 0) break;
-}
 ```
 
 == Demo a benchmark režim
