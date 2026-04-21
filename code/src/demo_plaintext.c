@@ -129,8 +129,8 @@ KnapStatus demo_plaintext_validate_request(const DemoPlaintextRequest *req) {
     if (req->block_bits > (u64)SIZE_MAX) {
         return KNAP_ERR_ALLOC;
     }
-    if (!req->scheme->keygen || !req->scheme->encrypt || !req->scheme->decrypt ||
-        !req->scheme->scheme_key_clear) {
+    if (!req->scheme->keygen || !req->scheme->encrypt ||
+        !req->scheme->decrypt || !req->scheme->scheme_key_clear) {
         return KNAP_ERR_INVALID;
     }
 
@@ -191,7 +191,8 @@ KnapStatus demo_plaintext_run(const DemoPlaintextRequest *req,
         return status;
     }
 
-    status = demo_plaintext_cipher_blocks_alloc(&result.cipher_blocks, block_count);
+    status =
+        demo_plaintext_cipher_blocks_alloc(&result.cipher_blocks, block_count);
     if (status != KNAP_OK) {
         bit_buf_clear(&plaintext_bits);
         bit_buf_clear(&decrypted_bits);
@@ -218,11 +219,13 @@ KnapStatus demo_plaintext_run(const DemoPlaintextRequest *req,
         };
         BitBuf decrypted_block = {0};
 
-        status = req->scheme->encrypt(&scheme_key, block, result.cipher_blocks[i]);
+        status =
+            req->scheme->encrypt(&scheme_key, block, result.cipher_blocks[i]);
         if (status != KNAP_OK) {
             bit_buf_clear(&decrypted_block);
             req->scheme->scheme_key_clear(&scheme_key);
-            demo_plaintext_cipher_blocks_clear(result.cipher_blocks, block_count);
+            demo_plaintext_cipher_blocks_clear(result.cipher_blocks,
+                                               block_count);
             bit_buf_clear(&plaintext_bits);
             bit_buf_clear(&decrypted_bits);
             return status;
@@ -233,7 +236,8 @@ KnapStatus demo_plaintext_run(const DemoPlaintextRequest *req,
         if (status != KNAP_OK) {
             bit_buf_clear(&decrypted_block);
             req->scheme->scheme_key_clear(&scheme_key);
-            demo_plaintext_cipher_blocks_clear(result.cipher_blocks, block_count);
+            demo_plaintext_cipher_blocks_clear(result.cipher_blocks,
+                                               block_count);
             bit_buf_clear(&plaintext_bits);
             bit_buf_clear(&decrypted_bits);
             return status;
@@ -242,7 +246,8 @@ KnapStatus demo_plaintext_run(const DemoPlaintextRequest *req,
         if (decrypted_block.length != req->block_bits) {
             bit_buf_clear(&decrypted_block);
             req->scheme->scheme_key_clear(&scheme_key);
-            demo_plaintext_cipher_blocks_clear(result.cipher_blocks, block_count);
+            demo_plaintext_cipher_blocks_clear(result.cipher_blocks,
+                                               block_count);
             bit_buf_clear(&plaintext_bits);
             bit_buf_clear(&decrypted_bits);
             return KNAP_ERR_CRYPTO;
