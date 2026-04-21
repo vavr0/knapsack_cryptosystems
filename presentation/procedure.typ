@@ -17,40 +17,33 @@
 
 #title-slide()
 
-== Stav práce
+== Stav implementácie
 
-- implementovaný `mh-classic`
-- implementovaný `mh-permuted` ako ďalší experimentálny variant
-- hotové spoločné rozhranie schém a CLI režimy `demo` a `bench`
-- ďalší krok: attack/demo časť a systematické experimenty
+- `mh-classic` je hotový a slúži ako baseline
+- `mh-permuted` je implementovaný ako experimentálny variant
+- hotové režimy `demo` a `bench`
+- náhodné generovanie mám riadené cez seed, takže experimenty viem spoľahlivo zopakovať
 
-== Rozšíriteľnosť riešenia
+== Architektúra implementácie
 
-- všetky varianty schémy sú skryté za spoločným API
-- návrh je zameraný na jednoduché pridávanie nových variantov
-- aplikácia potom volá len `keygen`, `encrypt`, `decrypt`
-
+- `main.c`: entrypoint
+- `app.c`: demo flow
+- `bench.c`: benchmarky
+- `cli.c`: spracovanie argumentov
+- `scheme_*.c`: samostatné implementácie variantov
+- `demo` a `bench` prepínajú varianty cez malé spoločné rozhranie
 ```c
 typedef struct {
   KnapStatus (*keygen)(...);
   KnapStatus (*encrypt)(...);
   KnapStatus (*decrypt)(...);
 } SchemeOps;
-
-const SchemeOps *scheme_resolve(const char *id) {
-  if (!id || strcmp(id, "mh-classic") == 0) return scheme_mh_get();
-  if (strcmp(id, "mh-permuted") == 0) return scheme_mh_permuted_get();
-  // planned next step
-  if (strcmp(id, "mh-iterated") == 0) return scheme_mh_iterated_get();
-  return NULL;
-}
 ```
+== MH classic a GMP
 
-== MH classic: tvorba kľúča
-
-- privátny základ tvorím ako superincreasing sekvenciu
-- používam *GMP* (`mpz_t`) na veľké celé čísla
-- z tejto sekvencie potom určím modulus a invertibilný multiplier
+- implementácia používa `GMP` (`mpz_t`) na prácu s veľkými číslami
+- na ukážke je časť generovania kľúča pre `mh-classic`
+- `GMP` používam pri práci so superincreasing sekvenciou, modulom a multiplikátorom
 
 ```c
 for (u64 i = 0; i < key->n; i++) {
@@ -59,7 +52,6 @@ for (u64 i = 0; i < key->n; i++) {
   mpz_set(key->priv_weights[i], delta);
   mpz_add(sum, sum, key->priv_weights[i]);
 }
-
 u64 margin_u64 = 1 + (prng_rand_u64(rng) % (64u * key->n));
 mpz_set_ui(margin, margin_u64);
 mpz_add(key->mod, sum, margin);
@@ -71,52 +63,21 @@ for (;;) {
 }
 ```
 
-== Beh schémy a chybové stavy
-
-- flow je rovnaký pre všetky varianty implementácie
-- `KnapStatus` rozlišuje `INVALID`, `ALLOC`, `CRYPTO`, `INTERNAL`
-- jednotné spracovanie chýb naprieč implementáciou
-
-```c
-typedef enum {
-  KNAP_OK, KNAP_ERR_INVALID, KNAP_ERR_ALLOC,
-  KNAP_ERR_CRYPTO, KNAP_ERR_INTERNAL
-} KnapStatus;
-
-status = scheme->keygen(&params, &scheme_key);
-if (status != KNAP_OK) return status;
-
-status = scheme->encrypt(&scheme_key, bit_buf_view(&flags->message_bits),
-                         ciphertext);
-if (status != KNAP_OK) return status;
-
-status = scheme->decrypt(&scheme_key, ciphertext, &decrypted);
-if (status != KNAP_OK) return status;
-```
-
 == Demo a benchmark režim
 
-- `demo`: end-to-end keygen / encrypt / decrypt na konkrétnej bitovej správe
+- `demo`: end-to-end `keygen / encrypt / decrypt` na konkrétnej bitovej správe
 - `bench`: opakované meranie `keygen`, `encrypt`, `decrypt`
-- CSV výstup slúži ako základ pre porovnanie variantov a parametrov
-
+- benchmark vie exportovať výsledky do CSV pre ďalšie spracovanie
+- plaintext spracovanie mám rozrobené ako rozšírenie `demo` režimu
 ```bash
-./code/build/knapsack demo --scheme mh-classic --msg 101010 --seed 123
+./code/build/knapsack demo --scheme mh-classic --bits 101010 --seed 123
 ./code/build/knapsack bench --scheme mh-classic --n 128 --reps 10 \
   --seed 123 --format csv
 ```
+== Rozpracované časti a ďalší postup
 
-== Smerovanie práce
-
-- preštudoval som literatúru k variantom a útokom na knapsack kryptosystémy
-- moderný výskum som si prešiel skôr pre kontext, nie ako hlavnú časť práce
-- väčšina novších výsledkov sa zameriava skôr na kryptanalýzu než návrh nových schém
-- knapsack prístupy sa dnes pri návrhu reálnych kryptosystémov nepoužívajú
-- jadrom práce zostáva implementácia variantov a ich porovnanie
-
-== Čo ešte treba urobiť
-
-- dokončiť attack/demo časť pre klasickú schému
-- doplniť spracovanie správ (bloky, plaintext input)
-- pripraviť `mh-iterated`
-- spraviť porovnávacie experimenty a dopísať *Implementation and Methodology* a *Results*
+- dotiahnuť plaintext vstup v `demo` vrátane blokového spracovania
+- zrefaktorovať `mh-permuted`
+- doimplementovať `mh-iterated` ako ďalší variant
+- pripraviť systematické benchmarky
+- doplniť prvé útoky na `mh-classic`
