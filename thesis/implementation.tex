@@ -1,10 +1,95 @@
 \chapter{Implementation and Methodology}
 
-\section{Choice of Programming Language}
-% Why you chose it
+\section{Implementation Goals}
 
-\section{Algorithm Design}
-% Pseudocode, data structures, listings
+The implementation part of this thesis was designed with two main goals. The
+first was to create a working experimental environment for the Merkle--Hellman
+knapsack cryptosystem and selected related variants. The second was to provide
+a practical basis for comparing their behaviour, especially with respect to key
+generation, encryption, decryption, and later cryptanalytic experiments.
+For this reason, the implementation was not intended as a production-ready
+cryptographic library. Instead, it was developed as a small research-oriented
+program in which the main algorithms can be tested, modified, and benchmarked
+in a controlled way. This made it possible to focus on the structure of the
+schemes themselves and on the consequences of different design choices, such as
+the use of permutation or repeated transformations.
+Another important goal was reproducibility. The program supports deterministic
+initialization through explicit seeds, which makes it possible to regenerate
+the same keys and benchmark scenarios across multiple runs. This is useful both
+for debugging and for experimental evaluation in later chapters.
+
+\section{Choice of Programming Language and Libraries}
+
+The implementation was written in the C programming language. This choice was
+made mainly for practical reasons. C provides low-level control over memory and
+data representation, introduces little abstraction overhead, and allows the
+individual steps of key generation, encryption, and decryption to be expressed
+in a direct way. Since the implemented schemes are mathematically simple but
+operate on potentially large integers, this level of control was useful for
+both debugging and benchmarking.
+At the same time, native integer types are not sufficient for realistic
+knapsack computations, because the weights, modulus, multiplier, and ciphertext
+can quickly exceed fixed machine word sizes. For this reason, the
+implementation uses the GNU Multiple Precision Arithmetic Library (GMP). GMP is
+used for the core arithmetic operations, especially modular multiplication,
+modular inversion, and ciphertext computation. This made it possible to keep
+the implementation in C while still supporting arithmetic beyond standard
+64-bit limits.
+The build process is controlled by a simple Makefile. It supports separate
+debug and release builds, as well as an address-sanitized configuration for
+runtime checking. This was useful during development, because the code makes
+extensive use of dynamic allocation and scheme-specific internal structures.
+The overall goal was to keep the toolchain simple, portable, and suitable for
+experimental work rather than for deployment.
+
+\section{Program Architecture}
+
+The implementation was organized as a small modular C program. The main goal
+was to keep the cryptographic code separate from user interaction, input
+parsing, and benchmarking. This made the program easier to test and also made
+it possible to add new knapsack variants without changing the rest of the
+application structure.
+
+\subsection{Top-Level Structure}
+The executable entry point in `main.c` is intentionally minimal and delegates
+control to the application layer in `app.c`. This top-level layer is
+responsible for the overall execution flow, including mode selection, demo
+execution, plaintext handling, and benchmark runs. Command-line parsing and
+validation are centralized in `cli.c`, which keeps input handling separate from
+the cryptographic part of the program.
+The program currently supports two main execution modes. The first is a demo
+mode intended for direct experiments with encryption and decryption. The second
+is a benchmark mode, which repeatedly runs the selected scheme and records
+timing data for later evaluation. This separation made it possible to keep the
+interactive and experimental parts of the implementation independent.
+
+\subsection{Scheme Abstraction}
+At the core of the implementation is a small scheme abstraction defined in
+`scheme.h`. Each cryptosystem variant is represented by a `SchemeOps`
+structure containing function pointers for key generation, encryption,
+decryption, and cleanup, together with a short identifier and a display name.
+This provides a common interface for all implemented schemes while still
+allowing each variant to keep its own internal data structures.
+The currently implemented variants are the classical Merkle--Hellman scheme and
+a permuted variant. Their implementations are placed in separate source files,
+which keeps the code easier to read and compare. Scheme selection is handled in
+`scheme.c`, where the requested identifier is resolved to the corresponding
+implementation.
+
+\subsection{Data Representation and Support Modules}
+Messages are represented internally as bit vectors through the `BitView` and
+`BitBuf` data structures. This matches the block-based nature of the knapsack
+schemes and makes it straightforward to work with fixed-length binary message
+blocks. For plaintext demonstrations, the helper logic converts text into bit
+blocks before encryption and reconstructs the original text after decryption.
+Several supporting modules are used around the core scheme implementations.
+Seed handling and entropy acquisition are separated into `seed.c`, which allows
+both deterministic runs and randomly initialized ones. Benchmarking is handled
+in `bench.c`, where key generation, encryption, and decryption are measured
+separately. Correctness is verified by checking that the decrypted output
+matches the original message. In this way, the overall architecture remains
+small, but still clearly separates cryptographic operations, application flow,
+and experimental evaluation.
 
 \section{Testing and Verification}
 % Correctness, performance

@@ -1,198 +1,165 @@
 \chapter{Theoretical Background}
 
-\section{Basics of Cryptography} Cryptography is a part of computer science and
-mathematics that focuses on protecting contents of transmitted data through
-insecure channels like the Internet, from unauthorized parties. Its name is
-derived from the greek word "kryptos" meaning hidden and "graphein" meaning
-writing so we could literally translate it as hidden writing. In today's world
-it is possible to hide any type of digital communication from text to video. 
+\section{Basics of Cryptography} 
 
-The need for secret communication came much earlier. One of the first
-implementations of cryptography was found in the use of non-standard
-hieroglyphs carved into the wall of a tomb from the Old Kingdom of
-Egypt~\cite{ibmCryptographyHistory}. This is an example of a classical cipher.
-Classical ciphers came before the invention of computers and for that reason
-they operate on letters rather than bits. In ancient times or even during the
+Cryptography, derived from Greek words meaning "hidden writing", is the study
+and practice of mathematical methods for secure communication over insecure
+channels. In modern systems, however, it is no longer limited to
+confidentiality alone, but also addresses integrity, authentication, and
+non-repudiation. More broadly, modern cryptography is concerned not only with
+secrecy, but also with detecting modification and verifying
+authenticity.\cite{diffie1976newDirections,ibm2023cryptography}
 
-First World War, cryptography had to be performed manually using only pen and
-paper~\cite{aumasson2017serious}. The most famous classical cipher is Caesar
-cipher. It is named after Julius Caesar, who used it during his rule of Roman
-Empire to protect his military communications. It works by shifting each letter
-in message by a number of positions in alphabet. The number of the shifted
-letters must be agreed upon in advance between communicating parties and can be
-considered as key. Even though this worked well in times of Roman Empire, it's
-very easy to break. There are only 26 letters in English alphabet, hence only
-26 keys possible. An attacker can simply try all possible shifts to quickly
-recover the plaintext. This weakness later motivated the development of more
-secure systems. 
+The need for secret communication predates modern computing by thousands of
+years. One early example is the use of unusual hieroglyphs carved into the wall
+of a tomb from the Old Kingdom of Egypt, often cited as one of the earliest
+known uses of cryptography.~\cite{schneider2024ibmhistory}
 
-Another popular classical cipher is the Vigenère cipher which came around 1500
-years after the invention of Caesar cipher. The Vigenère cipher became popular
-and was later used during the American Civil War by Confederate forces and
-during the First World War by the Swiss Army, among
-others~\cite{aumasson2017serious}. It works similarly to the Caesar cipher, but
-rather than shifting every letter by a constant number of positions it shifts
-by values defined by key. In this context, the key is a word in which each
-letter represents numerical value derived from their position in alphabet.
-During encryption, the key is repeated until it matches the length of the
-message. Then, each letter of the message is shifted forward in the alphabet by
-the value corresponding to the matching letter of the key. 
+Before computers, cryptography relied on classical ciphers that operated on
+letters rather than bits. One of the most popular examples is the Caesar
+cipher, which shifts each letter by a fixed number of positions in the
+alphabet. Because the number of possible shifts is small, the cipher is easy to
+break by trying all possibilities.~\cite{aumasson2017serious}
 
-Despite the improvements, it's still quite easy to break with frequency
-analysis techniques which exploit the uneven distribution of letters in
-languages. Classical ciphers are insecure because they rely on basic operations
-that can be done manually and modern computers can break them with basic
-programs analysing letter frequencies or even brute force testing all possible
-keys.
+A more advanced classical cipher is the Vigen\`ere cipher, which uses a keyword
+to vary the shift applied to each letter. This makes it stronger than the
+Caesar cipher, but it remains vulnerable to frequency analysis. Classical
+ciphers were historically important, yet their security was too weak for modern
+communication systems.~\cite{aumasson2017serious}
 
-As the need for secure communications grew, more sophisticated systems were
-developed, including mechanical rotor machines such as the Enigma and Lorenz
-ciphers used during the Second World War. These devices implemented rapidly
-changing substitution alphabets and, at the time, were considered as secure.
+As the need for secure communication grew, more sophisticated systems were
+developed, including mechanical rotor machines such as the Enigma machine.
+These devices used changing substitutions, which made them harder to break than
+earlier hand ciphers.~\cite{schneider2024ibmhistory}
 
-Their eventual breaking showed a primary flaw of classical cryptography.
-Security of classical and mechanical ciphers depended on complicated
-substitutions but they lacked computational hardness.
+Their eventual defeat showed that security could not rely only on increasingly
+complicated substitutions. From the 1970s onward, cryptography began to move
+toward mathematically defined constructions whose security depended on the
+difficulty of underlying computational problems. This shift marks the beginning
+of modern cryptography and motivates the discussion in the next section.
+~\cite{diffie1976newDirections}
 
-During the 1970s and 1980s cryptography progressed into a modern era. New
-theory based on well-defined mathematical principles appeared, which led
-researchers to realize that long-term security could not rely on secrecy or
-complicated mechanical design, but instead on problems that are fundamentally
-hard to solve. Modern cryptography is therefore built upon mathematically
-defined functions that are easy to compute in one direction but infeasible to
-reverse without secret information, called a key. These ideas led to the
-development of both symmetric and asymmetric cryptosystems. The next section
-introduces the computational principles underlying these constructions.
-
-% To achieve this it relies on hard mathematical problems and algorithms such as
-% integer factorization, discrete logarithms, or the subset-sum (knapsack)
-% problem. These problems belong to a class known as NP-complete which means it
-% is very difficult to find a solution within reasonable time without any
-% information about input even with vast computational power. On the other hand
-% verifying that the solution is correct is easy. All NP-complete problems are
-% decision problems that for any input the output is yes or no. For that reason
-% they form the foundation of modern cryptosystems. 
-% 
-% Because solving these problems directly is practically impossible, modern
-% cryptography uses mathematical functions that depend on secret information
-% called keys. With knowledge of the key the computation becomes simple, but
-% without it the problem remains computationally infeasible. This idea sparked
-% development of wide range of encryption methods and eventualy to both symmetric
-% and asymetric cryptosystems.
 \section{P, NP, and Computational Hardness}
 
-In cryptography, the security of many systems depends on problems that are
-believed to be computationally hard to solve. To describe meaning to
-computational difficulty, problems are organized into complexity classes. The
-groups are based on how the running time of an algorithm grows with the size of
-the input. One important class is $\mathcal{P}$, which contains decision problems that
-can be solved in polynomial time. A decision problem meaning one with a yes or
-a no answer is in $\mathcal{P}$ if there exists an algorithm that solves any instance in
-time bounded by a polynomial in the input size. Intuitively, problems in $\mathcal{P}$
-are considered efficiently solvable.
+The security of many modern cryptosystems depends on the assumption that a
+related computational problem is hard to solve efficiently. For this reason,
+computational complexity theory provides an important scheme for describing
+computational difficulty. The following concepts introduce the basic language
+used to discuss this.
 
-Another fundamental class is $\mathcal{NP}$, which stands for nondeterministic
-polynomial time. A decision problem belongs to $\mathcal{NP}$ if a proposed
-solution, often called a certificate, can be verified in polynomial time.
-This means that even if we do not know how to find a solution quickly, we can
-check whether a given solution is correct in a reasonable time. 
+To describe computational difficulty more precisely, problems are organized
+into complexity classes. They reflect how the running time of an algorithm
+grows with the size of the input. In complexity theory, $\mathcal{P}$ and
+$\mathcal{NP}$ are classes of decision problems with yes or no
+answers.~\cite[pp.~18--19]{garey1979computers} The class $\mathcal{P}$ contains
+those decision problems for which every instance can be solved in polynomial
+time with respect to the input size and they are commonly regarded as
+efficiently solvable.~\cite[p.~27]{garey1979computers}
 
-% It is also
-% important to note that $\mathcal{NP}$ does not mean “not polynomial”; instead,
-% it refers to the way problems are defined in terms of verifiability.
+The class $\mathcal{NP}$, which stands for nondeterministic polynomial time,
+contains decision problems for which a proposed solution can be verified in
+polynomial time. In other words, finding a solution may be difficult even when
+a proposed one can be checked
+efficiently.~\cite[pp.~28--29]{garey1979computers}
 
-A major open problem in theoretical computer science is whether
-$\mathcal{P} = \mathcal{NP}$. Many researchers believe that $\mathcal{P} \neq
-\mathcal{NP}$, but this has not been proven. If it turned out that
-$\mathcal{P} = \mathcal{NP}$, then every problem whose solution can be verified
-quickly could also be solved quickly. This would have enormous consequences:
-many problems currently considered difficult would become easy, and most modern
-cryptographic systems would no longer be secure. Because no polynomial-time
-algorithm is known for many $\mathcal{NP}$ problems, the prevailing assumption
-is that $\mathcal{P}$ $\neq$ $\mathcal{NP}$.
+A major open problem in complexity theory is whether $\mathcal{P} =
+\mathcal{NP}$. If this were true, every problem whose solution can be verified
+in polynomial time could also be solved in polynomial time. However, no proof
+is currently known for either $\mathcal{P} = \mathcal{NP}$ or $\mathcal{P} \neq
+\mathcal{NP}$. Most researchers nevertheless believe that $\mathcal{P} \neq
+\mathcal{NP}$.~\cite[ch.~9]{aumasson2017serious}
 
-Within the class $\mathcal{NP}$  there exists a subset of problems that are, in a
-precise sense, the most computationally difficult problems in the class. These
-are referred to as $\mathcal{NP}$-complete problems. A decision problem $C$ is said to
-be $\mathcal{NP}$-complete if it satisfies two requirements: it belongs to
-$\mathcal{NP}$, and every problem in $\mathcal{NP}$ can be transformed into C by a
-polynomial-time reduction. If a polynomial-time algorithm were discovered for
-any $\mathcal{NP}$-complete problem, then all problems in $\mathcal{NP}$ would become
-solvable in polynomial time. Since no such algorithm is known,
-$\mathcal{NP}$-complete problems are generally regarded as computationally
-unsolvable. 
+To compare the difficulty of decision problems, complexity theory uses
+polynomial-time reductions. Informally, a polynomial-time reduction is an
+efficient transformation from one problem to another that preserves the answer
+to each instance. If one problem can be reduced to another in polynomial time,
+then an efficient algorithm for the second problem would also give an efficient
+algorithm for the first. Reductions therefore provide a standard way to compare
+computational difficulty between problems.
 
-One well-known $\mathcal{NP}$-complete problem is the subset-sum problem. In the decision
-version of this problem, we are given a set of numbers and a target sum, and we
-ask whether there exists a subset of the numbers whose sum equals the target.
-It is easy to verify whether a chosen subset achieves the target sum, but
-finding the correct subset appears to require exponential time in the worst
-case. This contrast between easy verification and difficult search is typical
-for $\mathcal{NP}$-complete problems and is one of the reasons why the Knapsack problem has
-been used in cryptography.
+A decision problem is called $\mathcal{NP}$-complete if it belongs to
+$\mathcal{NP}$ and every problem in $\mathcal{NP}$ can be reduced to it in
+polynomial time. If any $\mathcal{NP}$-complete problem were solvable in
+polynomial time, then every problem in $\mathcal{NP}$ would also be solvable in
+polynomial time.
 
-There is also a broader category known as $\mathcal{NP}$-hard problems. Informally,
-$\mathcal{NP}$-hard means that a problem is at least as difficult as any problem in
-$\mathcal{NP}$. More formally, a problem $H$ is $\mathcal{NP}$-hard if every problem in
-$\mathcal{NP}$ can be reduced to $H$ in polynomial time. $\mathcal{NP}$-hard problems do not
-need to be decision problems, and they do not need to have efficiently
-verifiable solutions. If an $\mathcal{NP}$-hard problem is also in $\mathcal{NP}$, then it
-is $\mathcal{NP}$-complete. In other words, $\mathcal{NP}$-complete problems are exactly those that lie
-in the intersection $\mathcal{NP} \cap \mathcal{NP}$-hard.
+A related notion is $\mathcal{NP}$-hard. Informally, a problem is
+$\mathcal{NP}$-hard if it is at least as difficult as the
+$\mathcal{NP}$-complete problems under polynomial reductions. The
+$\mathcal{NP}$-complete problems form the part of this broader category that
+also belongs to $\mathcal{NP}$.~\cite[pp.~34--35, 37]{garey1979computers}
 
-Modern cryptographic algorithms rely on the assumed hardness of such problems.
-The security of a cryptosystem is based on the fact that no efficient algorithm
-is known for solving its underlying mathematical problem. For instance, the RSA
-cryptosystem is based on the difficulty of integer factorization, which is not
-known to be $\mathcal{NP}$-complete but is still considered hard. The classical Merkle--Hellman
-knapsack cryptosystem, on the other hand, is built directly on the $\mathcal{NP}$-complete
-Knapsack problem. Because solving the general knapsack problem appears to
-require exponential time, an attacker without the secret key faces an extremely
-difficult computational task. As long as no efficient algorithms are found for
-these kinds of hard problems, cryptographic schemes based on them remain secure.
+Modern cryptography often relies on mathematical problems for which no
+efficient algorithm is known. This is especially important in public-key
+cryptography, where security depends on assumptions about computational
+hardness rather than on keeping the method secret. Different cryptosystems rely
+on different hardness assumptions, such as integer factorization, discrete
+logarithms, or subset-sum.
+
+One problem especially relevant for this thesis is the subset-sum problem,
+which is among the $\mathcal{NP}$-complete
+problems.~\cite[p.~223]{garey1979computers} Its apparent hardness was one of
+the reasons why knapsack-type constructions were originally considered
+promising for cryptographic use.~\cite[pp.~653--654]{diffie1976newDirections}
+
+However, this connection must be interpreted carefully.
+$\mathcal{NP}$-completeness refers to the worst-case hardness of the general
+problem, whereas a cryptosystem uses specific structured instances. Diffie and
+Hellman already noted that complexity theory gives no indication of the
+difficulty of a particular knapsack
+instance.~\cite[p.~654]{diffie1976newDirections} This distinction will be
+important in the later discussion of knapsack cryptosystems.
 
 \section{Symmetric and Asymmetric Cryptography}
 
-Modern cryptography is divided into two main types. Symmetric and Asymmetric
-also known as public-key cryptography. Aim of both is to secure communication,
-but they differ in how the keys are used and mathematical concepts that make
-them work giving each approach its own strengths and weaknesses.
+Modern cryptography is usually divided into two main branches. These are
+symmetric cryptography, also called private-key cryptography, and asymmetric
+cryptography, also called public-key cryptography. Both are used to protect
+information, but they diverge mainly in how cryptographic keys are used. This
+leads to different practical advantages, limitations, and security assumptions.
 
-Symmetric cryptography follows the same basic idea that classical ciphers were
-built on. In this approach, all parties involved in transaction use a single
-shared secret key for both encryption and decryption. They must exchange this
-key in a secure way before communicating, so key distribution becomes an
-important problem.
-
+In symmetric cryptography, the same secret key is used for both encryption and
+decryption. All communicating parties must use the same key and keep it secret.
+This means that the key must be established and exchanged before communication.
 Because of this limitation, symmetric systems are often not practical when two
 parties have never communicated before or do not have a secure channel for
-exchanging the key. This problem motivated the development of a different
-approach, where the communicating parties do not need to share a secret in
-advance. This idea led to asymmetric, or public-key cryptography.
+exchanging the key. Despite this, it is still widely used in practice and
+especially useful for encrypting large amounts of data efficiently. Modern
+symmetric encryption commonly uses block ciphers or stream ciphers, with AES
+being a well-known block cipher example.~\cite{ibm2023cryptography}
 
-Asymmetric cryptography works with a pair of keys: a public key that can be
-shared with anyone and a private key that must remain secret. Messages
-encrypted with the public key can only be decrypted with the corresponding
-private key, which removes the need for a secure key exchange. The security of
-these systems depends on mathematical problems that are easy to compute in one
-direction but extremely difficult to reverse without the private key.
-...
-These ideas form the basis of modern public-key cryptography. Many encryption
-schemes rely on specific mathematical problems that are assumed to be hard to
-solve without the secret key. One such problem is the subset-sum, also known as
-the knapsack problem, which plays a central role in the cryptosystem studied in
-this thesis. The following sections introduce this problem and explain how it
-can be used to construct a public-key encryption scheme.
+This problem motivated the development of a different approach, in which the
+parties do not need to share a secret beforehand. This idea led to public-key
+cryptography. It works with a pair of keys, a public key that can be shared
+with anyone and a private key that must remain secret. Messages encrypted with
+the public key can only be decrypted with the corresponding private key, which
+removes the need for a secure key exchange. Diffie and Hellman also described a
+public-key distribution approach in which two users communicating over a public
+channel can obtain a shared secret key, which can then be used in a
+conventional symmetric cryptosystem.  This shows that symmetric and asymmetric
+cryptography do not replace one another, but can be used together, with
+public-key methods establishing a shared key and symmetric cryptography then
+protecting the actual message.~\cite[pp.~644,
+648--649]{diffie1976newDirections}
 
-\section{The Knapsack Problem}
+The security of asymmetric systems is based on the idea of one-way and trapdoor
+functions. Diffie and Hellman described these as functions that are easy to
+compute, but difficult to invert without additional secret information, and
+suggested the knapsack problem as one possible foundation for such
+systems.~\cite[pp.~650, 652--654]{diffie1976newDirections} In the cryptosystem
+studied in this thesis, the underlying problem is subset-sum, also known as the
+knapsack problem. The following sections introduce this problem and explain how
+it can be used to construct a public-key encryption scheme.
 
-The knapsack problem, also known as the subset--sum problem, is a fundamental
-combinatorial decision problem. Given a sequence of positive integers
+\section{The Subset-Sum Problem}
+
+The subset-sum problem, often also referred to in the cryptographic literature
+as the knapsack problem, is defined as follows. Given a sequence of positive
+integers
 \[
 W = (w_1, w_2, \dots, w_n)
 \]
-and a target value \(s \in \mathbb{N}\), the task is to determine whether there exists
-a binary vector
+and a target value \(s \in \mathbb{N}\), the goal is to find a binary vector
 \[
 x = (x_1, x_2, \dots, x_n) \in \{0,1\}^n
 \]
@@ -200,12 +167,12 @@ such that
 \[
 \sum_{i=1}^{n} x_i w_i = s.
 \]
-In this formulation, each variable \(x_i\) indicates whether the weight \(w_i\) is
-included in the subset. The problem is NP--complete: verifying a proposed solution
-is efficient, but no polynomial--time algorithm is known for solving arbitrary
-instances.
+Here, each variable \(x_i\) indicates whether the weight \(w_i\) is included in
+the subset. The related decision problem asks whether such a vector exists. In
+that form, subset-sum is \(\mathcal{NP}\)-complete.~\cite[p.~223]{garey1979computers}
 
-\subsection*{Example of a general instance}
+\subsection*{Example}
+
 Consider the sequence
 \[
 W = (3,\, 8,\, 12,\, 19)
@@ -214,158 +181,122 @@ and the target value
 \[
 s = 27.
 \]
-To decide whether a subset sums to \(27\), one must explore combinations of the
-weights. In this case, a valid solution exists:
+To determine whether some subset sums to \(27\), one must consider possible
+combinations of the weights. In this case, one valid solution is
 \[
 8 + 19 = 27,
 \]
-corresponding to the vector
+which corresponds to the vector
 \[
 x = (0,\,1,\,0,\,1).
 \]
-For a general instance, systematically finding such a vector may require testing
-an exponential number of subsets in the worst case.
+For arbitrary instances, finding such a vector may require examining an
+exponential number of subsets in the worst case.
 
 \subsection*{Superincreasing sequences}
 
-A sequence \(W\) is called \emph{superincreasing} if every element is strictly larger
-than the sum of all previous ones:
+A sequence $W$ is called \emph{superincreasing} if every element is strictly
+larger than the sum of all previous ones:
 \[
 w_i > \sum_{j=1}^{i-1} w_j \qquad \forall i \ge 2.
 \]
-For such sequences, the subset--sum problem is solvable by a simple greedy algorithm
-that starts with the largest weight and works downward.
+For such sequences, the subset-sum problem can be solved efficiently by a
+greedy procedure that starts with the largest weight and works downward. In
+contrast to general instances, which may have no solution, one solution, or
+several different solutions, a superincreasing instance has at most one
+solution, and if it exists, the greedy procedure recovers it. This
+special structure is what makes superincreasing sequences useful as the private
+trapdoor in the classical Merkle--Hellman
+cryptosystem.~\cite[pp.~525--526]{MerkleHellman1978}
 
-For a general subset-sum instance with an arbitrary sequence of weights, the
-target value may have no solution, one solution, or multiple different
-solutions. More importantly, without additional structure, finding a valid
-subset may require exponential search in the worst case. In contrast,
-superincreasing sequences have strong structure: each decision in the greedy
-process is forced, so the solution (if it exists) is recovered efficiently and
-deterministically. This property is the key reason why superincreasing
-sequences are used as a private trapdoor in the classical Merkle--Hellman
-construction.
-
-\subsection*{Example of a superincreasing instance}
-
-Consider the sequence
-\[
-W = (2,\, 5,\, 11,\, 23),
-\]
-which satisfies
-\[
-5 > 2,\quad 11 > 2+5,\quad 23 > 2+5+11.
-\]
-Let the target value be
-\[
-s = 28.
-\]
-The greedy procedure proceeds as follows:
-\begin{enumerate}
-    \item \(23 \le s\), include it: \(x_4 = 1\), new \(s = 5\).
-    \item \(11 > 5\), skip it: \(x_3 = 0\).
-    \item \(5 \le 5\), include it: \(x_2 = 1\), new \(s = 0\).
-    \item \(2 > 0\), skip it: \(x_1 = 0\).
-\end{enumerate}
-The algorithm terminates with the unique solution
-\[
-x = (0,\,1,\,0,\,1),
-\]
-corresponding to
-\[
-23 + 5 = 28.
-\]
-
-\subsection*{Summary}
-
-The essential feature of the knapsack problem is the strong contrast between
-general instances, which appear computationally intractable, and structured
-instances such as superincreasing sequences, which admit efficient solutions.
-This distinction forms the mathematical basis for constructions discussed in
-later chapters.
-
-\section{Knapsack Cryptosystem}
+\section{The Merkle--Hellman Knapsack Cryptosystem}
 
 The Merkle--Hellman cryptosystem was one of the earliest public-key encryption
-schemes based on the subset-sum problem \cite{MerkleHellman1978}. It was
-introduced in a model where secure communication does not require pre-shared
-secret keys. Its design uses a superincreasing private sequence as a trapdoor
-and publishes a transformed sequence that should appear computationally hard to
-solve without the private key. Although the idea was influential, later
-cryptanalysis showed that the basic construction is insecure \cite{Shamir1982}.
-The following description focuses on the classical Merkle--Hellman construction
-itself, namely key generation, encryption, and decryption.
+schemes. It is based on the subset-sum problem.~\cite{MerkleHellman1978} Its
+design uses a superincreasing sequence as part of the private key. This easy
+instance is then transformed into a public sequence that is intended to look
+like a hard general subset-sum instance. Although the idea was influential,
+later cryptanalysis showed that the basic construction is
+insecure.~\cite{Shamir1982}
 
 \subsection{Key Generation}
 
 The goal of key generation is to create two representations of the same
-knapsack instance: one easy for the owner and one hard-looking for everyone
-else \cite{MerkleHellman1978}. The process starts by choosing a superincreasing
-sequence \(W=(w_1,\dots,w_n)\), which will serve as the private trapdoor. Next,
-the key owner chooses a modulus \(m\) larger than the sum of all private
-weights and a multiplier \(r\) that is invertible modulo \(m\). These values
-are used
-to hide the private sequence by modular transformation, producing a public
-sequence \(B=(b_1,\dots,b_n)\), where \[ b_i \equiv r\,w_i \pmod m. \] 
-
-In the classical description, a permutation is also applied to further obscure
-the original structure. The public key is the transformed sequence (and
-permutation, if used), while the private key consists of the superincreasing
-sequence and transformation parameters \cite{MerkleHellman1978}.
+knapsack instance: one that is easy for the owner to solve and one that appears
+hard to solve for everyone else. First, a superincreasing sequence
+$W=(w_1,\dots,w_n)$ is chosen as the private sequence. Then a modulus $m$
+larger than $\sum_{i=1}^n w_i$ and a multiplier $r$ satisfying $\gcd(r,m)=1$
+are selected. The public sequence $B=(b_1,\dots,b_n)$ is computed from the
+private sequence using the multiplier $r$ modulo $m$, where
+\[
+b_i \equiv r w_i \pmod m.
+\]
+In the original description, the order of the transformed sequence may also be
+permuted to further obscure its structure.~\cite[p.~526]{MerkleHellman1978}
+The public key is the final transformed sequence, while the private key
+consists of the original superincreasing sequence together with the secret
+modulus $m$, multiplier $r$, and, if scrambling is used, the corresponding
+permutation.
 
 \subsection{Encryption}
-After key generation, the sender uses the public sequence \[
-B=(b_1,b_2,\dots,b_n) \] to encrypt an \(n\)-bit message \[
-x=(x_1,x_2,\dots,x_n), \quad x_i \in \{0,1\}. \] The ciphertext is computed
-as \[ C=\sum_{i=1}^{n} x_i b_i. \] This means that only the public weights
-corresponding to message bits equal to 1 are added. From the sender's
-perspective, encryption is therefore straightforward and efficient, because
-it only requires additions over public values \cite{MerkleHellman1978}.
+
+After key generation, the sender uses the public sequence
+\[
+B=(b_1,b_2,\dots,b_n)
+\]
+to encrypt an $n$-bit message
+\[
+x=(x_1,x_2,\dots,x_n), \quad x_i \in \{0,1\}.
+\]
+The length $n$ of the public sequence determines the block size of the scheme,
+so one application of the encryption algorithm encrypts one $n$-bit block.
+Longer messages must therefore be divided into blocks of this length.
+The ciphertext is computed as
+\[
+C=\sum_{i=1}^{n} x_i b_i.
+\]
+In other words, only those public weights corresponding to message bits equal
+to $1$ are added. Encryption is therefore straightforward and efficient, since
+it requires only additions over public weights.~\cite{MerkleHellman1978}
 
 \subsection{Decryption}
-To decrypt the ciphertext \(C\), the key owner uses private parameters and
-first computes
+To decrypt a ciphertext $C$, the receiver first computes
 \[
 S' \equiv r^{-1} C \pmod m,
 \]
-where \(r^{-1}\) is the modular inverse of \(r\) modulo \(m\). Because the
-public weights were constructed from the private superincreasing sequence,
-this step maps the problem back to an equivalent subset-sum instance over
-the private sequence. The resulting value \(S'\) is then solved by a greedy
-procedure, starting from the largest private weight and moving downward. At
-each step, if the current weight does not exceed the remaining sum, the
-corresponding bit is set to 1 and the weight is subtracted; otherwise the
-bit is set to 0. If permutation is used during key generation, bit positions
-are restored according to the secret key order after greedy recovery
-\cite{MerkleHellman1978}.
+where $r^{-1}$ is the modular inverse of $r$ modulo $m$. Because the public
+weights were constructed from the private superincreasing sequence, this step
+maps the problem back to an equivalent subset-sum instance over the private
+sequence. The resulting value $S'$ is then solved by a greedy procedure,
+starting from the largest private weight and moving downward. At each step, if
+the current weight does not exceed the remaining sum, the corresponding bit is
+set to 1 and the weight is subtracted; otherwise the bit is set to 0. If
+permutation is used during key generation, bit positions are restored according
+to the secret key order after greedy
+recovery.~\cite[pp.~525--526]{MerkleHellman1978}
 
 \subsection*{Example}
 Consider a private superincreasing sequence
 \[
 W=(2,\,5,\,11,\,23),
 \]
-with \(m=47\) and \(r=9\), where \(\gcd(r,m)=1\) and \(m>\sum W=41\).
+with $m=47$ and $r=9$, where $\gcd(r,m)=1$ and $m > 2+5+11+23 = 41$.
 The public key is
 \[
 B=(18,\,45,\,5,\,19),
 \]
-computed as \(b_i \equiv r w_i \pmod m\).
-For message \(x=(1,0,1,0)\), encryption gives
+computed as $b_i \equiv r w_i \pmod m$.
+For message $x=(1,0,1,0)$, encryption gives
 \[
 C=18+5=23.
 \]
-For decryption, \(r^{-1}\equiv 21 \pmod{47}\), so
+For decryption, $r^{-1}\equiv 21 \pmod{47}$, so
 \[
 S' \equiv r^{-1}C \equiv 21\cdot 23 \equiv 13 \pmod{47}.
 \]
-Using greedy recovery on \(W\): \(13=11+2\), so recovered bits are \(x=(1,0,1,0)\).
+Using greedy recovery on $W$: $13=11+2$, so recovered bits are $x=(1,0,1,0)$.
 
-\subsection*{Assumptions and Limitations}
-Although the classical Merkle--Hellman design is efficient for encryption and
-decryption, it assumes that the transformation from the private
-superincreasing sequence to the public sequence sufficiently hides the trapdoor
-structure. In practice, this assumption is not strong enough for the basic
-construction: later cryptanalysis showed that equivalent private structure can
-be recovered efficiently in polynomial time \cite{Shamir1982}. Therefore, the
-original scheme is historically important, but not secure for real-world use,
-which motivates the analysis of weaknesses and attacks in the next chapter.
+The basic construction does not hide the superincreasing structure well enough,
+and later cryptanalysis showed that an equivalent private key can be recovered
+in polynomial time.~\cite{Shamir1982} The attacks behind this result are
+discussed in the next chapter.
