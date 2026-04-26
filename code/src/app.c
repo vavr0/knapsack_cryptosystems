@@ -6,12 +6,16 @@
 #include "error.h"
 #include "scheme.h"
 #include "seed.h"
+#include "plaintext.h"
 #include <gmp.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+   #define DEFAULT_TEXT_BLOCK_SIZE 128u
+
 
 static KnapStatus read_bits_message(BitBuf *message_out) {
     char line[256];

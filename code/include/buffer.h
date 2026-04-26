@@ -17,6 +17,7 @@ typedef struct {
     u64 length;
 } TextBuf;
 
+
 BitView bit_view(void);
 BitBuf bit_buf(void);
 TextBuf text_buf(void);
