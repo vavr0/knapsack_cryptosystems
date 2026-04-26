@@ -25,7 +25,8 @@ typedef struct {
     u64 n;
     u64 reps;
     const char *format; // "csv" for now
-
 } CliFlags;
 
 KnapStatus parse_args(int argc, char **argv, CliFlags *out);
+void cli_flags_clear(CliFlags *flags);
+

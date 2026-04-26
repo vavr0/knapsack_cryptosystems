@@ -176,6 +176,7 @@ static KnapStatus demo_run(CliFlags *flags) {
 KnapStatus app_run(int argc, char **argv) {
     CliFlags flags = {0};
     KnapStatus status = parse_args(argc, argv, &flags);
+
     if (status == KNAP_STATUS_HELP) {
         print_usage(argv[0]);
 
@@ -185,12 +186,14 @@ KnapStatus app_run(int argc, char **argv) {
 
         return status;
     }
+
     if (flags.mode == CLI_MODE_DEMO) {
         status = demo_run(&flags);
     } else {
         status = bench_run(&flags);
     }
-    bit_buf_clear(&flags.bits_message);
+
+    cli_flags_clear(&flags);
 
     return status;
 }

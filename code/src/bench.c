@@ -1,5 +1,5 @@
 #include "bench.h"
-#include "bitvec.h"
+#include "buffer.h"
 #include "common.h"
 #include "error.h"
 #include "rand.h"
@@ -27,19 +27,19 @@ static void bench_sample_div(BenchSample *sample, u64 reps) {
 }
 
 // TODO
-static KnapStatus fill_message_random(BitBuf *message_bits, u64 n,
+static KnapStatus fill_message_random(BitBuf *bits_message, u64 n,
                                       PrngState *rng) {
-    if (!message_bits || n == 0) {
+    if (!bits_message || n == 0) {
         return KNAP_ERR_INVALID;
     }
 
-    KnapStatus status = bit_buf_alloc(message_bits, (size_t)n);
+    KnapStatus status = bit_buf_alloc(bits_message, (size_t)n);
     if (status != KNAP_OK) {
         return status;
     }
 
     for (u64 i = 0; i < n; i++) {
-        message_bits->data[i] = (u8)(prng_rand(rng) & 1);
+        bits_message->data[i] = (u8)(prng_rand(rng) & 1);
     }
 
     return KNAP_OK;
@@ -141,11 +141,11 @@ KnapStatus bench_run(CliFlags *flags) {
     }
     prng_seed(&rng, seed[0], seed[1]);
 
-    if (flags->message_bits.length == 0) {
+    if (flags->bits_message.length == 0) {
         if (flags->n == 0) {
             return KNAP_ERR_INVALID;
         }
-        status = fill_message_random(&flags->message_bits, flags->n, &rng);
+        status = fill_message_random(&flags->bits_message, flags->n, &rng);
         if (status != KNAP_OK) {
             return status;
         }
@@ -157,13 +157,13 @@ KnapStatus bench_run(CliFlags *flags) {
     if (!scheme) {
         return KNAP_ERR_INVALID;
     }
-    params.n = flags->message_bits.length;
+    params.n = flags->bits_message.length;
     params.initstate = seed[0];
     params.initseq = seed[1];
     params.flags = 0;
 
     for (u64 i = 0; i < warmup_reps; i++) {
-        status = bench_measure_once(scheme, bit_buf_view(&flags->message_bits),
+        status = bench_measure_once(scheme, bit_buf_view(&flags->bits_message),
                                     &params, &sample);
         if (status != KNAP_OK) {
             return status;
@@ -171,7 +171,7 @@ KnapStatus bench_run(CliFlags *flags) {
     }
 
     for (u64 i = 0; i < reps; i++) {
-        status = bench_measure_once(scheme, bit_buf_view(&flags->message_bits),
+        status = bench_measure_once(scheme, bit_buf_view(&flags->bits_message),
                                     &params, &sample);
         if (status != KNAP_OK) {
             return status;
@@ -185,7 +185,7 @@ KnapStatus bench_run(CliFlags *flags) {
            "total_ms\n");
 
     printf("%s,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f\n", scheme->info.id,
-           (unsigned long long)flags->message_bits.length,
+           (unsigned long long)flags->bits_message.length,
            (unsigned long long)reps, (unsigned long long)warmup_reps, seed[0],
            seed[1], avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms,
            avg.total_ms);

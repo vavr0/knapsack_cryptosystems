@@ -1,4 +1,4 @@
-#include "bitvec.h"
+#include "error.h"
 
 const char *knap_status_str(KnapStatus status) {
     switch (status) {

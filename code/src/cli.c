@@ -6,6 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+void cli_flags_clear(CliFlags *flags) {
+    if (!flags) {
+        return;
+    }
+    bit_buf_clear(&flags->bits_message);
+    text_buf_clear(&flags->text_message);
+    *flags = (CliFlags){0};
+}
+
 static KnapStatus parse_mode(int argc, char **argv, CliFlags *out) {
     if (!out || argc < 2 || !argv) {
         return KNAP_STATUS_HELP;
@@ -165,16 +174,23 @@ KnapStatus parse_args(int argc, char **argv, CliFlags *out) {
     *out = (CliFlags){0};
     status = parse_mode(argc, argv, out);
     if (status != KNAP_OK) {
+        cli_flags_clear(out);
+
         return status;
     }
     status = parse_flags(argc, argv, out);
     if (status != KNAP_OK) {
+        cli_flags_clear(out);
+
         return status;
     }
     status = validate_flags(out);
     if (status != KNAP_OK) {
+        cli_flags_clear(out);
+
         return status;
     }
 
     return KNAP_OK;
 }
+
