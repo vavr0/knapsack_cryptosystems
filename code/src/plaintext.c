@@ -19,7 +19,8 @@ KnapStatus blocks_from_bits(BitBlocks *out, BitView bits, u64 block_size) {
     KnapStatus status;
     u64 block_count;
     u64 size;
-    if (!out || block_size == 0 || !bit_view_is_valid(bits) || bits.length == 0) {
+    if (!out || block_size == 0 || !bit_view_is_valid(bits) ||
+        bits.length == 0) {
         return KNAP_ERR_INVALID;
     }
 
