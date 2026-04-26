@@ -4,9 +4,9 @@
 #include "cli.h"
 #include "common.h"
 #include "error.h"
+#include "plaintext.h"
 #include "scheme.h"
 #include "seed.h"
-#include "plaintext.h"
 #include <gmp.h>
 #include <limits.h>
 #include <stddef.h>
@@ -14,8 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-   #define DEFAULT_TEXT_BLOCK_SIZE 128u
-
+#define DEFAULT_TEXT_BLOCK_SIZE 128u
 
 static KnapStatus read_bits_message(BitBuf *message_out) {
     char line[256];
@@ -105,12 +104,22 @@ static KnapStatus demo_run(CliFlags *flags) {
     mpz_t ciphertext;
     u64 seed_pair[2];
 
+    BitBlocks blocks = {0};
+    BitBuf decrypted_blocks = {0};
+    u64 block_size;
+
     status = seed_resolve_pair(flags->has_seed, flags->seed, seed_pair);
     if (status != KNAP_OK) {
         return status;
     }
 
     printf("===knapsack demo===\n");
+
+    if (flags->input_mode == CLI_INPUT_TEXT) {
+        status = bit_buf_from_text(&flags->bits_message, &flags->text_message);
+        if (status != KNAP_OK)
+            return status;
+    }
 
     if (flags->bits_message.length == 0) {
         status = read_bits_message(&flags->bits_message);
@@ -119,15 +128,38 @@ static KnapStatus demo_run(CliFlags *flags) {
             return status;
         }
     }
+
+    if (flags->n != 0) {
+        block_size = flags->n;
+    } else if (flags->input_mode == CLI_INPUT_TEXT) {
+        block_size = 128u;
+    } else {
+        block_size = flags->bits_message.length;
+    }
+
+    status = blocks_from_bits(&blocks, bit_buf_view(&flags->bits_message),
+                              block_size);
+    if (status != KNAP_OK)
+        return status;
+
     scheme = scheme_resolve(flags->scheme_id);
     if (!scheme) {
         return KNAP_ERR_INVALID;
     }
-    params.n = flags->bits_message.length;
+
+    params.n = blocks.block_size;
     params.initstate = seed_pair[0];
     params.initseq = seed_pair[1];
     params.flags = 0;
     mpz_init(ciphertext);
+
+    status = bit_buf_alloc(&decrypted_blocks, (size_t)blocks.bits.length);
+    if (status != KNAP_OK) {
+        scheme->scheme_key_clear(&scheme_key);
+        mpz_clear(ciphertext);
+        bit_blocks_clear(&blocks);
+        return status;
+    }
 
     status = scheme->keygen(&params, &scheme_key);
     if (status != KNAP_OK) {
@@ -136,24 +168,34 @@ static KnapStatus demo_run(CliFlags *flags) {
         return status;
     }
 
-    status = scheme->encrypt(&scheme_key, bit_buf_view(&flags->bits_message),
-                             ciphertext);
-    if (status != KNAP_OK) {
-        scheme->scheme_key_clear(&scheme_key);
-        mpz_clear(ciphertext);
+    for (u64 i = 0; i < blocks.block_count; i++) {
+        BitBuf decrypted_block = {0};
+        BitView block = get_bit_block(&blocks, i);
 
-        return status;
+        status = scheme->encrypt(&scheme_key, block, ciphertext);
+        if (status != KNAP_OK) {
+            bit_buf_clear(&decrypted_block);
+            scheme->scheme_key_clear(&scheme_key);
+            mpz_clear(ciphertext);
+
+            return status;
+        }
+
+        status = scheme->decrypt(&scheme_key, ciphertext, &decrypted_block);
+        if (status != KNAP_OK) {
+            bit_buf_clear(&decrypted_block);
+            scheme->scheme_key_clear(&scheme_key);
+            mpz_clear(ciphertext);
+
+            return status;
+        }
+        memcpy(decrypted_blocks.data + (i * blocks.block_size),
+               decrypted_block.data, (size_t)blocks.block_size);
+
+        bit_buf_clear(&decrypted_block);
     }
 
-    status = scheme->decrypt(&scheme_key, ciphertext, &decrypted);
-    if (status != KNAP_OK) {
-        scheme->scheme_key_clear(&scheme_key);
-        mpz_clear(ciphertext);
-
-        return status;
-    }
-
-    if (!bit_buf_equal(&decrypted, &flags->bits_message)) {
+    if (!bit_buf_equal(&decrypted_blocks, &blocks.bits)) {
         bit_buf_clear(&decrypted);
         scheme->scheme_key_clear(&scheme_key);
         mpz_clear(ciphertext);
@@ -161,7 +203,7 @@ static KnapStatus demo_run(CliFlags *flags) {
         return KNAP_ERR_CRYPTO;
     }
 
-    status = print_demo_result(&flags->bits_message, ciphertext, &decrypted);
+    status = print_demo_result(&flags->bits_message, ciphertext, &decrypted_blocks);
     if (status != KNAP_OK) {
         bit_buf_clear(&decrypted);
         scheme->scheme_key_clear(&scheme_key);
