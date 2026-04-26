@@ -1,6 +1,6 @@
 #include "app.h"
 #include "bench.h"
-#include "bitvec.h"
+#include "buffer.h"
 #include "cli.h"
 #include "common.h"
 #include "error.h"
@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static KnapStatus read_message_bits(BitBuf *message_out) {
+static KnapStatus read_bits_message(BitBuf *message_out) {
     char line[256];
     if (!message_out) {
         return KNAP_ERR_INVALID;
@@ -54,18 +54,18 @@ static KnapStatus read_message_bits(BitBuf *message_out) {
     return KNAP_OK;
 }
 
-static KnapStatus print_demo_result(const BitBuf *message_bits,
+static KnapStatus print_demo_result(const BitBuf *bits_message,
                                     const mpz_t ciphertext,
                                     const BitBuf *decrypted_bits) {
     KnapStatus status;
     char *message_str = NULL;
     char *decrypted_str = NULL;
 
-    if (!message_bits || !decrypted_bits) {
+    if (!bits_message || !decrypted_bits) {
         return KNAP_ERR_INVALID;
     }
 
-    status = bit_buf_to_cstr(message_bits, &message_str);
+    status = bit_buf_to_cstr(bits_message, &message_str);
     if (status != KNAP_OK) {
         return status;
     }
@@ -108,8 +108,8 @@ static KnapStatus demo_run(CliFlags *flags) {
 
     printf("===knapsack demo===\n");
 
-    if (flags->message_bits.length == 0) {
-        status = read_message_bits(&flags->message_bits);
+    if (flags->bits_message.length == 0) {
+        status = read_bits_message(&flags->bits_message);
         if (status != KNAP_OK) {
 
             return status;
@@ -119,7 +119,7 @@ static KnapStatus demo_run(CliFlags *flags) {
     if (!scheme) {
         return KNAP_ERR_INVALID;
     }
-    params.n = flags->message_bits.length;
+    params.n = flags->bits_message.length;
     params.initstate = seed_pair[0];
     params.initseq = seed_pair[1];
     params.flags = 0;
@@ -132,7 +132,7 @@ static KnapStatus demo_run(CliFlags *flags) {
         return status;
     }
 
-    status = scheme->encrypt(&scheme_key, bit_buf_view(&flags->message_bits),
+    status = scheme->encrypt(&scheme_key, bit_buf_view(&flags->bits_message),
                              ciphertext);
     if (status != KNAP_OK) {
         scheme->scheme_key_clear(&scheme_key);
@@ -149,7 +149,7 @@ static KnapStatus demo_run(CliFlags *flags) {
         return status;
     }
 
-    if (!bit_buf_equal(&decrypted, &flags->message_bits)) {
+    if (!bit_buf_equal(&decrypted, &flags->bits_message)) {
         bit_buf_clear(&decrypted);
         scheme->scheme_key_clear(&scheme_key);
         mpz_clear(ciphertext);
@@ -157,7 +157,7 @@ static KnapStatus demo_run(CliFlags *flags) {
         return KNAP_ERR_CRYPTO;
     }
 
-    status = print_demo_result(&flags->message_bits, ciphertext, &decrypted);
+    status = print_demo_result(&flags->bits_message, ciphertext, &decrypted);
     if (status != KNAP_OK) {
         bit_buf_clear(&decrypted);
         scheme->scheme_key_clear(&scheme_key);
@@ -190,7 +190,7 @@ KnapStatus app_run(int argc, char **argv) {
     } else {
         status = bench_run(&flags);
     }
-    bit_buf_clear(&flags.message_bits);
+    bit_buf_clear(&flags.bits_message);
 
     return status;
 }

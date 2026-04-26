@@ -1,7 +1,13 @@
 #pragma once
-#include "bitvec.h"
+#include "buffer.h"
 #include "common.h"
 #include "error.h"
+
+typedef enum {
+    CLI_INPUT_NONE = 0,
+    CLI_INPUT_BITS,
+    CLI_INPUT_TEXT,
+} CliInputMode;
 
 typedef enum {
     CLI_MODE_DEMO = 0,
@@ -10,13 +16,15 @@ typedef enum {
 
 typedef struct {
     CliMode mode;
+    CliInputMode input_mode;
     const char *scheme_id;
-    BitBuf message_bits;
+    TextBuf text_message;
+    BitBuf bits_message;
     u64 seed;
     b8 has_seed;
     u64 n;
     u64 reps;
-    const char *format;         // "csv" for now
+    const char *format; // "csv" for now
 
 } CliFlags;
 

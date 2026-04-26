@@ -1,4 +1,4 @@
-#include "bitvec.h"
+#include "buffer.h"
 #include "common.h"
 
 // TODO check all these pls
@@ -6,6 +6,42 @@
 BitView bit_view(void) { return (BitView){0}; }
 
 BitBuf bit_buf(void) { return (BitBuf){0}; }
+
+TextBuf text_buf(void) { return (TextBuf){0}; }
+
+void text_buf_clear(TextBuf *buf) {
+    if (!buf) {
+        return;
+    }
+    free(buf->data);
+    *buf = text_buf();
+}
+
+KnapStatus text_buf_from_cstr(TextBuf *out, const char *s) {
+    size_t len;
+    char *copy;
+
+    if (!out || !s) {
+        return KNAP_ERR_INVALID;
+    }
+
+    len = strlen(s);
+    if (len == 0) {
+        return KNAP_ERR_INVALID;
+    }
+
+    copy = malloc(len + 1);
+    if (!copy) {
+        return KNAP_ERR_ALLOC;
+    }
+
+    memcpy(copy, s, len + 1);
+    text_buf_clear(out);
+    out->data = copy;
+    out->length = (u64)len;
+
+    return KNAP_OK;
+}
 
 void bit_buf_clear(BitBuf *buf) {
     if (!buf) {

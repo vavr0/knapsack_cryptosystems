@@ -12,8 +12,14 @@ typedef struct {
     u64 length;
 } BitBuf;
 
+typedef struct {
+    char *data;
+    u64 length;
+} TextBuf;
+
 BitView bit_view(void);
 BitBuf bit_buf(void);
+TextBuf text_buf(void);
 
 void bit_buf_clear(BitBuf *buf);
 
@@ -27,3 +33,7 @@ KnapStatus bit_buf_from_cstr(BitBuf *out, const char *s);
 KnapStatus bit_view_to_cstr(BitView view, char **out_str);
 KnapStatus bit_buf_to_cstr(const BitBuf *buf, char **out_str);
 BitView bit_buf_view(const BitBuf *buf);
+
+void text_buf_clear(TextBuf *buf);
+KnapStatus text_buf_from_cstr(TextBuf *out, const char *s);
+

@@ -1,5 +1,5 @@
 #include "cli.h"
-#include "bitvec.h"
+#include "buffer.h"
 #include "error.h"
 #include "scheme.h"
 #include <errno.h>
@@ -61,7 +61,7 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
             if (i + 1 >= argc) {
                 return KNAP_ERR_INVALID;
             }
-            status = bit_buf_from_cstr(&out->message_bits, argv[++i]);
+            status = bit_buf_from_cstr(&out->bits_message, argv[++i]);
             if (status != KNAP_OK) {
                 return KNAP_ERR_INVALID;
             }
@@ -144,13 +144,13 @@ static KnapStatus validate_flags(const CliFlags *flags) {
     }
 
     if (flags->mode == CLI_MODE_BENCH) {
-        if (flags->message_bits.length == 0 && flags->n == 0) {
+        if (flags->bits_message.length == 0 && flags->n == 0) {
             return KNAP_ERR_INVALID;
         }
     }
 
     // TODO check from utils ig
-    if (!bit_buf_is_valid(&flags->message_bits)) {
+    if (!bit_buf_is_valid(&flags->bits_message)) {
         return KNAP_ERR_INVALID;
     }
 
