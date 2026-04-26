@@ -16,45 +16,28 @@
 
 #define DEFAULT_TEXT_BLOCK_SIZE 128u
 
-static KnapStatus read_bits_message(BitBuf *message_out) {
-    char line[256];
-    if (!message_out) {
-        return KNAP_ERR_INVALID;
-    }
 
-    printf("Enter plaintext bits (e.g. 101010): ");
-    if (!fgets(line, sizeof(line), stdin)) {
-        return KNAP_ERR_INVALID;
-    }
+static KnapStatus read_message(TextBuf *out) {
+       char line[512];
 
-    size_t len = strcspn(line, "\n");
-    line[len] = '\0';
-    if (len == 0) {
-        fprintf(stderr, "Invalid length. Use 1... bits.\n");
-        return KNAP_ERR_INVALID;
-    }
+       if (!out) {
+           return KNAP_ERR_INVALID;
+       }
 
-    for (u64 i = 0; i < len; i++) {
-        if (line[i] != '0' && line[i] != '1') {
-            fprintf(stderr, "Invalid bit '%c'. Use only 0 or 1.\n", line[i]);
-            return KNAP_ERR_INVALID;
-        }
-    }
+       printf("Enter plaintext: ");
+       if (!fgets(line, sizeof(line), stdin)) {
+           return KNAP_ERR_INVALID;
+       }
 
-    u8 *bits = malloc(len * sizeof(*bits));
-    if (!bits) {
-        fprintf(stderr, "Memory allocation failed.\n");
-        return KNAP_ERR_ALLOC;
-    }
+       size_t len = strcspn(line, "\n");
+       line[len] = '\0';
 
-    for (u64 i = 0; i < len; i++) {
-        bits[i] = (u8)(line[i] - '0');
-    }
-    bit_buf_clear(message_out);
-    message_out->data = bits;
-    message_out->length = (u64)len;
+       if (len == 0) {
+           fprintf(stderr, "Invalid length. Use non-empty plaintext.\n");
+           return KNAP_ERR_INVALID;
+       }
 
-    return KNAP_OK;
+       return text_buf_from_cstr(out, line);
 }
 
 static KnapStatus print_demo_result(const BitBuf *bits_message,
@@ -114,16 +97,17 @@ static KnapStatus demo_run(CliFlags *flags) {
 
     printf("===knapsack demo===\n");
 
-    if (flags->input_mode == CLI_INPUT_TEXT) {
-        status = bit_buf_from_text(&flags->bits_message, &flags->text_message);
+    if (flags->input_mode == CLI_INPUT_NONE) {
+        status = read_message(&flags->text_message);
         if (status != KNAP_OK) {
-
             return status;
         }
+        flags->input_mode = CLI_INPUT_TEXT;
     }
 
-    if (flags->bits_message.length == 0) {
-        status = read_bits_message(&flags->bits_message);
+
+    if (flags->input_mode == CLI_INPUT_TEXT) {
+        status = bit_buf_from_text(&flags->bits_message, &flags->text_message);
         if (status != KNAP_OK) {
 
             return status;
@@ -133,7 +117,7 @@ static KnapStatus demo_run(CliFlags *flags) {
     if (flags->n != 0) {
         block_size = flags->n;
     } else if (flags->input_mode == CLI_INPUT_TEXT) {
-        block_size = 128u;
+        block_size = DEFAULT_TEXT_BLOCK_SIZE;
     } else {
         block_size = flags->bits_message.length;
     }
