@@ -2,83 +2,35 @@
 #include "error.h"
 #include "rand.h"
 #include "scheme.h"
-#include <gmp.h>
-#include <stddef.h>
+#include "scheme_mh_common.h"
 
 typedef struct {
-    u64 n;
-    mpz_t *priv_weights;
-    mpz_t *pub_weights;
+    MhKey key;
     u64 *perm;
-    u64 *inv_perm;
-    mpz_t mod;
-    mpz_t mult;
-    mpz_t mult_inv;
 } MhPermutedKey;
 
 static KnapStatus mh_permuted_key_alloc(MhPermutedKey *key, u64 n) {
-    size_t count;
-
+    KnapStatus status;
     if (!key || n == 0) {
         return KNAP_ERR_INVALID;
     }
 
-    count = (size_t)n;
-    if ((u64)count != n) {
-        return KNAP_ERR_ALLOC;
-    }
-    if (count > SIZE_MAX / sizeof(*key->priv_weights) ||
-        count > SIZE_MAX / sizeof(*key->pub_weights) ||
-        count > SIZE_MAX / sizeof(*key->perm) ||
-        count > SIZE_MAX / sizeof(*key->inv_perm)) {
+    if (n > (u64)SIZE_MAX || (size_t)n > SIZE_MAX / sizeof(*key->perm)) {
         return KNAP_ERR_ALLOC;
     }
 
-    key->n = 0;
-    key->priv_weights = NULL;
-    key->pub_weights = NULL;
-    key->perm = NULL;
-    key->inv_perm = NULL;
+    *key = (MhPermutedKey){0};
 
-    key->priv_weights = malloc(count * sizeof(*key->priv_weights));
-    if (!key->priv_weights) {
-        return KNAP_ERR_ALLOC;
+    status = mh_key_alloc(&key->key, n);
+    if (status != KNAP_OK) {
+        return status;
     }
 
-    key->pub_weights = malloc(count * sizeof(*key->pub_weights));
-    if (!key->pub_weights) {
-        free(key->priv_weights);
-        key->priv_weights = NULL;
-        return KNAP_ERR_ALLOC;
-    }
-
-    key->perm = malloc(count * sizeof(*key->perm));
+    key->perm = malloc((size_t)n * sizeof(*key->perm));
     if (!key->perm) {
-        free(key->pub_weights);
-        free(key->priv_weights);
-        key->pub_weights = NULL;
-        key->priv_weights = NULL;
+        mh_key_clear(&key->key);
         return KNAP_ERR_ALLOC;
     }
-
-    key->inv_perm = malloc(count * sizeof(*key->inv_perm));
-    if (!key->inv_perm) {
-        free(key->perm);
-        free(key->pub_weights);
-        free(key->priv_weights);
-        key->inv_perm = NULL;
-        key->perm = NULL;
-        key->pub_weights = NULL;
-        key->priv_weights = NULL;
-        return KNAP_ERR_ALLOC;
-    }
-
-    key->n = n;
-    for (u64 i = 0; i < n; i++) {
-        mpz_init(key->priv_weights[i]);
-        mpz_init(key->pub_weights[i]);
-    }
-    mpz_inits(key->mod, key->mult, key->mult_inv, NULL);
 
     return KNAP_OK;
 }
@@ -88,22 +40,9 @@ static void mh_permuted_key_clear(MhPermutedKey *key) {
         return;
     }
 
-    for (u64 i = 0; i < key->n; i++) {
-        mpz_clear(key->priv_weights[i]);
-        mpz_clear(key->pub_weights[i]);
-    }
-
-    free(key->priv_weights);
-    free(key->pub_weights);
+    mh_key_clear(&key->key);
     free(key->perm);
-    free(key->inv_perm);
-    mpz_clears(key->mod, key->mult, key->mult_inv, NULL);
-
-    key->n = 0;
-    key->priv_weights = NULL;
-    key->pub_weights = NULL;
-    key->perm = NULL;
-    key->inv_perm = NULL;
+    *key = (MhPermutedKey){0};
 }
 
 static void shuffle_u64(u64 *values, u64 n, PrngState *rng) {
@@ -120,98 +59,51 @@ static void shuffle_u64(u64 *values, u64 n, PrngState *rng) {
 }
 
 static KnapStatus mh_permuted_key_build(MhPermutedKey *key, PrngState *rng) {
-    mpz_t delta;
-    mpz_t sum;
-    mpz_t margin;
-
-    if (!key || !rng || key->n == 0) {
+    KnapStatus status;
+    if (!key || !rng || key->key.n == 0 || !key->perm) {
         return KNAP_ERR_INVALID;
     }
 
-    mpz_inits(delta, sum, margin, NULL);
-
-    for (u64 i = 0; i < key->n; i++) {
-        mpz_set_ui(delta, 1 + (prng_rand(rng) % 16u));
-        mpz_add(delta, delta, sum);
-        mpz_set(key->priv_weights[i], delta);
-        mpz_add(sum, sum, key->priv_weights[i]);
+    status = mh_key_build_private(&key->key, rng);
+    if (status != KNAP_OK) {
+        return status;
     }
 
-    {
-        u64 margin_u64 = 1 + (prng_rand_u64(rng) % (64u * key->n));
-        mpz_set_ui(margin, margin_u64);
-        mpz_add(key->mod, sum, margin);
-    }
-
-    for (;;) {
-        mpz_set_ui(key->mult, prng_rand_u64(rng));
-        mpz_mod(key->mult, key->mult, key->mod);
-
-        if (mpz_cmp_ui(key->mult, 2u) < 0) {
-            continue;
-        }
-        if (mpz_invert(key->mult_inv, key->mult, key->mod) != 0) {
-            break;
-        }
-    }
-
-    for (u64 i = 0; i < key->n; i++) {
+    for (u64 i = 0; i < key->key.n; i++) {
         key->perm[i] = i;
     }
-    shuffle_u64(key->perm, key->n, rng);
 
-    for (u64 i = 0; i < key->n; i++) {
-        key->inv_perm[key->perm[i]] = i;
-    }
+    shuffle_u64(key->perm, key->key.n, rng);
+    mh_key_build_public(&key->key, key->perm);
 
-    for (u64 i = 0; i < key->n; i++) {
-        u64 src = key->perm[i];
-        mpz_mul(key->pub_weights[i], key->priv_weights[src], key->mult);
-        mpz_mod(key->pub_weights[i], key->pub_weights[i], key->mod);
-    }
-
-    mpz_clears(delta, sum, margin, NULL);
     return KNAP_OK;
-}
-
-static void mh_permuted_encrypt_impl(const MhPermutedKey *key, BitView message,
-                                     mpz_t ciphertext) {
-    mpz_set_ui(ciphertext, 0);
-
-    for (u64 i = 0; i < key->n; i++) {
-        if (message.data[i]) {
-            mpz_add(ciphertext, ciphertext, key->pub_weights[i]);
-        }
-    }
 }
 
 static KnapStatus mh_permuted_decrypt_impl(const MhPermutedKey *key,
                                            const mpz_t ciphertext,
                                            BitBuf *message) {
-    mpz_t s;
+    KnapStatus status;
+    BitBuf private_bits = {0};
 
-    mpz_init(s);
-    mpz_mul(s, ciphertext, key->mult_inv);
-    mpz_mod(s, s, key->mod);
-
-    for (u64 j = key->n; j-- > 0;) {
-        u8 bit = 0;
-
-        if (mpz_cmp(s, key->priv_weights[j]) >= 0) {
-            bit = 1;
-            mpz_sub(s, s, key->priv_weights[j]);
-        }
-        message->data[key->inv_perm[j]] = bit;
+    status = bit_buf_alloc(&private_bits, key->key.n);
+    if (status != KNAP_OK) {
+        return status;
     }
 
-    if (mpz_cmp_ui(s, 0) != 0) {
-        mpz_clear(s);
-        return KNAP_ERR_CRYPTO;
+    status = mh_decrypt_impl(&key->key, ciphertext, &private_bits);
+    if (status != KNAP_OK) {
+        bit_buf_clear(&private_bits);
+        return status;
     }
 
-    mpz_clear(s);
+    for (u64 i = 0; i < key->key.n; i++) {
+        message->data[i] = private_bits.data[key->perm[i]];
+    }
+
+    bit_buf_clear(&private_bits);
     return KNAP_OK;
 }
+
 
 static MhPermutedKey *
 mh_permuted_key_from_scheme_key(const SchemeKey *scheme_key) {
@@ -275,7 +167,7 @@ static KnapStatus mh_permuted_encrypt(const SchemeKey *scheme_key,
         return KNAP_ERR_INTERNAL;
     }
 
-    mh_permuted_encrypt_impl(key, message, out_ciphertext);
+    mh_encrypt_impl(&key->key, message, out_ciphertext);
     return KNAP_OK;
 }
 

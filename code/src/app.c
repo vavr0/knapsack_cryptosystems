@@ -78,17 +78,23 @@ void print_usage(const char *prog) {
     fprintf(stderr, "\n");
     fprintf(stderr, "Demo options:\n");
     fprintf(stderr, "  --bits BITS        Raw bitstring input, e.g. 101010\n");
-    fprintf(stderr, "  --msg TEXT         Plaintext input; converted to bits\n");
-    fprintf(stderr, "  --n BITS           Demo block size in bits; text default is 128\n");
-    fprintf(stderr, "  --scheme ID        Scheme: mh-classic, mh, mh-permuted\n");
+    fprintf(stderr,
+            "  --msg TEXT         Plaintext input; converted to bits\n");
+    fprintf(
+        stderr,
+        "  --n BITS           Demo block size in bits; text default is 128\n");
+    fprintf(stderr,
+            "  --scheme ID        Scheme: mh-classic, mh, mh-permuted\n");
     fprintf(stderr, "  --seed SEED        Deterministic seed\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Bench options:\n");
     fprintf(stderr, "  --bits BITS        Raw bitstring input\n");
     fprintf(stderr, "  --n BITS           Random message length in bits\n");
-    fprintf(stderr, "  --reps N           Measurement repetitions; default is 10\n");
+    fprintf(stderr,
+            "  --reps N           Measurement repetitions; default is 10\n");
     fprintf(stderr, "  --format csv       CSV output\n");
-    fprintf(stderr, "  --scheme ID        Scheme: mh-classic, mh, mh-permuted\n");
+    fprintf(stderr,
+            "  --scheme ID        Scheme: mh-classic, mh, mh-permuted\n");
     fprintf(stderr, "  --seed SEED        Deterministic seed\n");
 }
 
