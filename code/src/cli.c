@@ -31,7 +31,8 @@ static KnapStatus parse_mode(int argc, char **argv, CliFlags *out) {
         out->mode = CLI_MODE_BENCH;
         return KNAP_OK;
     }
-    if (strcmp(mode, "--help") == 0 || strcmp(mode, "-h") == 0) {
+    if (strcmp(mode, "--help") == 0 || strcmp(mode, "-h") == 0 ||
+        strcmp(mode, "help") == 0) {
         return KNAP_STATUS_HELP;
     }
 

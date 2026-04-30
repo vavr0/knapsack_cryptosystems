@@ -16,28 +16,27 @@
 
 #define DEFAULT_TEXT_BLOCK_SIZE 128u
 
-
 static KnapStatus read_message(TextBuf *out) {
-       char line[512];
+    char line[512];
 
-       if (!out) {
-           return KNAP_ERR_INVALID;
-       }
+    if (!out) {
+        return KNAP_ERR_INVALID;
+    }
 
-       printf("Enter plaintext: ");
-       if (!fgets(line, sizeof(line), stdin)) {
-           return KNAP_ERR_INVALID;
-       }
+    printf("Enter plaintext: ");
+    if (!fgets(line, sizeof(line), stdin)) {
+        return KNAP_ERR_INVALID;
+    }
 
-       size_t len = strcspn(line, "\n");
-       line[len] = '\0';
+    size_t len = strcspn(line, "\n");
+    line[len] = '\0';
 
-       if (len == 0) {
-           fprintf(stderr, "Invalid length. Use non-empty plaintext.\n");
-           return KNAP_ERR_INVALID;
-       }
+    if (len == 0) {
+        fprintf(stderr, "Invalid length. Use non-empty plaintext.\n");
+        return KNAP_ERR_INVALID;
+    }
 
-       return text_buf_from_cstr(out, line);
+    return text_buf_from_cstr(out, line);
 }
 
 static KnapStatus print_demo_result(const BitBuf *bits_message,
@@ -76,6 +75,21 @@ void print_usage(const char *prog) {
     fprintf(stderr, "Usage:\n");
     fprintf(stderr, "  %s demo  [options]\n", prog);
     fprintf(stderr, "  %s bench [options]\n", prog);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Demo options:\n");
+    fprintf(stderr, "  --bits BITS        Raw bitstring input, e.g. 101010\n");
+    fprintf(stderr, "  --msg TEXT         Plaintext input; converted to bits\n");
+    fprintf(stderr, "  --n BITS           Demo block size in bits; text default is 128\n");
+    fprintf(stderr, "  --scheme ID        Scheme: mh-classic, mh, mh-permuted\n");
+    fprintf(stderr, "  --seed SEED        Deterministic seed\n");
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Bench options:\n");
+    fprintf(stderr, "  --bits BITS        Raw bitstring input\n");
+    fprintf(stderr, "  --n BITS           Random message length in bits\n");
+    fprintf(stderr, "  --reps N           Measurement repetitions; default is 10\n");
+    fprintf(stderr, "  --format csv       CSV output\n");
+    fprintf(stderr, "  --scheme ID        Scheme: mh-classic, mh, mh-permuted\n");
+    fprintf(stderr, "  --seed SEED        Deterministic seed\n");
 }
 
 static KnapStatus demo_run(CliFlags *flags) {
@@ -104,7 +118,6 @@ static KnapStatus demo_run(CliFlags *flags) {
         }
         flags->input_mode = CLI_INPUT_TEXT;
     }
-
 
     if (flags->input_mode == CLI_INPUT_TEXT) {
         status = bit_buf_from_text(&flags->bits_message, &flags->text_message);
