@@ -3,6 +3,7 @@
 #include "rand.h"
 #include "scheme.h"
 #include "scheme_mh_common.h"
+#include <stdlib.h>
 
 typedef struct {
     MhKey key;
