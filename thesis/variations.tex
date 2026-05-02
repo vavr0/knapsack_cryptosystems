@@ -7,14 +7,14 @@ An easy private superincreasing subset-sum instance is transformed into a
 public instance that should look hard~\cite{MerkleHellman1978}. However, in the
 basic construction, this hiding transformation is not strong enough to remove
 all useful structure. As a result, the public key does not behave like a hard
-subset-sum instance, and this opens the door to efficient cryptanalysis. 
+subset-sum instance, and this opens the door to efficient cryptanalysis.
 
 A major result was given by Shamir, who showed a polynomial-time
 attack against the basic Merkle--Hellman scheme \cite{Shamir1982}. The attack
 demonstrates that, even without knowing the private sequence directly, an
 equivalent private structure can be reconstructed from public information. This
 breaks the intended trapdoor asymmetry and shows that the original scheme is
-insecure. 
+insecure.
 
 \subsection{Shamir's Polynomial-Time Attack}
 
@@ -37,10 +37,10 @@ precomputation, the attacker can decrypt later ciphertexts in essentially the
 same way as the legitimate recipient. This is what makes the attack
 particularly strong against the basic Merkle--Hellman construction.~\cite[pp.~77--78]{OdlyzkoRiseFall}
 
-To see where this structure comes from, let $u \equiv r^{-1} \pmod m$. Then
+To see where this structure comes from, let $u \equiv r^{-1} \pmod{m}$. Then
 each public weight $b_i$ satisfies
 \[
-u b_i \equiv w_{\pi(i)} \pmod m,
+    u b_i \equiv w_{\pi(i)} \pmod{m},
 \]
 where $\pi$ denotes the possible secret permutation of the private sequence.
 Equivalently, for each $i$ there exists an integer $k_i$ such that
@@ -147,7 +147,6 @@ that the shortest vector will always be found, but in many low-density
 subset-sum instances the solution vector is short enough to be revealed by the
 reduced basis.~\cite{LenstraLenstraLovasz1982,LagariasOdlyzko1985}
 
-
 Lagarias and Odlyzko gave a general theoretical framework for this type of
 attack. They showed that sufficiently low-density subset-sum instances can
 often be solved in polynomial time by lattice-based methods, without any need
@@ -182,32 +181,68 @@ achieve.~\cite[pp.~81--83]{OdlyzkoRiseFall}
 
 \section{Selected Variations of Knapsack Cryptosystems}
 
-\subsection{Permutation and Modular Transformations}
-TODO
+The attacks discussed above did not immediately end interest in knapsack
+cryptography. They motivated attempts to modify or redesign the original
+Merkle--Hellman construction. Some variants stayed close to the original idea
+and tried to hide the superincreasing sequence more thoroughly, for example by
+using permutations or repeated modular transformations. Other proposals changed
+the construction more substantially.
 
-\subsection{Iterated and Modified Merkle--Hellman Variants}
+\subsection{Modified Merkle--Hellman Schemes}
 
-After Shamir's break of the basic scheme, a natural response was not to
-abandon the Merkle--Hellman idea immediately, but to try to hide the private
-superincreasing sequence more thoroughly. The main proposal was to repeat the
-modular multiplication step several times instead of applying it only once. In
-a $Y$-times iterated Merkle--Hellman knapsack, one starts with an easy private
-sequence and produces the public weights through a chain of modular
-transformations, so that each stage is intended to further obscure the
-structure inherited from the previous one. The hope was that repeated
-disguising would hide the original trapdoor more effectively than the
-single-iteration construction.~\cite[pp.~342--344]{Brickell1984}
+The first modifications of the Merkle--Hellman idea stayed close to the
+original construction. They did not replace the superincreasing trapdoor,
+but tried to disguise it more strongly. Merkle and Hellman already noted
+that the code breaker's task could be complicated by scrambling the order of
+the public weights and by adding different multiples of the modulus to
+them.~\cite[p.~526]{MerkleHellman1978} In modular notation, the public
+weights still satisfy a relation of the form
+\[
+    b_i \equiv r w_{\pi(i)}
+    \pmod{m}, 
+\]
+where $W=(w_1,\dots,w_n)$ is the private superincreasing sequence, $m$ is a
+secret modulus, $r$ is invertible modulo $m$, and $\pi$ is a possible secret
+permutation. These changes make the public sequence less directly readable, but
+they do not remove the basic relation between the public and private weights.
 
-This modification, however, did not remove the underlying weakness. Brickell
-described an attack that applies lattice basis reduction to carefully chosen
-subsets of the public weights and extracts short vectors that reflect the
-hidden modular relations created by the successive iterations. From these
-relations, the attacker can recover enough information about the order of the
-weights and about an equivalent superincreasing structure to solve the
-corresponding subset-sum instances efficiently. The attack is more involved
-than Shamir's original one, but its main conclusion is similar: repeated
-modular multiplication still leaves enough arithmetic structure for efficient
-cryptanalysis.~\cite[pp.~344--356]{Brickell1984}
+The main proposal was to repeat the modular multiplication step several times
+instead of applying it only once. In a $Y$-times iterated Merkle--Hellman
+knapsack, one starts with an easy private sequence and produces the public
+weights through a chain of modular transformations.    More explicitly, if
+$a^{(0)}$ denotes the original easy sequence, then the $j$-th stage produces a
+new sequence by
+\[
+    a_i^{(j)} \equiv r_j a_i^{(j-1)} \pmod{m_j}, \qquad j=1,\dots,Y.
+\]
+The final public sequence is $a^{(Y)}$, possibly after a secret
+permutation. For decryption, the legitimate receiver applies the modular
+inverses in the opposite order and eventually obtains a subset-sum instance
+over the original easy sequence. Thus the trapdoor idea is the same as in the
+basic Merkle--Hellman scheme, but repeated several times.
+
+Each stage is intended to
+further obscure the structure inherited from the previous one. The hope was
+that repeated disguising would hide the original trapdoor more effectively than
+the single-iteration construction.~\cite[pp.~342--344]{Brickell1984}
+
+
+\subsection{Brickell's Attack on Iterated Knapsacks}
+
+Brickell's attack targets the iterated construction itself, not only individual
+ciphertexts. The attack uses lattice basis reduction on selected subsets of the
+public weights. The reduced lattice basis is expected to contain short vectors
+that come from the hidden modular relations between the successive
+transformations. Brickell calls the useful short vectors desirable vectors, and
+uses them to recover information about the hidden order and structure of the
+knapsack.~\cite[pp.~344--348]{Brickell1984}
+
+From these short vectors, the attacker can reconstruct enough information to
+obtain a sequence that behaves like a superincreasing sequence for most
+positions. The remaining positions can then be handled separately. In this
+sense, the attack does not need to recover the exact original private key. It
+is sufficient to recover an equivalent structure that makes decryption
+efficient.~\cite[pp.~349--355]{Brickell1984}
 
 Although Brickell did not claim a proof that the attack succeeds for every
 parameter choice, he reported successful attacks on examples with $n=100$ and
@@ -221,11 +256,95 @@ the weakness and confirmed that simple repeated transformations were not enough
 to restore security.~\cite[p.~344]{Brickell1984}\cite[p.~8]{OdlyzkoRiseFall}
 
 \subsection{Chor--Rivest Knapsack-Type Cryptosystem}
+
+The Chor--Rivest cryptosystem was a more substantial attempt to build a
+knapsack-type public-key system after the weaknesses of Merkle--Hellman
+variants became clear. It does not hide a superincreasing sequence by modular
+multiplication. Instead, it uses arithmetic in finite fields and a construction
+related to the Bose--Chowla theorem. One of the aims of this design was to
+obtain a knapsack with higher density, because low-density lattice attacks are
+most effective when the public weights are large compared with the number of
+message bits.~\cite[pp.~901--902]{ChorRivest1988}
+
+The construction works over a finite field $GF(p^h)$. Let $t$ be an element of
+degree $h$ over $GF(p)$, and let $g$ be a generator of the multiplicative group
+of $GF(p^h)$. For each $\alpha \in GF(p)$, a value $a_\alpha$ is defined by
+\[
+    g^{a_\alpha}=t+\alpha.
+\]
+The public weights are obtained by applying a secret permutation $\pi$ and
+adding a secret offset $d$:
+\[
+    c_i \equiv a_{\pi(i)} + d \pmod{p^h-1}.
+\]
+The public key contains the values $c_i$ together with the public parameters,
+while the trapdoor information contains the finite-field structure, the
+generator, the permutation, and the offset.~\cite[pp.~902--903]{ChorRivest1988}
+
+Encryption still has the form of a knapsack sum. A plaintext block is encoded
+as a binary vector $m=(m_0,\dots,m_{p-1})$ with exactly $h$ ones, so
+\[
+    \sum_{i=0}^{p-1} m_i = h.
+\]
+The ciphertext is computed as
+\[
+    S \equiv \sum_{i=0}^{p-1} m_i c_i \pmod{p^h-1}.
+\]
+From the public point of view, encryption therefore still resembles a subset-sum
+problem. The difference is in the trapdoor used for decryption.
+
+To decrypt, the legitimate receiver first removes the offset by computing
+$S-hd$ modulo $p^h-1$. Exponentiating $g$ to this value gives a product of
+terms of the form $t+\alpha$. This product can be represented as a polynomial
+over $GF(p)$, and the receiver recovers the message by factoring it into linear
+terms. This is different from Merkle--Hellman decryption, where the receiver
+returns to a superincreasing sequence and applies the greedy algorithm.
+Chor--Rivest is therefore better understood as a different knapsack-type idea,
+not as a simple modification of the original Merkle--Hellman construction.~\cite[pp.~903--904]{ChorRivest1988}
+
+At the time of Odlyzko's survey, Chor--Rivest was described as one of the few
+knapsack-type systems that had resisted the attacks known then.~\cite{OdlyzkoRiseFall}
+This statement has to be understood historically. Later cryptanalysis by
+Vaudenay showed how to break the proposed Chor--Rivest parameters, including
+parameters based on $GF(p^{24})$ and $GF(256^{25})$.~\cite[pp.~243,
+255]{Vaudenay1998} For this thesis, the importance of Chor--Rivest is mainly
+that it shows how researchers tried to move away from low-density
+superincreasing constructions toward high-density knapsack-type designs.
+
 \subsection{Other Historical Proposals (Brief Overview)}
-\section{Comparison of Variants}
-\subsection{Security Perspective}
+
+Several other knapsack-based constructions were proposed during the early
+development of public-key cryptography. Merkle and Hellman also described a
+multiplicative trapdoor knapsack, where the trapdoor is based on products of
+relatively prime integers rather than on a superincreasing additive
+sequence.~\cite[pp.~526--527]{MerkleHellman1978} In this construction, the
+public values are related to discrete logarithms, and decryption uses the
+secret parameters to transform the ciphertext into a product that can be
+factored easily by the legitimate receiver. This idea tried to combine the
+knapsack problem with number-theoretic structure, but Odlyzko later showed that
+simple variants of the multiplicative knapsack are also vulnerable under
+practical parameter choices.~\cite{Odlyzko1984Attacks}
+
+Knapsack ideas were also proposed for authentication and digital signatures.
+One important example was Shamir's fast signature scheme, which was designed to
+provide efficient signing rather than encryption. Odlyzko showed that this
+scheme could be attacked quickly using lattice-based methods, without
+recovering the exact original secret information. He also noted that similar
+methods could be adapted to the Schobi--Massey knapsack-based authentication
+scheme. These examples show that the weaknesses of knapsack constructions were
+not limited to message encryption, but also affected related signature and
+authentication proposals.~\cite{Odlyzko1984Attacks}
+
+Other proposals, such as Graham--Shamir knapsacks, generalized knapsacks, and
+so-called ultimate knapsack variants, also appeared as attempts to repair or
+extend the original idea. They are not described in detail here, because their
+constructions differ in technical details and would require separate analysis.
+For the purpose of this thesis, the important point is that many of these
+systems were attacked by similar families of methods: structural
+reconstruction, Diophantine approximation, and lattice basis reduction. This
+broader pattern supports the main lesson of the chapter: changing the surface
+form of a knapsack cryptosystem did not necessarily remove the hidden structure
+that made cryptanalysis possible.~\cite{Brickell1984,OdlyzkoRiseFall}
+
 \subsection{Efficiency and Implementation Complexity}
 \subsection{Summary Table of Schemes and Attacks}
-\section{Discussion}
-\subsection{Lessons from the Rise and Fall of Knapsack Cryptography}
-\subsection{Implications for Modern Public-Key Design}
