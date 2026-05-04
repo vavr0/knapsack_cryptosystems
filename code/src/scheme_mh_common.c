@@ -123,10 +123,8 @@ KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
 
     // Greedy algorithm: recover bits from largest to smallest
     for (u64 i = key->n; i-- > 0;) {
-
         if (mpz_cmp(s, key->priv_weights[i]) >= 0) {
             message->data[i] = 1;
-
             mpz_sub(s, s, key->priv_weights[i]);
         } else {
             message->data[i] = 0;

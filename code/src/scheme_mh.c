@@ -6,8 +6,6 @@
 #include <stddef.h>
 
 
-
-
 static MhKey *mh_key_from_scheme_key(const SchemeKey *scheme_key) {
     if (!scheme_key || !scheme_key->data) {
         return NULL;
