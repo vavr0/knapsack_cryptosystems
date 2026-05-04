@@ -33,4 +33,5 @@ typedef struct {
 
 const SchemeOps *scheme_mh_get(void);
 const SchemeOps *scheme_mh_permuted_get(void);
+const SchemeOps *scheme_mh_iterated_get(void);
 const SchemeOps *scheme_resolve(const char *id);

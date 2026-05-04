@@ -153,13 +153,13 @@ it can be used to construct a public-key encryption scheme.
 
 \section{The Subset-Sum Problem}
 
-The subset-sum problem, often also referred to in the cryptographic literature
-as the knapsack problem, is defined as follows. Given a sequence of positive
-integers
+The subset-sum problem, often also referred to as the knapsack problem, is
+defined as follows. Given a sequence of positive integers
 \[
 W = (w_1, w_2, \dots, w_n)
 \]
-and a target value \(s \in \mathbb{N}\), the goal is to find a binary vector
+and a target value $s \in \mathbb{N}$. The search version asks to find a binary
+vector
 \[
 x = (x_1, x_2, \dots, x_n) \in \{0,1\}^n
 \]
@@ -167,9 +167,14 @@ such that
 \[
 \sum_{i=1}^{n} x_i w_i = s.
 \]
-Here, each variable \(x_i\) indicates whether the weight \(w_i\) is included in
+Here, each variable $x_i$ indicates whether the weight $w_i$ is included in
 the subset. The related decision problem asks whether such a vector exists. In
 that form, subset-sum is \(\mathcal{NP}\)-complete.~\cite[p.~223]{garey1979computers}
+
+The distinction between the decision and search versions is important for
+cryptography. In encryption, the attacker is not interested in if a
+solution exists. The attacker needs to recover the actual vector $x$, because
+this vector represents the encrypted message.~\cite[pp.~75--76]{OdlyzkoRiseFall}
 
 \subsection*{Example}
 
@@ -190,24 +195,27 @@ which corresponds to the vector
 \[
 x = (0,\,1,\,0,\,1).
 \]
-For arbitrary instances, finding such a vector may require examining an
-exponential number of subsets in the worst case.
+For general instances, finding such a vector may require checking many possible
+subsets.
 
 \subsection*{Superincreasing sequences}
 
-A sequence $W$ is called \emph{superincreasing} if every element is strictly
-larger than the sum of all previous ones:
+A special easy case is given by superincreasing sequences. A sequence $W$ is
+called \emph{superincreasing} if every element is strictly larger than the sum
+of all previous elements:
 \[
-w_i > \sum_{j=1}^{i-1} w_j \qquad \forall i \ge 2.
+    w_i > \sum_{j=1}^{i-1} w_j \qquad \text{for } i \ge 2.
 \]
-For such sequences, the subset-sum problem can be solved efficiently by a
-greedy procedure that starts with the largest weight and works downward. In
-contrast to general instances, which may have no solution, one solution, or
-several different solutions, a superincreasing instance has at most one
-solution, and if it exists, the greedy procedure recovers it. This
-special structure is what makes superincreasing sequences useful as the private
-trapdoor in the classical Merkle--Hellman
-cryptosystem.~\cite[pp.~525--526]{MerkleHellman1978}
+For such a sequence, subset-sum can be solved greedily. Starting from the
+largest weight, the algorithm includes the current weight if it does not exceed
+the remaining target value, and otherwise skips it. The superincreasing
+condition guarantees that this choice is safe, because all smaller
+weights together cannot replace a weight that is too large.
+
+This easy structure is the reason why superincreasing sequences are useful in
+the Merkle--Hellman cryptosystem. The private key contains an easy
+superincreasing instance, while the public key is intended to look like a
+general subset-sum instance.~\cite[pp.~525--526]{MerkleHellman1978}\cite[pp.~77--79]{OdlyzkoRiseFall}
 
 \section{The Merkle--Hellman Knapsack Cryptosystem}
 
@@ -219,15 +227,20 @@ like a hard general subset-sum instance. Although the idea was influential,
 later cryptanalysis showed that the basic construction is
 insecure.~\cite{Shamir1982}
 
+The main parameters are the block length $n$, the private superincreasing
+sequence $W=(w_1,\dots,w_n)$, the modulus $m$, the multiplier $r$, and
+optionally a secret permutation $\pi$. The value $n$ determines both the number
+of public weights and the number of message bits encrypted in one block.
+
 \subsection{Key Generation}
 
-The goal of key generation is to create two representations of the same
-knapsack instance: one that is easy for the owner to solve and one that appears
-hard to solve for everyone else. First, a superincreasing sequence
-$W=(w_1,\dots,w_n)$ is chosen as the private sequence. Then a modulus $m$
-larger than $\sum_{i=1}^n w_i$ and a multiplier $r$ satisfying $\gcd(r,m)=1$
-are selected. The public sequence $B=(b_1,\dots,b_n)$ is computed from the
-private sequence using the multiplier $r$ modulo $m$, where
+Key generation starts from an easy private subset-sum instance and transforms
+it into a public sequence by modular transformation with intention to look
+hard. First, a superincreasing sequence $W=(w_1,\dots,w_n)$ is chosen as the
+private sequence. Then a modulus $m$ larger than $\sum_{i=1}^n w_i$ and a
+multiplier $r$ satisfying $\gcd(r,m)=1$ are selected. The public sequence
+$B=(b_1,\dots,b_n)$ is computed from the private sequence using the multiplier
+$r$ modulo $m$, where
 \[
 b_i \equiv r w_i \pmod m.
 \]
@@ -274,6 +287,18 @@ set to 1 and the weight is subtracted; otherwise the bit is set to 0. If
 permutation is used during key generation, bit positions are restored according
 to the secret key order after greedy
 recovery.~\cite[pp.~525--526]{MerkleHellman1978}
+
+The reason decryption works is the relation between the public and private
+weights. Since $b_i \equiv r w_i \pmod m$, multiplying the ciphertext by
+$r^{-1}$ gives
+\[
+    r^{-1}C \equiv \sum_{i=1}^{n} x_i w_i \pmod m.
+\]
+The modulus was chosen so that $m > \sum_{i=1}^{n} w_i$. Therefore every
+possible private subset sum is smaller than $m$, and the value obtained after
+the modular reduction is the actual private subset sum. The receiver can then
+recover the message bits by the greedy algorithm. If a permutation is used, the
+bit positions are restored according to the secret permutation.
 
 \subsection*{Example}
 Consider a private superincreasing sequence

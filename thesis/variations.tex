@@ -136,16 +136,15 @@ the cancellation idea behind the lattice construction.
 
 The important point is that the solution vector is usually not one of the
 original basis vectors. It is hidden as an integer combination of them. Lattice
-basis reduction tries to replace the original basis by another basis of the same
-lattice, but with shorter and less dependent vectors. The number of basis
-vectors does not change; only the vectors themselves are replaced by integer
-combinations of the old ones. The LLL algorithm performs this process in
-polynomial time. Internally, it uses Gram--Schmidt orthogonalization to measure
-the lengths and directions of basis vectors, and then decides when to reduce a
-vector by another one or when to swap two basis vectors. It does not guarantee
-that the shortest vector will always be found, but in many low-density
-subset-sum instances the solution vector is short enough to be revealed by the
-reduced basis.~\cite{LenstraLenstraLovasz1982,LagariasOdlyzko1985}
+basis reduction tries to replace the original basis by another basis of the
+same lattice, but with shorter and less dependent vectors. The LLL algorithm
+performs this process in polynomial time. Internally, it uses Gram--Schmidt
+orthogonalization to measure the lengths and directions of basis vectors, and
+then decides when to reduce a vector by another one or when to swap two basis
+vectors. It does not guarantee that the shortest vector will always be found,
+but in many low-density subset-sum instances the solution vector is short
+enough to be revealed by the reduced
+basis.~\cite{LenstraLenstraLovasz1982,LagariasOdlyzko1985}
 
 Lagarias and Odlyzko gave a general theoretical framework for this type of
 attack. They showed that sufficiently low-density subset-sum instances can
@@ -423,10 +422,62 @@ broader pattern supports the main lesson of the chapter: changing the surface
 form of a knapsack cryptosystem did not necessarily remove the hidden structure
 that made cryptanalysis possible.~\cite{Brickell1984,OdlyzkoRiseFall}
 
+\subsection{Parameter Choices, Efficiency, and Complexity}
+
+One of the main reasons why knapsack cryptosystems were attractive was their expected
+speed. Odlyzko compares Merkle--Hellman with RSA using the parameter sizes
+considered reasonable at that time. For about $n \approx 100$, the
+singly-iterated Merkle--Hellman scheme was expected to be more than one hundred
+times faster than RSA with a roughly 500-bit
+modulus.~\cite[pp.~80--81]{OdlyzkoRiseFall} The reason was that Merkle--Hellman
+uses relatively small numbers and needs only one modular multiplication during
+decryption, while RSA required many modular multiplications. 
+
+The disadvantage was storage size. RSA public keys contain only a small number
+of large integers, mainly the modulus and public exponent. In contrast, a
+Merkle--Hellman public key contains the whole public knapsack sequence. For $n
+\approx 100$, each public weight has about $2n$ bits. The public key contains
+$n$ such weights, so its size is about $2n^2$ bits, around 20,000 bits.
+Ciphertexts are also larger than the plaintext blocks. A block of about $n$
+plaintext bits is represented by a ciphertext of about $2n$
+bits~\cite{OdlyzkoRiseFall}
+
+The next question is how the parameters affect both efficiency and security.
+The block length $n$ determines both the number of message bits encrypted in
+one block and the number of public weights stored in the key. Increasing $n$
+gives larger message blocks and makes exhaustive search less realistic, but it
+also increases the public key size and the cost of processing all weights. In
+the implementation, this parameter is exposed directly through the benchmark
+option for the message length, so it is the natural variable for the
+experimental results.
+
+The private weights must be superincreasing, which makes decryption efficient.
+This means that each new weight must be larger than the sum of all previous
+weights. Choosing weights close to this lower bound gives smaller numbers and
+more compact keys but the sequence then becomes more predictable in its
+growth. Choosing them with larger gaps increases the bit length of the
+weights, the modulus, and the ciphertexts. It can also lower the density of the
+public knapsack, which is undesirable because low-density instances are more
+exposed to lattice-based attacks.
+
+The modulus and multiplier add another constraint. The modulus must be larger
+than the sum of the private weights. If not, the modular step used in
+decryption would not uniquely return to the private subset-sum instance. The
+multiplier must be chosen so that it has an inverse modulo $m$. In practice,
+this means that key generation must not only generate random-looking values,
+but also check these conditions. These conditions are necessary for decryption,
+but they reduce the range of possible public keys and are part of the structure
+that cryptanalytic attacks can use.
+
+This gives a natural connection to the implementation chapter. Since the
+classical schemes are already broken, the experiments are not meant to find
+secure parameters. Their purpose is to show how parameter choices affect
+running time, key size, ciphertext size, and density.
+
 \subsection{Modern Perspective}
 
 The failure of knapsack cryptosystems did not make the subset-sum problem
-disappeared from cryptography. The difference is that modern work usually
+disappeare from cryptography. The difference is that modern work usually
 does not try to hide a superincreasing sequence or another easy knapsack in the
 same way as Merkle--Hellman. Instead, subset-sum is used as an explicit
 hardness assumption. If an attacker breaks the construction, this would also
@@ -440,7 +491,7 @@ gave a public-key encryption scheme whose security is polynomial-time
 equivalent to the hardness of random subset-sum
 instances.~\cite{LyubashevskyPalacioSegev2010} Faust, Masny, and Venturi
 extended this direction to a stronger setting, where the attacker is allowed to
-obtain decryptions of chosen ciphertexts other than target one. This different
+obtain decryptions of chosen ciphertexts other than the target one. This different
 from classical trapdoor knapsacks. It studies encryption schemes with security
 reductions to random subset-sum, not new disguises of superincreasing
 sequences.~\cite{FaustMasnyVenturi2015}
@@ -465,5 +516,4 @@ cryptosystems are mostly important as a historical and educational case study.
 They connect NP-completeness, trapdoor design, and lattice attacks, but they
 are not a common basis for practical public-key encryption.
 
-\subsection{Efficiency and Implementation Complexity}
 \subsection{Summary Table of Schemes and Attacks}

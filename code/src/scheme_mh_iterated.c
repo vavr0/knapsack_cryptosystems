@@ -3,6 +3,7 @@
 #include "error.h"
 #include "rand.h"
 #include "scheme.h"
+#include "scheme_mh_common.h"
 #include <gmp.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -16,29 +17,137 @@ typedef struct {
 } MhIteratedLayer;
 
 typedef struct {
-    u64 n;
+    MhKey key;
     u64 layer_count;
-    mpz_t *priv_weights;
-    mpz_t *pub_weights;
-    MhIteratedLayer *layers;
+    MhIteratedLayer *extra_layers;
 } MhIteratedKey;
 
 static KnapStatus mh_iterated_key_alloc(MhIteratedKey *key, u64 n,
                                         u64 layer_count) {
-    (void)key;
-    (void)n;
-    (void)layer_count;
-    return KNAP_ERR_INTERNAL;
+    KnapStatus status;
+    u64 extra_layer_count;
+
+    if (!key || n == 0 || layer_count == 0) {
+        return KNAP_ERR_INVALID;
+    }
+
+    extra_layer_count = layer_count - 1u;
+    if (extra_layer_count > (u64)SIZE_MAX ||
+        (size_t)extra_layer_count > SIZE_MAX / sizeof(*key->extra_layers)) {
+        return KNAP_ERR_ALLOC;
+    }
+
+    *key = (MhIteratedKey){0};
+
+    status = mh_key_alloc(&key->key, n);
+    if (status != KNAP_OK) {
+        return status;
+    }
+
+    key->layer_count = extra_layer_count;
+    if (extra_layer_count == 0) {
+        return KNAP_OK;
+    }
+
+    key->extra_layers = malloc((size_t)extra_layer_count *
+                               sizeof(*key->extra_layers));
+    if (!key->extra_layers) {
+        mh_key_clear(&key->key);
+        *key = (MhIteratedKey){0};
+        return KNAP_ERR_ALLOC;
+    }
+
+    for (u64 i = 0; i < extra_layer_count; i++) {
+        mpz_inits(key->extra_layers[i].mod, key->extra_layers[i].mult,
+                  key->extra_layers[i].mult_inv, NULL);
+    }
+
+    return KNAP_OK;
 }
 
 static void mh_iterated_key_clear(MhIteratedKey *key) {
-    (void)key;
+    if (!key) {
+        return;
+    }
+
+    for (u64 i = 0; i < key->layer_count; i++) {
+        mpz_clears(key->extra_layers[i].mod, key->extra_layers[i].mult,
+                   key->extra_layers[i].mult_inv, NULL);
+    }
+    free(key->extra_layers);
+    mh_key_clear(&key->key);
+
+    *key = (MhIteratedKey){0};
+}
+
+static KnapStatus mh_iterated_layer_build(MhIteratedLayer *layer,
+                                          const mpz_t *weights, u64 n,
+                                          PrngState *rng) {
+    mpz_t sum;
+    mpz_t margin;
+
+    if (!layer || !weights || n == 0 || !rng) {
+        return KNAP_ERR_INVALID;
+    }
+
+    mpz_inits(sum, margin, NULL);
+
+    for (u64 i = 0; i < n; i++) {
+        mpz_add(sum, sum, weights[i]);
+    }
+
+    u64 margin_u64 = 1 + (prng_rand_u64(rng) % (64u * n));
+    mpz_set_ui(margin, margin_u64);
+    mpz_add(layer->mod, sum, margin);
+
+    for (;;) {
+        mpz_set_ui(layer->mult, prng_rand_u64(rng));
+        mpz_mod(layer->mult, layer->mult, layer->mod);
+        if (mpz_cmp_ui(layer->mult, 2u) < 0) {
+            continue;
+        }
+        if (mpz_invert(layer->mult_inv, layer->mult, layer->mod) != 0) {
+            break;
+        }
+    }
+
+    mpz_clears(sum, margin, NULL);
+    return KNAP_OK;
+}
+
+static void mh_iterated_layer_apply(const MhIteratedLayer *layer,
+                                    mpz_t *weights, u64 n) {
+    for (u64 i = 0; i < n; i++) {
+        mpz_mul(weights[i], weights[i], layer->mult);
+        mpz_mod(weights[i], weights[i], layer->mod);
+    }
 }
 
 static KnapStatus mh_iterated_key_build(MhIteratedKey *key, PrngState *rng) {
-    (void)key;
-    (void)rng;
-    return KNAP_ERR_INTERNAL;
+    KnapStatus status;
+
+    if (!key || !rng || key->key.n == 0) {
+        return KNAP_ERR_INVALID;
+    }
+
+    status = mh_key_build_private(&key->key, rng);
+    if (status != KNAP_OK) {
+        return status;
+    }
+
+    mh_key_build_public(&key->key, NULL);
+
+    for (u64 i = 0; i < key->layer_count; i++) {
+        status = mh_iterated_layer_build(&key->extra_layers[i],
+                                         key->key.pub_weights, key->key.n, rng);
+        if (status != KNAP_OK) {
+            return status;
+        }
+        mh_iterated_layer_apply(&key->extra_layers[i], key->key.pub_weights,
+                                key->key.n);
+    }
+
+    return KNAP_OK;
 }
 
 static MhIteratedKey *
@@ -91,7 +200,6 @@ static KnapStatus mh_iterated_encrypt(const SchemeKey *scheme_key,
                                       mpz_t out_ciphertext) {
     MhIteratedKey *key;
 
-    (void)out_ciphertext;
     if (!scheme_key || !scheme_key->data || !message.data ||
         message.length == 0) {
         return KNAP_ERR_INVALID;
@@ -105,15 +213,17 @@ static KnapStatus mh_iterated_encrypt(const SchemeKey *scheme_key,
         return KNAP_ERR_INTERNAL;
     }
 
-    return KNAP_ERR_INTERNAL;
+    mh_encrypt_impl(&key->key, message, out_ciphertext);
+    return KNAP_OK;
 }
 
 static KnapStatus mh_iterated_decrypt(const SchemeKey *scheme_key,
                                       const mpz_t ciphertext,
                                       BitBuf *out_message) {
     MhIteratedKey *key;
+    KnapStatus status;
+    mpz_t s;
 
-    (void)ciphertext;
     if (!scheme_key || !scheme_key->data || !out_message ||
         scheme_key->n == 0) {
         return KNAP_ERR_INVALID;
@@ -124,7 +234,27 @@ static KnapStatus mh_iterated_decrypt(const SchemeKey *scheme_key,
         return KNAP_ERR_INTERNAL;
     }
 
-    return KNAP_ERR_INTERNAL;
+    status = bit_buf_alloc(out_message, (size_t)scheme_key->n);
+    if (status != KNAP_OK) {
+        bit_buf_clear(out_message);
+        return status;
+    }
+
+    mpz_init_set(s, ciphertext);
+
+    for (u64 i = key->layer_count; i-- > 0;) {
+        mpz_mul(s, s, key->extra_layers[i].mult_inv);
+        mpz_mod(s, s, key->extra_layers[i].mod);
+    }
+
+    status = mh_decrypt_impl(&key->key, s, out_message);
+    mpz_clear(s);
+    if (status != KNAP_OK) {
+        bit_buf_clear(out_message);
+        return status;
+    }
+
+    return KNAP_OK;
 }
 
 static void mh_iterated_scheme_key_clear(SchemeKey *scheme_key) {
