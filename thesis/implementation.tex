@@ -2,45 +2,67 @@
 
 \section{Implementation Goals}
 
-The implementation part of this thesis was designed with two main goals. The
-first was to create a working experimental environment for the Merkle--Hellman
-knapsack cryptosystem and selected related variants. The second was to provide
-a practical basis for comparing their behaviour, especially with respect to key
-generation, encryption, decryption, and later cryptanalytic experiments.
-For this reason, the implementation was not intended as a production-ready
-cryptographic library. Instead, it was developed as a small research-oriented
-program in which the main algorithms can be tested, modified, and benchmarked
-in a controlled way. This made it possible to focus on the structure of the
-schemes themselves and on the consequences of different design choices, such as
-the use of permutation or repeated transformations.
-Another important goal was reproducibility. The program supports deterministic
-initialization through explicit seeds, which makes it possible to regenerate
-the same keys and benchmark scenarios across multiple runs. This is useful both
-for debugging and for experimental evaluation in later chapters.
+The implementation part of this thesis was designed as an experimental and
+educational tool for studying the Merkle--Hellman knapsack cryptosystem. Its
+main goal is to demonstrate the complete workflow of the scheme: key
+generation, encryption, decryption, and verification of the recovered
+plaintext. The implementation also includes a permuted variant, which makes it
+possible to compare the basic construction with a simple modification of the
+public key structure.
+
+The program is not intended to be a secure cryptographic library. The schemes
+studied in this thesis are historically important, but they are known to be
+insecure against cryptanalytic attacks. For this reason, the implementation is
+used mainly to illustrate how the trapdoor construction works in practice and
+to support the theoretical discussion from the previous chapters.
+
+A further goal is to provide a basis for simple cryptanalytic experiments. The
+implemented attacks are meant to be illustrative rather than complete
+state-of-the-art cryptanalysis. They are used to show that small or structured
+knapsack instances can be attacked directly, and to connect the implementation
+with the theoretical discussion of weaknesses in the Merkle--Hellman scheme and
+its variants.
+
+Another goal was to prepare a simple environment for experiments. The
+program supports deterministic initialization through explicit seeds, so the
+same keys and test cases can be reproduced across multiple runs. This is useful
+for debugging, correctness testing, and later benchmarking of parameters such
+as block length, key size, ciphertext size, and running time.
 
 \section{Choice of Programming Language and Libraries}
 
-The implementation was written in the C programming language. This choice was
-made mainly for practical reasons. C provides low-level control over memory and
-data representation, introduces little abstraction overhead, and allows the
-individual steps of key generation, encryption, and decryption to be expressed
-in a direct way. Since the implemented schemes are mathematically simple but
-operate on potentially large integers, this level of control was useful for
-both debugging and benchmarking.
-At the same time, native integer types are not sufficient for realistic
-knapsack computations, because the weights, modulus, multiplier, and ciphertext
-can quickly exceed fixed machine word sizes. For this reason, the
-implementation uses the GNU Multiple Precision Arithmetic Library (GMP). GMP is
-used for the core arithmetic operations, especially modular multiplication,
-modular inversion, and ciphertext computation. This made it possible to keep
-the implementation in C while still supporting arithmetic beyond standard
+The implementation was written in the C programming language for practical
+reasons connected with the experimental nature of the work. The program has to
+store and manipulate sequences of private weights, public weights, moduli,
+multipliers, ciphertexts, and intermediate values. C made it possible to keep
+these data structures explicit and to control how keys, messages, and
+scheme-specific objects are initialized, reused, and cleared during experiments.
+
+A major requirement of the implementation is support for integers larger than
+those provided by the standard C integer types. In knapsack cryptosystems, the
+weights, modulus, multiplier, and ciphertexts can grow quickly as the block
+length increases. For this reason, the implementation uses the GNU Multiple
+Precision Arithmetic Library (GMP). GMP is used for arbitrary-precision integer
+arithmetic, including additions, comparisons, modular multiplication, modular
+reduction, modular inversion, and ciphertext computation. This made it possible
+to keep the implementation in C while supporting arithmetic beyond standard
 64-bit limits.
+
+Seed handling was implemented explicitly in order to support both reproducible
+and non-deterministic experiments. The program uses a pseudo-random generator
+initialized either from a user-provided seed or from operating-system entropy.
+A provided seed makes experiments exactly repeatable, while the entropy-based
+mode allows non-deterministic runs. If system entropy is unavailable,
+initialization fails rather than silently falling back to a weaker source;
+deterministic execution is still possible by providing an explicit seed.
+
 The build process is controlled by a simple Makefile. It supports separate
 debug and release builds, as well as an address-sanitized configuration for
-runtime checking. This was useful during development, because the code makes
-extensive use of dynamic allocation and scheme-specific internal structures.
-The overall goal was to keep the toolchain simple, portable, and suitable for
-experimental work rather than for deployment.
+runtime checking. This was useful during development, because the code uses
+dynamic allocation for keys, messages, ciphertexts, and scheme-specific
+internal structures. The toolchain was kept simple so that the program could be
+built and tested in both macOS and Linux environments with only a C compiler,
+Make, and GMP installed.
 
 \section{Program Architecture}
 
