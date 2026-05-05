@@ -48,14 +48,6 @@ reduction, modular inversion, and ciphertext computation. This made it possible
 to keep the implementation in C while supporting arithmetic beyond standard
 64-bit limits.
 
-Seed handling was implemented explicitly in order to support both reproducible
-and non-deterministic experiments. The program uses a pseudo-random generator
-initialized either from a user-provided seed or from operating-system entropy.
-A provided seed makes experiments exactly repeatable, while the entropy-based
-mode allows non-deterministic runs. If system entropy is unavailable,
-initialization fails rather than silently falling back to a weaker source;
-deterministic execution is still possible by providing an explicit seed.
-
 The build process is controlled by a simple Makefile. It supports separate
 debug and release builds, as well as an address-sanitized configuration for
 runtime checking. This was useful during development, because the code uses
@@ -73,6 +65,7 @@ it possible to add new knapsack variants without changing the rest of the
 application structure.
 
 \subsection{Top-Level Structure}
+
 The executable entry point in `main.c` is intentionally minimal and delegates
 control to the application layer in `app.c`. This top-level layer is
 responsible for the overall execution flow, including mode selection, demo
@@ -86,6 +79,7 @@ timing data for later evaluation. This separation made it possible to keep the
 interactive and experimental parts of the implementation independent.
 
 \subsection{Scheme Abstraction}
+
 At the core of the implementation is a small scheme abstraction defined in
 `scheme.h`. Each cryptosystem variant is represented by a `SchemeOps`
 structure containing function pointers for key generation, encryption,
@@ -99,15 +93,22 @@ which keeps the code easier to read and compare. Scheme selection is handled in
 implementation.
 
 \subsection{Data Representation and Support Modules}
+
 Messages are represented internally as bit vectors through the `BitView` and
 `BitBuf` data structures. This matches the block-based nature of the knapsack
 schemes and makes it straightforward to work with fixed-length binary message
 blocks. For plaintext demonstrations, the helper logic converts text into bit
 blocks before encryption and reconstructs the original text after decryption.
 Several supporting modules are used around the core scheme implementations.
-Seed handling and entropy acquisition are separated into `seed.c`, which allows
-both deterministic runs and randomly initialized ones. Benchmarking is handled
-in `bench.c`, where key generation, encryption, and decryption are measured
+Seed handling and pseudo-random generation are implemented in separate support
+modules. The pseudo-random generator in \texttt{rand.c} is based on Melissa
+O'Neill's PCG random number generator for C~\cite{ONeill2014PCG}. The module
+\texttt{seed.c} initializes it either from a user-provided seed or from
+operating-system entropy. A provided seed makes generated keys, messages, and
+benchmark cases repeatable. Without a seed, the program uses system entropy for
+non-deterministic runs. If entropy cannot be obtained, initialization fails
+instead of silently falling back to a weaker source. Benchmarking is handled in
+`bench.c`, where key generation, encryption, and decryption are measured
 separately. Correctness is verified by checking that the decrypted output
 matches the original message. In this way, the overall architecture remains
 small, but still clearly separates cryptographic operations, application flow,
