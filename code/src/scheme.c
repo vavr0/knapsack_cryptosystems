@@ -8,5 +8,8 @@ const SchemeOps *scheme_resolve(const char *id) {
     if (strcmp(id, "mh-permuted") == 0) {
         return scheme_mh_permuted_get();
     }
-    return scheme_mh_get();
+    if (strcmp(id, "mh-iterated") == 0) {
+        return scheme_mh_iterated_get();
+    }
+    return NULL;
 }

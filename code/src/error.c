@@ -18,4 +18,3 @@ const char *knap_status_str(KnapStatus status) {
         return "KNAP_ERR_INTERNAL";
     }
 }
-

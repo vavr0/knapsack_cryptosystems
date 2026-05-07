@@ -49,8 +49,8 @@ static KnapStatus mh_iterated_key_alloc(MhIteratedKey *key, u64 n,
         return KNAP_OK;
     }
 
-    key->extra_layers = malloc((size_t)extra_layer_count *
-                               sizeof(*key->extra_layers));
+    key->extra_layers =
+        malloc((size_t)extra_layer_count * sizeof(*key->extra_layers));
     if (!key->extra_layers) {
         mh_key_clear(&key->key);
         *key = (MhIteratedKey){0};
@@ -196,8 +196,7 @@ static KnapStatus mh_iterated_keygen(const SchemeKeygenParams *params,
 }
 
 static KnapStatus mh_iterated_encrypt(const SchemeKey *scheme_key,
-                                      BitView message,
-                                      mpz_t out_ciphertext) {
+                                      BitView message, mpz_t out_ciphertext) {
     MhIteratedKey *key;
 
     if (!scheme_key || !scheme_key->data || !message.data ||

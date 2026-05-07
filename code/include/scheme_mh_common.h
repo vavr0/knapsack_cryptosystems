@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "buffer.h"
@@ -24,4 +23,4 @@ void mh_key_build_public(MhKey *key, const u64 *perm);
 
 void mh_encrypt_impl(const MhKey *key, BitView message, mpz_t ciphertext);
 KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
-                              BitBuf *message);
+                           BitBuf *message);

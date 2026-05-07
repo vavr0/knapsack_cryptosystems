@@ -31,12 +31,24 @@ static KnapStatus parse_mode(int argc, char **argv, CliFlags *out) {
         out->mode = CLI_MODE_BENCH;
         return KNAP_OK;
     }
+    if (strcmp(mode, "attack") == 0) {
+        out->mode = CLI_MODE_ATTACK;
+        return KNAP_OK;
+    }
     if (strcmp(mode, "--help") == 0 || strcmp(mode, "-h") == 0 ||
         strcmp(mode, "help") == 0) {
         return KNAP_STATUS_HELP;
     }
 
     return KNAP_ERR_INVALID;
+}
+
+static b8 is_attack_id_valid(const char *id) {
+    if (!id) {
+        return 0;
+    }
+    return (b8)(strcmp(id, "brute") == 0 || strcmp(id, "mitm") == 0 ||
+                strcmp(id, "trapdoor-toy") == 0);
 }
 
 static KnapStatus parse_u64_str(const char *s, u64 *out, b8 allow_zero) {
@@ -104,7 +116,14 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
                 return KNAP_ERR_INVALID;
             }
             out->scheme_id = argv[++i];
-        } else if (strcmp(flag, "--seed") == 0) {
+        } else if (strcmp(flag, "--attack") == 0) {
+            if (i + 1 >= argc) {
+                return KNAP_ERR_INVALID;
+            }
+            out->attack_id = argv[++i];
+        }
+
+        else if (strcmp(flag, "--seed") == 0) {
             u64 value;
             if (i + 1 >= argc) {
                 return KNAP_ERR_INVALID;
@@ -116,11 +135,6 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
             }
             out->seed = value;
             out->has_seed = 1;
-        } else if (strcmp(flag, "--format") == 0) {
-            if (i + 1 >= argc) {
-                return KNAP_ERR_INVALID;
-            }
-            out->format = argv[++i];
         } else if (strcmp(flag, "--n") == 0) {
             if (i + 1 >= argc) {
                 return KNAP_ERR_INVALID;
@@ -139,7 +153,6 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
             if (status != KNAP_OK) {
                 return KNAP_ERR_INVALID;
             }
-
         } else if (strcmp(flag, "-h") == 0 || strcmp(flag, "--help") == 0) {
             return KNAP_STATUS_HELP;
         } else {
@@ -154,21 +167,13 @@ static KnapStatus validate_flags(const CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
 
-    if (flags->mode != CLI_MODE_DEMO && flags->mode != CLI_MODE_BENCH) {
+    if (flags->mode != CLI_MODE_DEMO && flags->mode != CLI_MODE_BENCH &&
+        flags->mode != CLI_MODE_ATTACK) {
         return KNAP_ERR_INVALID;
     }
 
     if (flags->scheme_id && scheme_resolve(flags->scheme_id) == NULL) {
         return KNAP_ERR_INVALID;
-    }
-
-    if (flags->format) {
-        if (strcmp(flags->format, "csv") != 0) {
-            return KNAP_ERR_INVALID;
-        }
-        if (flags->mode != CLI_MODE_BENCH) {
-            return KNAP_ERR_INVALID;
-        }
     }
 
     if (flags->input_mode == CLI_INPUT_NONE) {
@@ -194,12 +199,16 @@ static KnapStatus validate_flags(const CliFlags *flags) {
     }
 
     if (flags->mode == CLI_MODE_DEMO) {
-        if (flags->reps != 0 || flags->format != NULL) {
+        if (flags->reps != 0) {
             return KNAP_ERR_INVALID;
         }
 
         if (flags->input_mode == CLI_INPUT_TEXT && flags->n != 0 &&
             (flags->n % 8u) != 0) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->attack_id != NULL || flags->reps != 0) {
             return KNAP_ERR_INVALID;
         }
     }
@@ -209,6 +218,29 @@ static KnapStatus validate_flags(const CliFlags *flags) {
             return KNAP_ERR_INVALID;
         }
         if (flags->bits_message.length == 0 && flags->n == 0) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->attack_id != NULL) {
+            return KNAP_ERR_INVALID;
+        }
+    }
+
+    if (flags->mode == CLI_MODE_ATTACK) {
+        if (!is_attack_id_valid(flags->attack_id)) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->input_mode == CLI_INPUT_TEXT) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->bits_message.length == 0 && flags->n == 0) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->scheme_id && strcmp(flags->scheme_id, "mh") != 0 &&
+            strcmp(flags->scheme_id, "mh-classic") != 0) {
             return KNAP_ERR_INVALID;
         }
     }

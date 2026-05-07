@@ -105,7 +105,6 @@ static KnapStatus mh_permuted_decrypt_impl(const MhPermutedKey *key,
     return KNAP_OK;
 }
 
-
 static MhPermutedKey *
 mh_permuted_key_from_scheme_key(const SchemeKey *scheme_key) {
     if (!scheme_key || !scheme_key->data) {

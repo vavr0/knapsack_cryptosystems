@@ -6,7 +6,7 @@
 
 typedef struct {
     void *data; // scheme-specific keypair/context
-    u64 n;   // key/message length
+    u64 n;      // key/message length
 } SchemeKey;
 
 typedef struct {
@@ -23,7 +23,8 @@ typedef struct {
 
 typedef struct {
     SchemeInfo info;
-    KnapStatus (*keygen)(const SchemeKeygenParams *params, SchemeKey *out_keypair);
+    KnapStatus (*keygen)(const SchemeKeygenParams *params,
+                         SchemeKey *out_keypair);
     KnapStatus (*encrypt)(const SchemeKey *keypair, BitView message,
                           mpz_t out_ciphertext);
     KnapStatus (*decrypt)(const SchemeKey *keypair, const mpz_t ciphertext,

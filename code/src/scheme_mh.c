@@ -1,8 +1,8 @@
 #include "common.h"
 #include "error.h"
 #include "rand.h"
-#include "scheme_mh_common.h"
 #include "scheme.h"
+#include "scheme_mh_common.h"
 #include <stddef.h>
 
 static MhKey *mh_key_from_scheme_key(const SchemeKey *scheme_key) {
@@ -32,14 +32,14 @@ static KnapStatus mh_keygen(const SchemeKeygenParams *params,
         return status;
     }
 
-   status = mh_key_build_private(key, &rng);
-   if (status != KNAP_OK) {
-       mh_key_clear(key);
-       free(key);
-       return status;
-   }
+    status = mh_key_build_private(key, &rng);
+    if (status != KNAP_OK) {
+        mh_key_clear(key);
+        free(key);
+        return status;
+    }
 
-   mh_key_build_public(key, NULL);
+    mh_key_build_public(key, NULL);
 
     out_scheme_key->data = key;
     out_scheme_key->n = params->n;
