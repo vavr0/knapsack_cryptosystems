@@ -231,6 +231,10 @@ static KnapStatus validate_flags(const CliFlags *flags) {
             return KNAP_ERR_INVALID;
         }
 
+        if (flags->reps != 0) {
+            return KNAP_ERR_INVALID;
+        }
+
         if (flags->input_mode == CLI_INPUT_TEXT) {
             return KNAP_ERR_INVALID;
         }
