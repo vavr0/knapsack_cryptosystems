@@ -32,7 +32,6 @@ void print_usage(const char *prog) {
     fprintf(stderr, "  --attack ID        Attack: brute, mitm, trapdoor-toy\n");
     fprintf(stderr, "  --bits BITS        Explicit raw bitstring input\n");
     fprintf(stderr, "  --n BITS           Random message length in bits\n");
-    fprintf(stderr, "  --reps N           Attack repetitions; default is 1\n");
     fprintf(stderr, "  --scheme ID        Scheme: mh-classic or mh\n");
     fprintf(stderr, "  --seed SEED        Deterministic seed\n");
 }
@@ -99,4 +98,14 @@ KnapStatus print_demo_result(const CliFlags *flags, const SchemeOps *scheme,
     text_buf_clear(&decrypted_text);
     free(decrypted_str);
     return KNAP_OK;
+}
+
+void print_attack_result(const char *attack_id, const SchemeOps *scheme, u64 n,
+                         const u64 seed[2], const AttackResult *result,
+                         f64 attack_ms) {
+    printf("attack,scheme,n,initstate,initseq,success,attack_ms,checked\n");
+    printf("%s,%s,%llu,%llu,%llu,%d,%.6f,%llu\n", attack_id, scheme->info.id,
+           (unsigned long long)n, (unsigned long long)seed[0],
+           (unsigned long long)seed[1], (int)result->success, attack_ms,
+           (unsigned long long)result->checked_count);
 }

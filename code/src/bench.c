@@ -5,6 +5,7 @@
 #include "rand.h"
 #include "scheme.h"
 #include "seed.h"
+#include "utils.h"
 
 typedef struct {
     f64 keygen_ms;
@@ -24,33 +25,6 @@ static void bench_sample_div(BenchSample *sample, u64 reps) {
     sample->encrypt_ms /= (f64)reps;
     sample->decrypt_ms /= (f64)reps;
     sample->total_ms /= (f64)reps;
-}
-
-// TODO
-static KnapStatus fill_message_random(BitBuf *bits_message, u64 n,
-                                      PrngState *rng) {
-    if (!bits_message || n == 0) {
-        return KNAP_ERR_INVALID;
-    }
-
-    KnapStatus status = bit_buf_alloc(bits_message, (size_t)n);
-    if (status != KNAP_OK) {
-        return status;
-    }
-
-    for (u64 i = 0; i < n; i++) {
-        bits_message->data[i] = (u8)(prng_rand(rng) & 1);
-    }
-
-    return KNAP_OK;
-}
-
-static f64 now_ms(void) {
-    struct timespec ts;
-    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-        return 0.0;
-    }
-    return (f64)ts.tv_sec * 1000.0 + (f64)ts.tv_nsec / 1000000.0;
 }
 
 static KnapStatus bench_measure_once(const SchemeOps *scheme, BitView message,

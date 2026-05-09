@@ -82,12 +82,12 @@ static KnapStatus demo_run(CliFlags *flags) {
     SchemeKeygenParams params = {0};
     BitBuf decrypted = {0};
     mpz_t *ciphertexts;
-    u64 seed_pair[2];
+    u64 seed[2];
 
     BitBlocks blocks = {0};
     u64 block_size;
 
-    status = seed_resolve_pair(flags->has_seed, flags->seed, seed_pair);
+    status = seed_resolve_pair(flags->has_seed, flags->seed, seed);
     if (status != KNAP_OK) {
         return status;
     }
@@ -136,8 +136,8 @@ static KnapStatus demo_run(CliFlags *flags) {
     }
 
     params.n = blocks.block_size;
-    params.initstate = seed_pair[0];
-    params.initseq = seed_pair[1];
+    params.initstate = seed[0];
+    params.initseq = seed[1];
     params.flags = 0;
 
     status = scheme->keygen(&params, &scheme_key);
