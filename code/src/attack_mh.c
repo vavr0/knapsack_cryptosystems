@@ -4,10 +4,20 @@
 #include "scheme.h"
 #include "scheme_mh_common.h"
 #include "seed.h"
+#include "stdlib.h"
 #include "utils.h"
 #include <gmp.h>
 
-#define ATTACK_BRUTE_MAX_N 30u
+static void subset_sum(const mpz_t *weights, u64 offset, u64 count, u64 mask,
+                       mpz_t out_sum) {
+    mpz_set_ui(out_sum, 0);
+
+    for (u64 i = 0; i < count; i++) {
+        if ((mask >> i) & 1u) {
+            mpz_add(out_sum, out_sum, weights[offset + i]);
+        }
+    }
+}
 
 static KnapStatus attack_brute_force(MhPublicKeyView pub_key,
                                      const mpz_t ciphertext,
@@ -25,13 +35,7 @@ static KnapStatus attack_brute_force(MhPublicKeyView pub_key,
     mpz_init(sum);
 
     for (u64 mask = 0; mask < limit; mask++) {
-        mpz_set_ui(sum, 0);
-
-        for (u64 i = 0; i < pub_key.n; i++) {
-            if ((mask >> i) & 1u) {
-                mpz_add(sum, sum, pub_key.weights[i]);
-            }
-        }
+        subset_sum(pub_key.weights, 0, pub_key.n, mask, sum);
 
         result->checked_count++;
 
@@ -71,7 +75,7 @@ KnapStatus attack_mh_run(CliFlags *flags) {
     f64 t1;
     f64 attack_ms;
 
-    if (!flags) {
+    if (!flags || !flags->attack_id) {
         return KNAP_ERR_INVALID;
     }
 
@@ -91,6 +95,10 @@ KnapStatus attack_mh_run(CliFlags *flags) {
         if (status != KNAP_OK) {
             return status;
         }
+    }
+
+    if (flags->bits_message.length > ATTACK_BRUTE_MAX_N) {
+        return KNAP_ERR_INVALID;
     }
 
     scheme = scheme_resolve(flags->scheme_id);
@@ -131,7 +139,7 @@ KnapStatus attack_mh_run(CliFlags *flags) {
 
     if (status != KNAP_OK) {
         mpz_clear(ciphertext);
-        bit_buf_clear(&result.message);
+        attack_result_clear(&result);
         scheme->scheme_key_clear(&scheme_key);
         return status;
     }
@@ -149,6 +157,51 @@ KnapStatus attack_mh_run(CliFlags *flags) {
     scheme->scheme_key_clear(&scheme_key);
 
     return KNAP_OK;
+}
+
+static KnapStatus attack_meet_in_middle(MhPublicKeyView pub_key,
+                                        const mpz_t ciphertext,
+                                        AttackResult *result) {
+    if (!pub_key.weights || !result || pub_key.n == 0) {
+        return KNAP_ERR_INVALID;
+    }
+
+    u64 left_n = pub_key.n / 2;
+    u64 right_n = pub_key.n - left_n;
+
+    if (left_n > ATTACK_MITM_MAX_HALF_N || right_n > ATTACK_MITM_MAX_HALF_N) {
+        return KNAP_ERR_INVALID;
+    }
+
+    u64 left_count = 1ULL << left_n;
+    u64 right_count = 1ULL << right_n;
+
+    result->table_entries = left_count + right_count;
+
+    // allocate left and right tables
+    // fill left: value = subset sum of left half
+    // fill right: value = ciphertext - subset sum of right half
+    // sort both
+    // scan for equal value
+}
+
+static int mitm_entry_cmp(const void *a, const void *b) {
+    const MitmEntry *entry_a = (const MitmEntry *)a;
+    const MitmEntry *entry_b = (const MitmEntry *)b;
+
+    return mpz_cmp(entry_a->value, entry_b->value);
+}
+
+static void mitm_entries_clear(MitmEntry *entries, u64 count) {
+    if (!entries) {
+        return;
+    }
+
+    for (u64 i = 0; i < count; i++) {
+        mpz_clear(entries[i].value);
+    }
+
+    free(entries);
 }
 
 void attack_result_clear(AttackResult *result) {

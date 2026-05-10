@@ -103,9 +103,11 @@ KnapStatus print_demo_result(const CliFlags *flags, const SchemeOps *scheme,
 void print_attack_result(const char *attack_id, const SchemeOps *scheme, u64 n,
                          const u64 seed[2], const AttackResult *result,
                          f64 attack_ms) {
-    printf("attack,scheme,n,initstate,initseq,success,attack_ms,checked\n");
-    printf("%s,%s,%llu,%llu,%llu,%d,%.6f,%llu\n", attack_id, scheme->info.id,
-           (unsigned long long)n, (unsigned long long)seed[0],
+    printf("attack,scheme,n,initstate,initseq,success,attack_ms,checked,table_"
+           "entries\n");
+    printf("%s,%s,%llu,%llu,%llu,%d,%.6f,%llu,%llu\n", attack_id,
+           scheme->info.id, (unsigned long long)n, (unsigned long long)seed[0],
            (unsigned long long)seed[1], (int)result->success, attack_ms,
-           (unsigned long long)result->checked_count);
+           (unsigned long long)result->checked_count,
+           (unsigned long long)result->table_entries);
 }

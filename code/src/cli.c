@@ -208,7 +208,7 @@ static KnapStatus validate_flags(const CliFlags *flags) {
             return KNAP_ERR_INVALID;
         }
 
-        if (flags->attack_id != NULL || flags->reps != 0) {
+        if (flags->attack_id != NULL) {
             return KNAP_ERR_INVALID;
         }
     }
