@@ -4,8 +4,9 @@ This directory contains the C implementation used in the thesis work on historic
 
 ## Structure
 
-- `src/` - application flow, CLI, benchmarks, plaintext helpers, and scheme implementations
+- `src/` - application flow, CLI, benchmarks, plaintext helpers, attacks, and scheme implementations
 - `include/` - public headers
+- `tests/` - small CLI checks
 - `Makefile` - build configuration
 
 ## Build
@@ -26,6 +27,12 @@ Build with sanitizers:
 
 ```bash
 make san
+```
+
+Run basic checks:
+
+```bash
+./tests/test.sh
 ```
 
 ## Run
@@ -54,16 +61,28 @@ Plaintext demo with explicit block size:
 ./build/debug/knapsack demo --scheme mh-classic --msg "hello" --n 64 --seed 123
 ```
 
-Benchmark example:
+Benchmark example. Bench output is CSV:
 
 ```bash
-./build/debug/knapsack bench --scheme mh-classic --n 128 --reps 10 --seed 123 --format csv
+./build/debug/knapsack bench --scheme mh-classic --n 128 --reps 10 --seed 123
 ```
 
 Benchmark with an explicit bitstring:
 
 ```bash
-./build/debug/knapsack bench --scheme mh-classic --bits 101010 --reps 10 --seed 123 --format csv
+./build/debug/knapsack bench --scheme mh-classic --bits 101010 --reps 10 --seed 123
+```
+
+Brute-force attack example:
+
+```bash
+./build/debug/knapsack attack --attack brute --n 12 --seed 123
+```
+
+Meet-in-the-middle attack example:
+
+```bash
+./build/debug/knapsack attack --attack mitm --n 32 --seed 123
 ```
 
 ## CLI summary
@@ -73,7 +92,7 @@ Demo mode accepts:
 - `--bits BITS` - raw bitstring input
 - `--msg TEXT` - plaintext input converted to bits
 - `--n BITS` - demo block size in bits; plaintext input defaults to 128-bit blocks
-- `--scheme ID` - `mh-classic`, `mh`, or `mh-permuted`
+- `--scheme ID` - `mh-classic`, `mh`, `mh-permuted`, or `mh-iterated`
 - `--seed SEED` - deterministic seed
 
 Bench mode accepts:
@@ -81,15 +100,18 @@ Bench mode accepts:
 - `--bits BITS` - explicit raw bitstring input
 - `--n BITS` - random message length in bits
 - `--reps N` - repetitions; default is 10
-- `--format csv` - CSV output
-- `--scheme ID` - `mh-classic`, `mh`, or `mh-permuted`
+- `--scheme ID` - `mh-classic`, `mh`, `mh-permuted`, or `mh-iterated`
 - `--seed SEED` - deterministic seed
 
-## Current limitations
+Attack mode accepts:
 
-- Demo output is still bit-oriented.
-- For multi-block demo messages, the printed ciphertext currently represents the last processed block only.
-- Block-aware and text-aware demo output is planned for a later refactor.
+- `--attack ID` - `brute` or `mitm`
+- `--bits BITS` - explicit raw bitstring input
+- `--n BITS` - random message length in bits
+- `--scheme ID` - currently `mh-classic` or `mh`
+- `--seed SEED` - deterministic seed
+
+Attack output is CSV. The implemented attacks are generic subset-sum attacks against the public knapsack instance, not full Shamir key recovery.
 
 ## Notes
 

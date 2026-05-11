@@ -67,14 +67,15 @@ KnapStatus mh_key_build_private(MhKey *key, PrngState *rng) {
     // Build superinceasing sequencce
     // larger delta -> lower density -> easier for lattice-style attacks
     for (u64 i = 0; i < key->n; i++) {
-        mpz_set_ui(delta, 1 + (prng_rand(rng) % 16u));
+        mpz_set_ui(delta, 1 + (prng_rand(rng) % MH_DEFAULT_DELTA_MAX));
         mpz_add(delta, delta, sum);
         mpz_set(key->priv_weights[i], delta);
         mpz_add(sum, sum, key->priv_weights[i]);
     }
 
     // Choose mod > sum(W)
-    u64 margin_u64 = 1 + (prng_rand_u64(rng) % (64u * key->n));
+    u64 margin_u64 =
+        1 + (prng_rand_u64(rng) % (MH_DEFAULT_MARGIN_FACTOR * key->n));
     mpz_set_ui(margin, margin_u64);
     mpz_add(key->mod, sum, margin);
 

@@ -47,8 +47,7 @@ static b8 is_attack_id_valid(const char *id) {
     if (!id) {
         return 0;
     }
-    return (b8)(strcmp(id, "brute") == 0 || strcmp(id, "mitm") == 0 ||
-                strcmp(id, "trapdoor-toy") == 0);
+    return (b8)(strcmp(id, "brute") == 0 || strcmp(id, "mitm") == 0);
 }
 
 static KnapStatus parse_u64_str(const char *s, u64 *out, b8 allow_zero) {

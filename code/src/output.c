@@ -29,7 +29,7 @@ void print_usage(const char *prog) {
     fprintf(stderr, "  --seed SEED        Deterministic seed\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Attack options:\n");
-    fprintf(stderr, "  --attack ID        Attack: brute, mitm, trapdoor-toy\n");
+    fprintf(stderr, "  --attack ID        Attack: brute, mitm\n");
     fprintf(stderr, "  --bits BITS        Explicit raw bitstring input\n");
     fprintf(stderr, "  --n BITS           Random message length in bits\n");
     fprintf(stderr, "  --scheme ID        Scheme: mh-classic or mh\n");

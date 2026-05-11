@@ -6,6 +6,9 @@
 #include "rand.h"
 #include <gmp.h>
 
+#define MH_DEFAULT_DELTA_MAX 16u
+#define MH_DEFAULT_MARGIN_FACTOR 64u
+
 typedef struct {
     u64 n;               // key length
     mpz_t *priv_weights; // private key sequence (weight)

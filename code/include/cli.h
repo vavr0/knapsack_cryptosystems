@@ -1,4 +1,5 @@
 #pragma once
+
 #include "buffer.h"
 #include "common.h"
 #include "error.h"
