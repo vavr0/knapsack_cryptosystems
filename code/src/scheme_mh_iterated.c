@@ -96,7 +96,8 @@ static KnapStatus mh_iterated_layer_build(MhIteratedLayer *layer,
         mpz_add(sum, sum, weights[i]);
     }
 
-    u64 margin_u64 = 1 + (prng_rand_u64(rng) % (64u * n));
+    u64 margin_u64 =
+        1 + (prng_rand_u64(rng) % (MH_DEFAULT_MARGIN_FACTOR * n));
     mpz_set_ui(margin, margin_u64);
     mpz_add(layer->mod, sum, margin);
 

@@ -16,9 +16,10 @@ typedef struct {
 } BenchSample;
 
 typedef struct {
+    u64 delta_max;
+    u64 margin_bound;
+    u64 margin;
     u64 sum_bits;
-    u64 mod_bits;
-    u64 max_public_bits;
     f64 density;
 } BenchKeyStats;
 
@@ -38,6 +39,7 @@ static void bench_sample_div(BenchSample *sample, u64 reps) {
 static KnapStatus bench_key_stats_from_mh(const MhKey *key,
                                           BenchKeyStats *out) {
     mpz_t sum;
+    mpz_t margin;
     u64 max_public_bits = 0;
 
     if (!key || !out || key->n == 0) {
@@ -45,7 +47,7 @@ static KnapStatus bench_key_stats_from_mh(const MhKey *key,
     }
 
     *out = (BenchKeyStats){0};
-    mpz_init_set_ui(sum, 0);
+    mpz_inits(sum, margin, NULL);
 
     for (u64 i = 0; i < key->n; i++) {
         u64 bits;
@@ -58,12 +60,15 @@ static KnapStatus bench_key_stats_from_mh(const MhKey *key,
         }
     }
 
+    mpz_sub(margin, key->mod, sum);
+
+    out->delta_max = MH_DEFAULT_DELTA_MAX;
+    out->margin_bound = MH_DEFAULT_MARGIN_FACTOR * key->n;
+    out->margin = mpz_get_ui(margin);
     out->sum_bits = (u64)mpz_sizeinbase(sum, 2);
-    out->mod_bits = (u64)mpz_sizeinbase(key->mod, 2);
-    out->max_public_bits = max_public_bits;
     out->density = (f64)key->n / (f64)max_public_bits;
 
-    mpz_clear(sum);
+    mpz_clears(sum, margin, NULL);
     return KNAP_OK;
 }
 
@@ -209,16 +214,18 @@ KnapStatus bench_run(CliFlags *flags) {
     bench_sample_div(&avg, reps);
 
     printf("scheme,n,reps,warmup_reps,initstate,initseq,keygen_ms,encrypt_ms,"
-           "decrypt_ms,total_ms,sum_bits,mod_bits,max_public_bits,density\n");
+           "decrypt_ms,total_ms,delta_max,margin_bound,margin,sum_bits,"
+           "density\n");
 
     printf("%s,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f,%llu,%llu,%llu,"
-           "%.6f\n",
+           "%llu,%.6f\n",
            scheme->info.id, (unsigned long long)flags->bits_message.length,
            (unsigned long long)reps, (unsigned long long)warmup_reps, seed[0],
            seed[1], avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms,
-           avg.total_ms, (unsigned long long)key_stats.sum_bits,
-           (unsigned long long)key_stats.mod_bits,
-           (unsigned long long)key_stats.max_public_bits, key_stats.density);
+           avg.total_ms, (unsigned long long)key_stats.delta_max,
+           (unsigned long long)key_stats.margin_bound,
+           (unsigned long long)key_stats.margin,
+           (unsigned long long)key_stats.sum_bits, key_stats.density);
 
     return KNAP_OK;
 }

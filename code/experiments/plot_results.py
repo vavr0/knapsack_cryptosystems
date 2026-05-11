@@ -55,6 +55,63 @@ def plot_crypto_components(df):
     print("wrote", out)
 
 
+def plot_classic_sum_bits(df):
+    classic = df[df["scheme"] == "mh-classic"]
+    avg = classic.groupby("n", as_index=False)["sum_bits"].mean()
+
+    plt.plot(avg["n"], avg["sum_bits"], marker="o")
+    plt.title("Private superincreasing sum growth")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("bit length of sum(W)")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+
+    out = PLOTS / "classic_sum_bits.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
+def plot_classic_density(df):
+    classic = df[df["scheme"] == "mh-classic"]
+    avg = classic.groupby("n", as_index=False)["density"].mean()
+
+    plt.plot(avg["n"], avg["density"], marker="o")
+    plt.title("Public knapsack density")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("density")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+
+    out = PLOTS / "classic_density.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
+def plot_classic_margin(df):
+    classic = df[df["scheme"] == "mh-classic"]
+    avg = classic.groupby("n", as_index=False)[["margin", "margin_bound"]].mean()
+
+    plt.plot(avg["n"], avg["margin_bound"], marker="o", label="margin bound")
+    plt.plot(avg["n"], avg["margin"], marker="o", label="chosen margin")
+    plt.title("Modulus margin selection")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("margin")
+    plt.xscale("log", base=2)
+    plt.yscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+
+    out = PLOTS / "classic_margin.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
 def plot_attack_time(df):
     avg = df.groupby(["attack", "n"], as_index=False)["attack_ms"].mean()
 
@@ -94,12 +151,111 @@ def plot_mitm_table_entries(df):
     print("wrote", out)
 
 
+def plot_delta_sweep_density(df):
+    rows = df[df["sweep"] == "delta"]
+    avg = rows.groupby(["delta_max", "n"], as_index=False)["density"].mean()
+
+    for delta_max in sorted(avg["delta_max"].unique()):
+        group = avg[avg["delta_max"] == delta_max].sort_values("n")
+        plt.plot(group["n"], group["density"], marker="o", label=f"Δ={delta_max}")
+
+    plt.title("Effect of superincreasing slack on density")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("density")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend(title="delta max")
+    plt.tight_layout()
+
+    out = PLOTS / "sweep_delta_density.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
+def plot_delta_sweep_sum_bits(df):
+    rows = df[df["sweep"] == "delta"]
+    avg = rows.groupby(["delta_max", "n"], as_index=False)["sum_bits"].mean()
+
+    for delta_max in sorted(avg["delta_max"].unique()):
+        group = avg[avg["delta_max"] == delta_max].sort_values("n")
+        plt.plot(group["n"], group["sum_bits"], marker="o", label=f"Δ={delta_max}")
+
+    plt.title("Effect of superincreasing slack on private sum size")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("bit length of sum(W)")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend(title="delta max")
+    plt.tight_layout()
+
+    out = PLOTS / "sweep_delta_sum_bits.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
+def plot_margin_sweep_margin(df):
+    rows = df[df["sweep"] == "margin"].copy()
+    rows["margin_factor"] = (rows["margin_bound"] / rows["n"]).round().astype(int)
+    avg = rows.groupby(["margin_factor", "n"], as_index=False)["margin"].mean()
+
+    for margin_factor in sorted(avg["margin_factor"].unique()):
+        group = avg[avg["margin_factor"] == margin_factor].sort_values("n")
+        plt.plot(group["n"], group["margin"], marker="o", label=f"F={margin_factor}")
+
+    plt.title("Effect of margin bound on selected modulus margin")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("average selected margin")
+    plt.xscale("log", base=2)
+    plt.yscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend(title="margin factor")
+    plt.tight_layout()
+
+    out = PLOTS / "sweep_margin_selected.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
+def plot_margin_sweep_density(df):
+    rows = df[df["sweep"] == "margin"].copy()
+    rows["margin_factor"] = (rows["margin_bound"] / rows["n"]).round().astype(int)
+    avg = rows.groupby(["margin_factor", "n"], as_index=False)["density"].mean()
+
+    for margin_factor in sorted(avg["margin_factor"].unique()):
+        group = avg[avg["margin_factor"] == margin_factor].sort_values("n")
+        plt.plot(group["n"], group["density"], marker="o", label=f"F={margin_factor}")
+
+    plt.title("Effect of margin bound on density")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("density")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend(title="margin factor")
+    plt.tight_layout()
+
+    out = PLOTS / "sweep_margin_density.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
 def main():
     PLOTS.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_csv(RESULTS / "crypto_bench.csv")
     plot_crypto_total(df)
     plot_crypto_components(df)
+
+    sweep_path = RESULTS / "param_sweep.csv"
+    if sweep_path.exists():
+        sweep = pd.read_csv(sweep_path)
+        plot_delta_sweep_density(sweep)
+        plot_delta_sweep_sum_bits(sweep)
+        plot_margin_sweep_margin(sweep)
+        plot_margin_sweep_density(sweep)
 
     attack_path = RESULTS / "attack_bench.csv"
     if attack_path.exists():
