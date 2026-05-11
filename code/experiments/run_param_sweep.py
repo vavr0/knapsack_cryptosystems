@@ -68,6 +68,7 @@ def run_config(sweep, delta_max, margin_factor):
 
     print("config", sweep, "delta", delta_max, "margin", margin_factor)
     set_constants(delta_max, margin_factor)
+    run(["make", "clean"])
     run(["make", "release"])
 
     for n in NS:
@@ -87,6 +88,10 @@ def run_config(sweep, delta_max, margin_factor):
                     str(seed),
                 ]
             )
+            if int(row["delta_max"]) != delta_max:
+                raise SystemExit("built binary used wrong delta_max")
+            if int(row["margin_bound"]) != margin_factor * n:
+                raise SystemExit("built binary used wrong margin_bound")
             row["sweep"] = sweep
             rows.append(row)
 
