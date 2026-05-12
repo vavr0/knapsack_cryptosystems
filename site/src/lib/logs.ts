@@ -9,6 +9,108 @@ export type LogEntry = {
 
 export const logs: LogEntry[] = [
 	{
+		slug: 'week-13',
+		title: 'Week 13 - Experiments and Results Draft',
+		date: '2026-05-12',
+		summary:
+			'Ran the main experiment scripts, generated benchmark plots, and expanded the thesis results and implementation chapters.',
+		completed: [
+			'Added experiment scripts, requirements, CSV outputs, and plots for cryptosystem timing, attack timing, MITM table size, and parameter sweeps.',
+			'Refined the benchmark and attack code so experiments can report the values needed by the thesis.',
+			'Continued the thesis write-up by expanding the implementation, variations, and results sections and removing draft comments.'
+		],
+		nextSteps: [
+			'Select the final plots and explain the important trends in the results chapter.',
+			'Check that all experiment commands are reproducible from a clean checkout.',
+			'Do a final pass over thesis wording, references, and figure captions.'
+		]
+	},
+	{
+		slug: 'week-12',
+		title: 'Week 12 - Attack Modes and Output Cleanup',
+		date: '2026-05-10',
+		summary:
+			'Wired attack selection into the CLI, added brute-force and meet-in-the-middle attack work, and separated output helpers from the main app flow.',
+		completed: [
+			'Added attack mode parsing and connected the iterated Merkle-Hellman scheme to the scheme selection path.',
+			'Implemented and prepared brute-force and meet-in-the-middle attack paths for experiments.',
+			'Moved printing and output helpers into a dedicated module and cleaned up benchmark/report formatting.'
+		],
+		nextSteps: [
+			'Run consistent attack benchmarks for the schemes and parameter choices.',
+			'Use the measured results to support the attack discussion in the thesis.',
+			'Keep the CLI simple enough for the final demo.'
+		]
+	},
+	{
+		slug: 'week-11',
+		title: 'Week 11 - Iterated Variant and Thesis Drafting',
+		date: '2026-05-03',
+		summary:
+			'Added the base iterated scheme, shared common Merkle-Hellman helpers, and continued the written discussion of LLL and variants.',
+		completed: [
+			'Refactored duplicated classical and permuted scheme logic into common helper code.',
+			'Added an initial iterated Merkle-Hellman implementation and updated scheme-related CLI behavior.',
+			'Expanded thesis notes around variants, LLL-style attacks, and bibliography entries.'
+		],
+		nextSteps: [
+			'Finish connecting the iterated variant to all demo and benchmark paths.',
+			'Decide how much implementation detail belongs in the thesis versus the code appendix.',
+			'Prepare attack code that can compare the classical and variant schemes.'
+		]
+	},
+	{
+		slug: 'week-10',
+		title: 'Week 10 - Plaintext Input and Thesis Recovery',
+		date: '2026-04-26',
+		summary:
+			'Implemented plaintext input support, refreshed the procedure presentation, and recovered thesis text on attacks and variations.',
+		completed: [
+			'Reworked the input buffer path and added plaintext parsing support to the CLI and app flow.',
+			'Updated the seminar procedure slides and kept the website PDF in sync.',
+			'Recovered and expanded thesis sections on implementation, theory, Shamir-style attacks, LLL, and variations.'
+		],
+		nextSteps: [
+			'Finish output handling for plaintext demos.',
+			'Connect the plaintext path to repeatable benchmark and attack examples.',
+			'Continue turning recovered thesis material into polished prose.'
+		]
+	},
+	{
+		slug: 'week-09',
+		title: 'Week 09 - Presentation and Repository Cleanup',
+		date: '2026-04-19',
+		summary:
+			'Built the procedure presentation, embedded it into the site, cleaned tracked artifacts, and documented the code structure.',
+		completed: [
+			'Created and refreshed the procedure presentation PDF and added it to the website navigation.',
+			'Added weekly log entries for the migrated Svelte site and removed old generated or temporary artifacts.',
+			'Updated the main README and code README with build and project structure notes.'
+		],
+		nextSteps: [
+			'Use the procedure slides during the next seminar walkthrough.',
+			'Keep generated build outputs out of the repository.',
+			'Return focus to plaintext input and the attack demonstration.'
+		]
+	},
+	{
+		slug: 'week-08',
+		title: 'Week 08 - Stabilization After Variant Work',
+		date: '2026-04-12',
+		summary:
+			'Did a small stabilization pass after the new variant work, including repository cleanup and minor app, benchmark, and seed handling fixes.',
+		completed: [
+			'Cleaned the ignore rules and removed noise from the repository state.',
+			'Made small adjustments in the app and benchmark paths after the parameter and seed refactors.',
+			'Checked the classical Merkle-Hellman code after the permuted variant was merged.'
+		],
+		nextSteps: [
+			'Prepare the site and presentation for the next seminar update.',
+			'Document the project layout so the implementation is easier to review.',
+			'Plan the next concrete demo step around user-supplied plaintext.'
+		]
+	},
+	{
 		slug: 'week-07',
 		title: 'Week 07 - New Variant and Research Notes',
 		date: '2026-04-05',

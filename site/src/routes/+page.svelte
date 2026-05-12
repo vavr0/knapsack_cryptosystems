@@ -22,8 +22,9 @@
 
 		<h3>Current status</h3>
 		<p>
-			Scope refined after supervisor feedback, Makefile and repo cleaned up, and the site prepared
-			for a live seminar walkthrough while I get ready to show the parameter-based break demo.
+			Implementation now includes classical, permuted, and iterated Merkle-Hellman paths, plaintext
+			input support, attack modes, benchmark scripts, and generated plots for the thesis results
+			chapter.
 		</p>
 	</div>
 
