@@ -2,6 +2,7 @@
 #include "buffer.h"
 #include "error.h"
 #include "rand.h"
+#include <time.h>
 
 f64 now_ms(void) {
     struct timespec ts;

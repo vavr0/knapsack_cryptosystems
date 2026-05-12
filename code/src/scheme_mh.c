@@ -4,6 +4,7 @@
 #include "scheme.h"
 #include "scheme_mh_common.h"
 #include <stddef.h>
+#include <stdlib.h>
 
 static MhKey *mh_key_from_scheme_key(const SchemeKey *scheme_key) {
     if (!scheme_key || !scheme_key->data) {

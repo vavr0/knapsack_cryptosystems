@@ -1,4 +1,5 @@
 #include "scheme_mh_common.h"
+#include <stdlib.h>
 
 KnapStatus mh_key_alloc(MhKey *key, u64 n) {
     u64 i;

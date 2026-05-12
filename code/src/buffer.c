@@ -1,5 +1,7 @@
 #include "buffer.h"
 #include "common.h"
+#include <stdlib.h>
+#include <string.h>
 
 // TODO check all these pls
 

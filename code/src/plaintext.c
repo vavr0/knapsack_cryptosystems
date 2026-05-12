@@ -2,6 +2,7 @@
 #include "buffer.h"
 #include "common.h"
 #include "error.h"
+#include <stdlib.h>
 #include <string.h>
 
 BitBlocks bit_blocks(void) { return (BitBlocks){0}; }
