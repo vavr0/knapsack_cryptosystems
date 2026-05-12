@@ -1,3 +1,147 @@
 \chapter{Results}
 
-...
+This chapter presents the experimental part of the thesis. The purpose of these
+experiments is not to propose secure parameters for Merkle--Hellman, because
+classical knapsack cryptosystems are already known to be insecure. The goal is
+more limited: to check that the implementation works correctly, to compare the
+running time of the implemented variants, and to illustrate how selected
+parameters influence the generated knapsack instances.
+
+\section{Experimental Setup}
+
+The experiments were run with the C implementation described in the previous
+chapter. The benchmark mode measures key generation, encryption, and decryption
+separately and prints the results in CSV format. The plotted values were then
+created from these CSV files using the Python scripts in the
+\texttt{experiments} directory.
+
+For the cryptographic benchmarks, the tested block sizes were
+\(n \in \{128,256,512,1024,2048,4096\}\). Each configuration was tested with
+three deterministic seeds. The benchmark used five measured repetitions after a
+small warm-up phase. The compared schemes were \texttt{mh-classic},
+\texttt{mh-permuted}, and \texttt{mh-iterated}. The measured times therefore
+represent the behaviour of this implementation and this test environment, not a
+security claim about the schemes.
+
+The attack experiments used only the classical Merkle--Hellman public knapsack
+instance. The implemented solvers are brute force search and meet-in-the-middle
+search. They are included only as simple subset-sum solvers. They are not
+implementations of Shamir's polynomial-time attack or of lattice-based
+low-density attacks.
+
+\section{Correctness of the Implementation}
+
+Correctness was checked by encrypting a message and then decrypting the
+resulting ciphertext. The decrypted bit sequence was compared with the original
+input. This was done for raw bit strings and also for plaintext messages that
+are converted into bit blocks before encryption.
+
+The automated test script checks the three implemented variants on small
+examples. It also checks that benchmark mode produces CSV output and that the
+simple subset-sum solvers work on small instances. These tests do not prove the
+absence of implementation errors, but they give a basic check that the main
+workflow of key generation, encryption, and decryption is working as expected.
+
+\section{Runtime of Implemented Variants}
+
+Figure~\ref{fig:crypto-total-ms} compares the total running time of the three
+implemented variants. The total time is the sum of key generation, encryption,
+and decryption. For all tested block sizes the measured times remain small, but
+the growth with increasing \(n\) is visible. The iterated variant is the slowest
+for larger block sizes, which is expected because it applies an additional
+modular transformation layer.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/experiments/plots/crypto_total_ms.png}
+    \caption{Average total runtime of the implemented Merkle--Hellman variants.}
+    \label{fig:crypto-total-ms}
+\end{figure}
+
+Figure~\ref{fig:crypto-components-classic} shows the operation breakdown for
+the classical variant. In this implementation, key generation is the largest
+part of the measured runtime. Encryption and decryption are faster, because they
+mainly process one sequence of weights for a fixed-size block.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/experiments/plots/crypto_components_classic.png}
+    \caption{Runtime breakdown of the classical Merkle--Hellman implementation.}
+    \label{fig:crypto-components-classic}
+\end{figure}
+
+\section{Influence of Key-Generation Parameters}
+
+The implementation generates the private superincreasing sequence by adding a
+small random slack value to the current sum of previous weights. This slack is
+controlled by the constant \texttt{MH\_DEFAULT\_DELTA\_MAX}. Larger values can
+make the private weights grow faster. Since the density of a knapsack instance
+is defined as
+\[
+    d = \frac{n}{\log_2(\max_i b_i)},
+\]
+larger public weights can reduce the density.
+
+Figure~\ref{fig:sweep-delta-density} shows this effect. For small block sizes,
+larger slack values reduce the density more visibly. For larger block sizes the
+density values move closer to one in these experiments. This result should be
+interpreted carefully. It does not show resistance to lattice attacks; it only
+shows how this particular generator changes the measured density for the tested
+parameters.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/experiments/plots/sweep_delta_density.png}
+    \caption{Effect of the superincreasing slack parameter on public knapsack density.}
+    \label{fig:sweep-delta-density}
+\end{figure}
+
+\section{Subset-Sum Solver Experiments}
+
+The solver experiments compare brute force search with meet-in-the-middle
+search. Brute force checks possible bit vectors directly, so its worst-case
+running time grows as \(2^n\). Meet-in-the-middle splits the weights into two
+halves and compares partial sums. This reduces the time growth, but it requires
+an exponential table of partial sums.
+
+Figure~\ref{fig:attack-ms} shows the measured running time of both solvers. The
+vertical axis is logarithmic. The brute force solver becomes expensive already
+for small values of \(n\). The meet-in-the-middle solver handles larger values
+in this experiment, but it also grows quickly.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/experiments/plots/attack_ms.png}
+    \caption{Runtime of the implemented brute force and meet-in-the-middle subset-sum solvers.}
+    \label{fig:attack-ms}
+\end{figure}
+
+The memory cost of meet-in-the-middle is shown in
+Figure~\ref{fig:mitm-table-entries}. The number of table entries grows
+exponentially with the message length. This illustrates the usual trade-off of
+this method: it is faster than direct brute force, but it needs much more
+storage.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../code/experiments/plots/mitm_table_entries.png}
+    \caption{Number of table entries used by the meet-in-the-middle solver.}
+    \label{fig:mitm-table-entries}
+\end{figure}
+
+\section{Summary of Experimental Results}
+
+The experiments confirm that the implemented schemes correctly perform key
+generation, encryption, and decryption for the tested inputs. The runtime
+measurements show that the implementation is fast for educational parameter
+sizes, with key generation being the largest part of the cost in the classical
+variant. The parameter sweep shows that the construction of the private
+superincreasing sequence influences the density of the public knapsack.
+
+The subset-sum solver experiments demonstrate the rapid growth of direct
+message-recovery methods. However, these simple solvers are not the main reason
+why classical Merkle--Hellman is insecure. The cryptographic weakness of the
+scheme follows from the structural and lattice-based attacks discussed in the
+previous chapter. The role of the experiments is therefore mainly educational:
+they connect the implementation with the parameters and complexity behaviour
+discussed in the theoretical part of the thesis.

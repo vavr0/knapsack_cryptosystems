@@ -7,6 +7,7 @@
 #include "utils.h"
 #include <gmp.h>
 #include <stdlib.h>
+#include <string.h>
 
 static void subset_sum(const mpz_t *weights, u64 offset, u64 count, u64 mask,
                        mpz_t out_sum) {

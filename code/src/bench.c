@@ -7,6 +7,7 @@
 #include "scheme_mh_common.h"
 #include "seed.h"
 #include "utils.h"
+#include <stdio.h>
 
 typedef struct {
     f64 keygen_ms;
@@ -217,12 +218,12 @@ KnapStatus bench_run(CliFlags *flags) {
            "decrypt_ms,total_ms,delta_max,margin_bound,margin,sum_bits,"
            "density\n");
 
-    printf("%s,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f,%llu,%llu,%llu,"
+    printf("%s,%llu,%llu,%llu,%lu,%lu,%.6f,%.6f,%.6f,%.6f,%llu,%llu,%llu,"
            "%llu,%.6f\n",
            scheme->info.id, (unsigned long long)flags->bits_message.length,
            (unsigned long long)reps, (unsigned long long)warmup_reps, seed[0],
-           seed[1], avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms,
-           avg.total_ms, (unsigned long long)key_stats.delta_max,
+           seed[1], avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms, avg.total_ms,
+           (unsigned long long)key_stats.delta_max,
            (unsigned long long)key_stats.margin_bound,
            (unsigned long long)key_stats.margin,
            (unsigned long long)key_stats.sum_bits, key_stats.density);

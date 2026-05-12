@@ -4,11 +4,10 @@
 
 The implementation part of this thesis was designed as an experimental and
 educational tool for studying the Merkle--Hellman knapsack cryptosystem. Its
-main goal is to demonstrate the complete workflow of the scheme: key
-generation, encryption, decryption, and verification of the recovered
-plaintext. The implementation also includes a permuted variant, which makes it
-possible to compare the basic construction with a simple modification of the
-public key structure.
+main goal is to show the full workflow of the scheme. This includes key
+generation, encryption, decryption, and checking that the recovered plaintext
+is correct. Besides the classic variant it also includes a permuted variant and
+a simple iterated variant.
 
 The program is not intended to be a secure cryptographic library. The schemes
 studied in this thesis are historically important, but they are known to be
@@ -16,45 +15,41 @@ insecure against cryptanalytic attacks. For this reason, the implementation is
 used mainly to illustrate how the trapdoor construction works in practice and
 to support the theoretical discussion from the previous chapters.
 
-A further goal is to provide a basis for simple cryptanalytic experiments. The
-implemented attacks are meant to be illustrative rather than complete
-state-of-the-art cryptanalysis. They are used to show that small or structured
-knapsack instances can be attacked directly, and to connect the implementation
-with the theoretical discussion of weaknesses in the Merkle--Hellman scheme and
-its variants.
+The implementation also includes simple solvers for small subset-sum
+instances. They are used only to illustrate how direct recovery of the message
+becomes harder as the message length increases. They are not implementations of
+Shamir's structural attack or lattice-based attacks.
 
-Another goal was to prepare a simple environment for experiments. The
-program supports deterministic initialization through explicit seeds, so the
-same keys and test cases can be reproduced across multiple runs. This is useful
-for debugging, correctness testing, and later benchmarking of parameters such
-as block length, key size, ciphertext size, and running time.
+Another goal was to prepare a simple environment for experiments. The program
+supports deterministic runs through explicit seeds, so the same keys and test
+cases can be reproduced across multiple runs. This is useful for debugging,
+correctness testing, and benchmarks of running time, density, and size-related
+key parameters such as the bit length of the private-weight sum.
 
 \section{Choice of Programming Language and Libraries}
 
-The implementation was written in the C programming language for practical
-reasons connected with the experimental nature of the work. The program has to
-store and manipulate sequences of private weights, public weights, moduli,
-multipliers, ciphertexts, and intermediate values. C made it possible to keep
-these data structures explicit and to control how keys, messages, and
-scheme-specific objects are initialized, reused, and cleared during experiments.
+The implementation is written in C. This choice was motivated by both practical
+and educational reasons. C is commonly used in systems programming and in many
+cryptographic libraries, where performance, memory layout, and low-level
+arithmetic are important. For this thesis, using C also made it possible to work
+closer to the representation of keys, bit vectors, and large integer values
+instead of relying on a high-level prototype. It was also useful as practice
+with manual memory management, explicit error handling, and build tooling.
 
 A major requirement of the implementation is support for integers larger than
 those provided by the standard C integer types. In knapsack cryptosystems, the
 weights, modulus, multiplier, and ciphertexts can grow quickly as the block
 length increases. For this reason, the implementation uses the GNU Multiple
-Precision Arithmetic Library (GMP). GMP is used for arbitrary-precision integer
-arithmetic, including additions, comparisons, modular multiplication, modular
-reduction, modular inversion, and ciphertext computation. This made it possible
-to keep the implementation in C while supporting arithmetic beyond standard
-64-bit limits.
+Precision Arithmetic Library (GMP). GMP is used for large integer arithmetic,
+such as additions, comparisons, modular inversion, and ciphertext computation.
+This made it possible to keep the implementation in C while supporting
+arithmetic beyond standard 64-bit limits.
 
-Seed handling was implemented explicitly in order to support both reproducible
-and non-deterministic experiments. The program uses a pseudo-random generator
-initialized either from a user-provided seed or from operating-system entropy.
-A provided seed makes experiments exactly repeatable, while the entropy-based
-mode allows non-deterministic runs. If system entropy is unavailable,
-initialization fails rather than silently falling back to a weaker source;
-deterministic execution is still possible by providing an explicit seed.
+The random generator used by the program is based on PCG~\cite{ONeill2014PCG}.
+It is used for the randomized parts of the implementation, such as generating
+private weights, permutations, and test messages. The generator is suitable for
+experiments and demonstrations, but the program does not claim to provide
+production cryptographic randomness.
 
 The build process is controlled by a simple Makefile. It supports separate
 debug and release builds, as well as an address-sanitized configuration for
@@ -68,54 +63,97 @@ Make, and GMP installed.
 
 The implementation was organized as a small modular C program. The main goal
 was to keep the cryptographic code separate from user interaction, input
-parsing, and benchmarking. This made the program easier to test and also made
-it possible to add new knapsack variants without changing the rest of the
-application structure.
+parsing, benchmarking, and subset-sum solvers. This structure makes the
+implementation easier to follow and makes later extensions, such as new modes or
+scheme variants, less dependent on changes in unrelated code.
 
-\subsection{Top-Level Structure}
+The executable entry point in \texttt{main.c} is intentionally small. It
+hands control to the application layer in \texttt{app.c}, which selects the
+requested mode and coordinates the rest of the program. Command-line parsing
+and validation are handled in \texttt{cli.c}. This keeps input handling
+separate from the implementation of the schemes.
 
-The executable entry point in `main.c` is intentionally minimal and delegates
-control to the application layer in `app.c`. This top-level layer is
-responsible for the overall execution flow, including mode selection, demo
-execution, plaintext handling, and benchmark runs. Command-line parsing and
-validation are centralized in `cli.c`, which keeps input handling separate from
-the cryptographic part of the program.
-The program currently supports two main execution modes. The first is a demo
-mode intended for direct experiments with encryption and decryption. The second
-is a benchmark mode, which repeatedly runs the selected scheme and records
-timing data for later evaluation. This separation made it possible to keep the
-interactive and experimental parts of the implementation independent.
+The program supports demo mode, benchmark mode, and a solver mode.
+Demo mode can encrypt either a raw bit string or a plaintext message. Plaintext
+input is converted to bits, split into fixed-size blocks, encrypted block by
+block, and then reconstructed after decryption. Benchmark mode repeats key
+generation, encryption, and decryption and records timing data.
+In the command-line interface, the solver mode is named \texttt{attack}, but it
+only runs brute-force search and a meet-in-the-middle solver on small generated
+subset-sum instances. In the current program, this mode is intended for the
+classical Merkle--Hellman scheme.
 
-\subsection{Scheme Abstraction}
+\subsection{Scheme Interface and Variants}
 
-At the core of the implementation is a small scheme abstraction defined in
-`scheme.h`. Each cryptosystem variant is represented by a `SchemeOps`
+The common scheme interface is a small abstraction defined in
+\texttt{scheme.h}. Each variant is then represented by a \texttt{SchemeOps}
 structure containing function pointers for key generation, encryption,
 decryption, and cleanup, together with a short identifier and a display name.
-This provides a common interface for all implemented schemes while still
-allowing each variant to keep its own internal data structures.
-The currently implemented variants are the classical Merkle--Hellman scheme and
-a permuted variant. Their implementations are placed in separate source files,
-which keeps the code easier to read and compare. Scheme selection is handled in
-`scheme.c`, where the requested identifier is resolved to the corresponding
-implementation.
+This gives all variants the same external interface, while still allowing each
+one to keep its own internal logic and data structures. 
+
+The implemented variants are the classical Merkle--Hellman scheme, a permuted
+variant, and a simple iterated variant. Their code is placed in separate source
+files. Scheme selection is handled in \texttt{scheme.c}, where the identifier
+passed on the command line is mapped to the corresponding implementation. The
+identifier \texttt{mh} is also accepted as an alias for \texttt{mh-classic}.
+
+The classical variant implements the standard Merkle--Hellman flow with a
+superincreasing private sequence, a modulus, and a multiplier. The permuted
+variant adds a secret permutation of the private weights before the public
+weights are created. The iterated variant applies more than one modular
+transformation layer and removes these layers in reverse order during
+decryption.
 
 \subsection{Data Representation and Support Modules}
 
-Messages are represented internally as bit vectors through the `BitView` and
-`BitBuf` data structures. This matches the block-based nature of the knapsack
-schemes and makes it straightforward to work with fixed-length binary message
-blocks. For plaintext demonstrations, the helper logic converts text into bit
-blocks before encryption and reconstructs the original text after decryption.
-Several supporting modules are used around the core scheme implementations.
-Seed handling and entropy acquisition are separated into `seed.c`, which allows
-both deterministic runs and randomly initialized ones. Benchmarking is handled
-in `bench.c`, where key generation, encryption, and decryption are measured
-separately. Correctness is verified by checking that the decrypted output
-matches the original message. In this way, the overall architecture remains
-small, but still clearly separates cryptographic operations, application flow,
-and experimental evaluation.
+The schemes work with fixed-length bit blocks. Raw bit-string input can be
+used directly, while plaintext input is first converted from bytes to bits. The
+bit sequence is then split into blocks of the selected size, and each block is
+encrypted as one knapsack ciphertext.
 
-\section{Testing and Verification}
-% Correctness, performance
+The implementation uses \texttt{BitBuf} for owned bit arrays and
+\texttt{BitView} for non-owning views into an existing bit array. This is used
+when passing individual blocks to encryption. Plaintext strings are stored in
+\texttt{TextBuf}, but the schemes themselves only work with bits.
+
+Block splitting is handled by \texttt{BitBlocks}. It stores the padded bit
+buffer, the block size, the number of blocks, and the original bit length. The
+buffer is initialized with zeros before the original bits are copied into it, so
+unused positions in the last block become zero padding. After decryption, only
+the original number of bits is used when printing the recovered bits or
+converting them back to text.
+
+Several support modules are separated from the scheme implementations. Seed
+handling is implemented in \texttt{seed.c} and supports runs with an explicit
+seed or with entropy from the operating system. This seed handling is used by demo, benchmark, and solver
+runs, so generated keys and messages can be repeated when needed.
+
+Benchmarking is implemented in \texttt{bench.c}. It measures key generation,
+encryption, decryption, and total running time, and records values such as
+density, margin, and the bit length of the private-weight sum.
+
+The subset-sum solvers are implemented in \texttt{attack\_mh.c}. Output
+formatting is separated into \texttt{output.c}, and plaintext conversion is
+handled in \texttt{plaintext.c}.
+
+\section{Testing and Experiment Support}
+
+Correctness was checked with the script \texttt{tests/test.sh}. The script
+builds the address-sanitized version of the program and runs selected demo,
+benchmark, and solver cases. It checks that the implemented variants can
+encrypt and decrypt raw bit strings and plaintext messages. It also checks that
+the solver mode can recover generated messages for small parameters.
+
+The tests are not a formal verification of the schemes. They are used to check
+that the implemented program behaves as expected for the tested inputs and that
+basic error cases are handled. This is sufficient for the purpose of this
+thesis, because the implementation is used as an educational and experimental
+tool.
+
+Python is used outside the C program for experiment automation and plotting.
+The scripts in the \texttt{experiments} directory run the compiled program with
+selected parameters, store the CSV output, and generate plots for the results
+chapter. The measured values therefore come from the C implementation, while
+Python is used only to organize and visualize the data.
 

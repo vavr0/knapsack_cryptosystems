@@ -40,36 +40,48 @@ precomputation, the attacker can decrypt later ciphertexts in essentially the
 same way as the legitimate recipient. This is what makes the attack
 particularly strong against the basic Merkle--Hellman construction.~\cite[pp.~77--78]{OdlyzkoRiseFall}
 
-To see where this structure comes from, let $u \equiv r^{-1} \pmod{m}$. Then
-each public weight $b_i$ satisfies
+To see where this structure comes from, let \(u \equiv r^{-1} \pmod{m}\).
+Then each public weight satisfies
 \[
     u b_i \equiv w_{\pi(i)} \pmod{m},
 \]
-where $\pi$ denotes the possible secret permutation of the private sequence.
-Equivalently, for each $i$ there exists an integer $k_i$ such that
+where \(\pi\) denotes the possible secret permutation of the private sequence.
+Equivalently, for each \(i\) there exists an integer \(k_i\) such that
 \[
-u b_i - k_i m = w_{\pi(i)}.
+    u b_i - k_i m = w_{\pi(i)}.
 \]
-Dividing by $m b_i$ gives
+If \(u\) and \(m\) were known, then
 \[
-\frac{u}{m} - \frac{k_i}{b_i} = \frac{w_{\pi(i)}}{m b_i}.
+    k_i = \left\lfloor \frac{u b_i}{m} \right\rfloor,
 \]
-For those indices corresponding to the smallest hidden weights, the right-hand
-side is very small, so the fractions $k_i/b_i$ are all close to the same
-unknown ratio $u/m$. This is the key observation behind Shamir's attack: the
-public key still contains enough arithmetic information to approximate the
-hidden modular parameters and reconstruct an equivalent trapdoor.~\cite[pp.~84--85]{OdlyzkoRiseFall}
+because \(0 < w_{\pi(i)} < m\). The attacker cannot use this formula directly,
+since \(u\) and \(m\) are secret. Shamir's attack instead recovers several of
+these integers indirectly.
 
-Shamir's main contribution was to show that these approximation relations can
-be exploited in polynomial time. From a small collection of such relations, the
-attacker can obtain a sufficiently accurate approximation to the hidden ratio
-$u/m$ and then construct another pair of modular parameters that transforms the
-public knapsack into a superincreasing one. These recovered parameters do not
-have to coincide with the original secret ones. It is enough that they define
-an equivalent trapdoor that allows efficient decryption. In this way, the
-attack turns the structural weakness of the public key into a full
-polynomial-time break of the classical
-scheme.~\cite[pp.~145--152]{Shamir1982}\cite[pp.~85--86]{OdlyzkoRiseFall}
+Dividing by \(m b_i\) gives
+\[
+    \frac{u}{m} - \frac{k_i}{b_i}
+    =
+    \frac{w_{\pi(i)}}{m b_i}.
+\]
+For indices that correspond to small hidden private weights, the right-hand
+side is very small. Therefore the fractions \(k_i/b_i\) are close to the same
+unknown value \(u/m\). If two such approximations are subtracted, the unknown
+ratio \(u/m\) is eliminated, giving inequalities of the form
+\[
+    \left| k_i b_j - k_j b_i \right| < E,
+\]
+where \(E\) is small. The public weights \(b_i,b_j\) are known, while the
+unknowns are the integers \(k_i,k_j\).
+
+Shamir's main observation was that a fixed number of such relations can be
+solved in polynomial time using Lenstra's integer programming algorithm in
+fixed dimension. If the private sequence was permuted, the attacker can try all
+choices of this fixed number of public indices; this still gives only a
+polynomial number of cases. Once the relevant \(k_i\)'s are found, the ratios
+\(k_i/b_i\) give an approximation to \(u/m\), from which an equivalent trapdoor
+can be constructed.~\cite[pp.~145--152]{Shamir1982}
+\cite[pp.~84--86]{OdlyzkoRiseFall}
 
 \subsection{Low-Density Attacks and Lattice Methods}
 
@@ -259,100 +271,49 @@ to restore security.~\cite[p.~344]{Brickell1984}\cite[p.~8]{OdlyzkoRiseFall}
 
 \subsection{Chor--Rivest Knapsack-Type Cryptosystem}
 
-The Chor--Rivest cryptosystem is an attempt to build a knapsack-type public-key
-system after the weaknesses of Merkle--Hellman variants had become clear.
-Unlike the original proposals, it does not hide a superincreasing sequence by
-modular multiplication. Instead, its trapdoor is based on arithmetic in a
-finite field. The public key still has the form of a knapsack instance, but the
-private key allows the receiver to transform the knapsack sum into a polynomial
-factorization problem.~\cite[pp.~901--902]{ChorRivest1988}
+The Chor--Rivest cryptosystem was proposed as a knapsack-type system that does
+not use a hidden superincreasing sequence. Instead, its trapdoor is based on
+arithmetic in a finite field. The public key still looks like a knapsack
+sequence, but the private key gives a way to interpret a knapsack sum as a
+polynomial factorization problem.~\cite[pp.~901--902]{ChorRivest1988}
 
-Key generation starts by choosing parameters $p$ and $h$ and the finite field
-$GF(p^h)$, where $p$ is a prime power and $h$ is the extension
-degree. The field is chosen so that $p^h-1$ has only moderate prime factors.
-This makes discrete logarithms in $GF(p^h)$ easier to compute when
-constructing the key. The field is represented as $GF(p)[x]/f(x)$, where
-$f(x)$ is a monic irreducible polynomial of degree $h$ over $GF(p)$. Let $t$
-be the residue class of $x$ modulo $f(x)$, so $t$ is an element of $GF(p^h)$
-and $f(t)=0$. Let $g$ be a generator of the multiplicative group of $GF(p^h)$.
-For each $\alpha \in GF(p)$, the value $a_\alpha$ is defined by
+In key generation, the scheme works in a finite field \(GF(p^h)\). A generator
+\(g\) of the multiplicative group is chosen, together with a field element
+\(t\). For each \(\alpha \in GF(p)\), the value \(a_\alpha\) is defined by
 \[
     g^{a_\alpha}=t+\alpha.
 \]
-Thus $a_\alpha$ is the discrete logarithm of $t+\alpha$ with respect to
-$g$.~\cite[pp.~902--903]{ChorRivest1988}
+Thus \(a_\alpha\) is a discrete logarithm of a special field element. The
+public weights are not these values directly. A secret permutation \(\pi\) and
+a secret offset \(d\) are used to publish
+\[
+    c_i \equiv a_{\pi(i)} + d \pmod{p^h-1}.
+\]
+The public key is therefore a knapsack sequence, while the private key keeps
+the field representation, the permutation, and the offset.~\cite[pp.~902--903]{ChorRivest1988}
 
-The values $a_\alpha$ are not published directly. The scheme chooses a secret
-one-to-one map $\pi$ from $\{0,1,\dots,p-1\}$ to $GF(p)$ and a secret integer
-$d$. The public weights are defined by
+A message block is represented by non-negative integers
+\(m_0,\dots,m_{p-1}\) whose sum is \(h\). Encryption computes the knapsack sum
 \[
-    c_i \equiv a_{\pi(i)} + d \pmod{p^h-1},
-    \qquad 0 \leq i \leq p-1.
+    S=\sum_{i=0}^{p-1} m_i c_i.
 \]
-The public key consists of the values $c_0,c_1,\dots,c_{p-1}$ together with the
-public parameters. The secret key contains the information needed to reverse
-this construction, in particular $t$, $g$, $\pi$, and $d$. In this way, each
-public weight hides a discrete logarithm of a field element of the form
-$t+\alpha$.~\cite[pp.~902--903]{ChorRivest1988}
+The condition \(\sum_i m_i=h\) is important because the secret offset \(d\)
+then contributes exactly \(hd\) to the sum. During decryption, the receiver
+subtracts this value and obtains a sum of the hidden discrete logarithms.
 
-Before encryption, the plaintext must be represented in the special message
-format used by the scheme. A plaintext block is transformed into a vector
-$m=(m_0,\dots,m_{p-1})$ of non-negative integers satisfying
+After this correction, exponentiating \(g\) changes the sum of logarithms into
+a product of field elements,
 \[
-    \sum_{i=0}^{p-1} m_i = h.
-\]
-
-Encryption is then performed by computing the knapsack sum
-\[
-    S = \sum_{i=0}^{p-1} m_i c_i.
-\]
-Because the entries of $m$ sum to $h$, the secret offset $d$ contributes exactly
-$hd$ to the ciphertext. This property is used during decryption to remove the
-offset again.
-
-From the public point of view, the attacker sees a knapsack equation with
-public weights $c_i$. The trapdoor appears only during decryption. Since
-\[
-    c_i \equiv a_{\pi(i)} + d \pmod{p^h-1},
-\]
-the receiver can compute
-\[
-    r \equiv S-hd \pmod{p^h-1}.
-\]
-Using the condition $\sum_i m_i=h$, this gives
-\[
-    r \equiv \sum_{i=0}^{p-1} m_i a_{\pi(i)} \pmod{p^h-1}.
-\]
-After exponentiating $g$ to this value, the sum in the exponent becomes a
-product:
-\[
-    g^r
-    =
-    g^{\sum_i m_i a_{\pi(i)}}
-    =
-    \prod_{i=0}^{p-1}
-    \left(g^{a_{\pi(i)}}\right)^{m_i}
+    g^{S-hd}
     =
     \prod_{i=0}^{p-1}(t+\pi(i))^{m_i}.
 \]
+This is the main trapdoor step. The receiver can convert this field element
+into a polynomial and factor it over \(GF(p)\). The linear factors reveal the
+values \(\pi(i)\), and their multiplicities reveal the message values \(m_i\).
+In this way, the legitimate receiver solves the encrypted knapsack sum without
+directly solving a general subset-sum problem.~\cite[pp.~903--904]{ChorRivest1988}
 
-This product can be recovered as a polynomial over $GF(p)$. The element $g^r$
-is represented by a polynomial $G(x)$ of degree less than $h$. On the other
-hand,
-\[
-    \prod_{i=0}^{p-1}(x+\pi(i))^{m_i}
-\]
-is a monic polynomial of degree $h$. Since this polynomial gives the same field
-element as $G(x)$ modulo $f(x)$, it differs from $G(x)$ by a multiple of
-$f(x)$. The reason this multiple is exactly one is that both the product and
-$f(x)$ are monic polynomials of degree $h$, while $G(x)$ has degree less than
-$h$. Therefore the product is obtained as
-\[
-    G(x)+f(x).
-\]
-Factoring $G(x)+f(x)$ over $GF(p)$ gives the linear factors $x+\pi(i)$ and
-their multiplicities. These multiplicities recover the values $m_i$, and
-therefore the plaintext block.~\cite[pp.~903--904]{ChorRivest1988}
 
 \subsection{Cryptanalysis of Chor--Rivest}
 
