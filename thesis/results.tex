@@ -14,11 +14,13 @@ chapter. The benchmark mode measures key generation, encryption, and decryption
 separately and prints the results in CSV format. The plotted values were then
 created from these CSV files using the Python scripts in the
 \texttt{experiments} directory.
-
-For the cryptographic benchmarks, the tested block sizes were
-\(n \in \{128,256,512,1024,2048,4096\}\). Each configuration was tested with
-three deterministic seeds. The benchmark used five measured repetitions after a
-small warm-up phase. The compared schemes were \texttt{mh-classic},
+For the cryptographic benchmarks, the tested block sizes were 
+\[
+    n \in \{128,256,512,1024,2048,4096\}
+\]. 
+Each configuration was tested with three
+deterministic seeds. The benchmark used five measured repetitions after a small
+warm-up phase. The compared schemes were \texttt{mh-classic},
 \texttt{mh-permuted}, and \texttt{mh-iterated}. The measured times therefore
 represent the behaviour of this implementation and this test environment, not a
 security claim about the schemes.
