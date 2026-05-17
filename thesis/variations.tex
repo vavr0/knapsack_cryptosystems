@@ -42,13 +42,17 @@ the public weights to be transformed into a superincreasing instance. Once
 such a trapdoor is available, ciphertexts can be decrypted efficiently, which
 is already enough to break the system~\cite{OdlyzkoRiseFall}.
 
-To see where this structure comes from, let \(u \equiv r^{-1} \pmod{m}\).
-Then each public weight satisfies
+The reason an equivalent trapdoor can exist is that the public weights are
+still connected to the original modular transformation. Let
+\(u \equiv r^{-1} \pmod{m}\). This value is part of the legitimate secret
+information, so the attacker does not know it. If it were known, multiplying a
+public weight by \(u\) modulo \(m\) would undo the public transformation:
 \[
     u b_i \equiv w_{\pi(i)} \pmod{m},
 \]
 where \(\pi\) denotes the possible secret permutation of the private sequence.
-Equivalently, for each \(i\) there exists an integer \(k_i\) such that
+The same congruence can be written as an equality. For each \(i\), there is an
+integer \(k_i\) such that
 \[
     u b_i - k_i m = w_{\pi(i)}.
 \]
@@ -56,9 +60,11 @@ If \(u\) and \(m\) were known, then
 \[
     k_i = \left\lfloor \frac{u b_i}{m} \right\rfloor,
 \]
-because \(0 < w_{\pi(i)} < m\). The attacker cannot use this formula directly,
-since \(u\) and \(m\) are secret. Shamir's attack instead recovers several of
-these integers indirectly.
+because \(0 < w_{\pi(i)} < m\). This formula shows what \(k_i\) represents: it
+is the number of times the modulus is subtracted when \(u b_i\) is reduced
+modulo \(m\). The attacker cannot compute it directly, since \(u\) and \(m\)
+are secret. Shamir's attack therefore recovers several of these integers
+indirectly.
 
 Dividing by \(m b_i\) gives
 \[
