@@ -2,40 +2,45 @@
 
 \section{Weaknesses of the Merkle--Hellman Scheme}
 
-The classical Merkle--Hellman cryptosystem is based on a clear trapdoor idea.
-An easy private superincreasing subset-sum instance is transformed into a
-public instance that should look hard~\cite{MerkleHellman1978}. However, in the
-basic construction, this hiding transformation is not strong enough to remove
-all useful structure. As a result, the public key does not behave like a hard
-subset-sum instance, and this opens the door to efficient cryptanalysis.
+The classical Merkle--Hellman cryptosystem transforms an easy private
+superincreasing sequence into a public knapsack sequence that is intended to
+look like a hard subset-sum instance. This is done by modular multiplication
+and, optionally, by a secret permutation~\cite{MerkleHellman1978}. However,
+this disguise is not strong enough and the public key still retais enough
+structure from its trapdoor construction to make efficient cryptanalysis
+possible.
 
-A major result was given by Shamir, who showed a polynomial-time
-attack against the basic Merkle--Hellman scheme \cite{Shamir1982}. The attack
-demonstrates that, even without knowing the private sequence directly, an
-equivalent private structure can be reconstructed from public information. This
-breaks the intended trapdoor asymmetry and shows that the original scheme is
-insecure.
+A more general warning sign is the linear form of knapsack encryption. If
+\[
+    C = \sum_{i=1}^{n} x_i b_i,
+\]
+then reducing the equation modulo \(2\) gives
+\[
+    C \equiv \sum_{i=1}^{n} x_i(b_i \bmod 2) \pmod{2}.
+\]
+In this equation, only public weights that are odd contribute their
+corresponding message bit to the sum. Then, \(C \bmod 2\) reveals the parity of
+the message bits corresponding to odd public weights. This does not
+determine the plaintext, but it does rule out some possible messages. Odlyzko
+notes that this observation was not known to give a practical attack by itself,
+but it was still considered suspicious because the ciphertext reveals direct
+information about the plaintext~\cite[pp.~81--82]{OdlyzkoRiseFall}.
+
+The decisive break of the basic Merkle--Hellman scheme came with Shamir's
+polynomial time attack~\cite{Shamir1982}. Unlike the parity observation above,
+this was not only a small leakage of information about a message. It exposed
+structure in the public key itself and made efficient decryption possible for
+an attacker. The main idea of this attack is described next.
 
 \subsection{Shamir's Polynomial-Time Attack}
 
-Shamir showed that the basic Merkle--Hellman cryptosystem can be broken in
-polynomial time.~\cite[pp.~145--152]{Shamir1982} The attack is not based on exhaustive search
-over ciphertexts, but on structure that remains visible in the public key. This
-means that the weakness lies in the key construction itself.
-
-Importantly, breaking the scheme does not require reconstructing the exact
-private sequence chosen during key generation. It is sufficient to recover an
-equivalent trapdoor that allows the public knapsack to be transformed into an
-easy superincreasing instance. Once such a trapdoor is available, ciphertexts
-can be decrypted efficiently, which is already enough to break the
-system.~\cite[pp.~86--87]{OdlyzkoRiseFall}
-
-Shamir's attack is not a separate ciphertext attack performed from
-scratch for every message. Instead, it is a key-recovery attack with an
-initial polynomial-time computation on the public key. After this
-precomputation, the attacker can decrypt later ciphertexts in essentially the
-same way as the legitimate recipient. This is what makes the attack
-particularly strong against the basic Merkle--Hellman construction.~\cite[pp.~77--78]{OdlyzkoRiseFall}
+The attack works on the public key, rather than on one ciphertext at a time.
+Its goal is to recover an equivalent trapdoor, that is, another pair of modular
+parameters that can be used for decryption. This equivalent trapdoor does not
+have to be the same as the original private key. It is enough that it allows
+the public weights to be transformed into a superincreasing instance. Once
+such a trapdoor is available, ciphertexts can be decrypted efficiently, which
+is already enough to break the system~\cite{OdlyzkoRiseFall}.
 
 To see where this structure comes from, let \(u \equiv r^{-1} \pmod{m}\).
 Then each public weight satisfies
@@ -429,6 +434,22 @@ this means that key generation must not only generate random-looking values,
 but also check these conditions. These conditions are necessary for decryption,
 but they reduce the range of possible public keys and are part of the structure
 that cryptanalytic attacks can use.
+
+Odlyzko gives a useful warning about parameter choices. A private
+superincreasing sequence may look efficient and still leave visible structure
+after the modular transformation. For example, if the private weights have a
+very regular geometric form, then neighbouring public weights can satisfy
+relations such as
+\[
+    b_{j+1}=2b_j
+    \quad\text{or}\quad
+    b_{j+1}=2b_j-m.
+\]
+By comparing values of the form \(b_i-2b_j\), the hidden modulus \(m\) may
+appear repeatedly and can be recovered. This example shows that compact or
+regular parameter choices can make the public key far from a random-looking
+subset-sum instance~\cite{OdlyzkoRiseFall}.
+
 
 This gives a natural connection to the implementation chapter. Since the
 classical schemes are already broken, the experiments are not meant to find
