@@ -38,7 +38,7 @@ The attack works on the public key, rather than on one ciphertext at a time.
 Its goal is to recover an equivalent trapdoor, that is, another pair of modular
 parameters that can be used for decryption. This equivalent trapdoor does not
 have to be the same as the original private key. It is enough that it allows
-the public weights to be transformed into a superincreasing instance. Once
+the public weights to be transformed into a superincreasing sequence. Once
 such a trapdoor is available, ciphertexts can be decrypted efficiently, which
 is already enough to break the system~\cite{OdlyzkoRiseFall}.
 
@@ -51,8 +51,8 @@ public weight by \(u\) modulo \(m\) would undo the public transformation:
     u b_i \equiv w_{\pi(i)} \pmod{m},
 \]
 where \(\pi\) denotes the possible secret permutation of the private sequence.
-The same congruence can be written as an equality. For each \(i\), there is an
-integer \(k_i\) such that
+By the definition of modular arithmetic, this means that for each \(i\) there
+is an integer \(k_i\) such that
 \[
     u b_i - k_i m = w_{\pi(i)}.
 \]
@@ -62,9 +62,9 @@ If \(u\) and \(m\) were known, then
 \]
 because \(0 < w_{\pi(i)} < m\). This formula shows what \(k_i\) represents: it
 is the number of times the modulus is subtracted when \(u b_i\) is reduced
-modulo \(m\). The attacker cannot compute it directly, since \(u\) and \(m\)
-are secret. Shamir's attack therefore recovers several of these integers
-indirectly.
+modulo \(m\). Since \(u\) and \(m\) are secret, the attacker cannot compute
+\(k_i\) directly, so Shamir's attack recovers several such integers
+indirectly~\cite[pp.~145--152]{Shamir1982}.
 
 Dividing by \(m b_i\) gives
 \[
@@ -75,21 +75,34 @@ Dividing by \(m b_i\) gives
 For indices that correspond to small hidden private weights, the right-hand
 side is very small. Therefore the fractions \(k_i/b_i\) are close to the same
 unknown value \(u/m\). If two such approximations are subtracted, the unknown
-ratio \(u/m\) is eliminated, giving inequalities of the form
+ratio \(u/m\) is eliminated. Multiplying by \(b_i b_j\), this becomes
 \[
     \left| k_i b_j - k_j b_i \right| < E,
 \]
 where \(E\) is small. The public weights \(b_i,b_j\) are known, while the
-unknowns are the integers \(k_i,k_j\).
+unknowns are the integers \(k_i,k_j\)~\cite{Shamir1982,OdlyzkoRiseFall}.
 
-Shamir's main observation was that a fixed number of such relations can be
-solved in polynomial time using Lenstra's integer programming algorithm in
-fixed dimension. If the private sequence was permuted, the attacker can try all
-choices of this fixed number of public indices; this still gives only a
-polynomial number of cases. Once the relevant \(k_i\)'s are found, the ratios
-\(k_i/b_i\) give an approximation to \(u/m\), from which an equivalent trapdoor
-can be constructed.~\cite[pp.~145--152]{Shamir1982}
-\cite[pp.~84--86]{OdlyzkoRiseFall}
+Shamir's main observation was that, for a fixed number of selected indices, the
+unknown integers \(k_i\) can be found in polynomial time using Lenstra's
+integer programming algorithm in fixed dimension. Here the dimension is fixed
+because the attack uses only a fixed number of selected indices, not all \(n\)
+weights at once. If the private sequence was permuted, the attacker does not
+know in advance which public weights correspond to the smallest private
+weights. However, the attacker can try all choices of this fixed number of
+public indices, and this is still only a polynomial number of
+cases~\cite{OdlyzkoRiseFall}.
+
+Once the relevant \(k_i\)'s are found, the ratios \(k_i/b_i\) give an
+approximation to \(u/m\). This approximation is then used to construct another
+pair of modular parameters that maps the public weights to a superincreasing
+sequence. These parameters do not have to be the original secret values; they
+only have to provide an equivalent trapdoor for decryption.
+
+Odlyzko also notes that for the attack can be described using continued
+fractions. This methhod is much simpler, but it is less general and has limited
+applicability to knapsacks~\cite{OdlyzkoRiseFall}. The later use of lattice
+reduction became more important for attacks on other knapsack systems, which
+leads to the low-density attacks discussed next.
 
 \subsection{Low-Density Attacks and Lattice Methods}
 
@@ -99,20 +112,18 @@ analysis showed that this is only part of the picture. Another important
 class of attacks does not try to recover the original trapdoor at all, but
 targets the public subset-sum instance directly when it has low density. In
 these conditions, the public knapsack may be solvable much more efficiently than by
-exhaustive search, which broadens the weakness from a single construction flaw
-to a more general structural problem in knapsack
-cryptography.~\cite[pp.~82--83]{OdlyzkoRiseFall}\cite{LagariasOdlyzko1985}
+brufe-force search~\cite{OdlyzkoRiseFall}\cite{LagariasOdlyzko1985}.
 
 A standard measure used in this context is the density of the subset-sum
 instance, usually defined as
 \[
     d=\frac{n}{\log_2(\max_i a_i)},
 \]
-where \(a_1,\dots,a_n\) are the public weights. When \(d\) is small, the public
-weights are large compared with the number of message bits. Then the subset
-sums are spread over a larger range of values. Because of this, the vector that
-represents the correct \(0\)-\(1\) solution can stand out as a short vector in
-the constructed lattice.
+where \(a_1,\dots,a_n\) are the public weights. When \(d\) is small, the
+largest public weights require many bits compared with the number of message
+bits.  In this situation, subset sums are less densely packed, so the vector
+for the correct \(0\)-\(1\) solution is more likely to stand out as a short
+vector in the constructed lattice.
 
 The lattice embedding can be described as follows. Suppose that the ciphertext
 is \(C\), where
@@ -145,41 +156,38 @@ Thus the solution appears inside the lattice as a vector with only \(0\) and
 \(1\) in the first coordinates and zero in the last coordinate. This makes it
 short compared with many other lattice vectors.
 
-For example, take \(a=(7,11,19)\) and \(C=30\). The solution is
-\(x=(0,1,1)\), since \(30=11+19\). The corresponding basis vectors include
+For example, take \(a=(7,31,55)\) and \(C=86\). Here
+\(d=3/\log_2(55)\approx 0.52\), so the example has low density, although it is
+still far too small to be a secure parameter choice. The solution is
+\(x=(0,1,1)\), since \(86=31+55\). The corresponding basis vectors include
 \[
-    v_2=(0,1,0,-11),\quad v_3=(0,0,1,-19),\quad v_4=(0,0,0,30),
+    v_2=(0,1,0,-31),\quad v_3=(0,0,1,-55),\quad v_4=(0,0,0,86),
 \]
 and therefore
 \[
     v_2+v_3+v_4=(0,1,1,0).
 \]
-This example is small and not meant as a secure parameter choice, but it shows
-the cancellation idea behind the lattice construction.
+This shows the cancellation idea behind the lattice construction.
 
 The important point is that the solution vector is usually not one of the
 original basis vectors. It is hidden as an integer combination of them. Lattice
 basis reduction tries to replace the original basis by another basis of the
-same lattice, but with shorter and less dependent vectors. The LLL algorithm
+same lattice, but with shorter and more nearly orthogonal vectors. The LLL algorithm
 performs this process in polynomial time. Internally, it uses Gram--Schmidt
 orthogonalization to measure the lengths and directions of basis vectors, and
 then decides when to reduce a vector by another one or when to swap two basis
 vectors. It does not guarantee that the shortest vector will always be found,
 but in many low-density subset-sum instances the solution vector is short
 enough to be revealed by the reduced
-basis.~\cite{LenstraLenstraLovasz1982,LagariasOdlyzko1985}
+basis~\cite{LenstraLenstraLovasz1982,LagariasOdlyzko1985}.
 
-Lagarias and Odlyzko gave a general theoretical framework for this type of
-attack. They showed that sufficiently low-density subset-sum instances can
-often be solved in polynomial time by lattice-based methods, without any need
-to reconstruct the original trapdoor. For knapsack cryptography, this was an
-important shift in perspective: even if the private structure is not recovered,
-the public instance may still be weak simply because its parameters place it in
-a regime where lattice reduction is effective.~\cite{LagariasOdlyzko1985}
-
-Low-density attacks complement Shamir's result. Instead of
-recovering an equivalent secret structure, they show that the public knapsack
-itself may already be directly solvable.
+Lagarias and Odlyzko proposed a lattice-based algorithm that always runs in
+polynomial time, but may fail to find a solution. Their analysis showed that,
+for almost all subset-sum instances with density below about \(0.645\), the
+target solution vector is the shortest non-zero vector in the constructed
+lattice. Since LLL is only an approximate reduction algorithm, the rigorous
+success guarantee is weaker, but the result still explains why low-density
+knapsack instances are vulnerable in practice~\cite{LagariasOdlyzko1985}.
 
 \subsection{Why NP-Completeness Does Not Guarantee Security}
 
