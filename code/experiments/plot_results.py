@@ -31,6 +31,27 @@ def plot_crypto_total(df):
     print("wrote", out)
 
 
+def plot_crypto_keygen_by_scheme(df):
+    avg = df.groupby(["scheme", "n"], as_index=False)["keygen_ms"].mean()
+
+    for scheme in avg["scheme"].unique():
+        rows = avg[avg["scheme"] == scheme].sort_values("n")
+        plt.plot(rows["n"], rows["keygen_ms"], marker="o", label=scheme)
+
+    plt.title("Merkle-Hellman key generation time")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("average key generation time (ms)")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+
+    out = PLOTS / "crypto_keygen_by_scheme.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
 def plot_crypto_components(df):
     classic = df[df["scheme"] == "mh-classic"]
     avg = classic.groupby("n", as_index=False)[
@@ -247,6 +268,7 @@ def main():
 
     df = pd.read_csv(RESULTS / "crypto_bench.csv")
     plot_crypto_total(df)
+    plot_crypto_keygen_by_scheme(df)
     plot_crypto_components(df)
 
     sweep_path = RESULTS / "param_sweep.csv"

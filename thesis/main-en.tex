@@ -165,26 +165,21 @@ this bachelor thesis.
 \newpage 
 \chapter*{Abstrakt}
 
-Knapsack kryptosystémy vznikli ako jeden z prvých pokusov postaviť kryptografiu
-s verejným kľúčom na probléme, ktorý je výpočtovo ťažký. Na prvý pohľad ide o
-veľmi prirodzenú myšlienku: ak je problém subset-sum NP-úplný, potom by malo
-byť ťažké z verejného súčtu zistiť, ktoré prvky boli použité pri šifrovaní.
-História týchto kryptosystémov však ukázala, že všeobecná výpočtová náročnosť
-problému sama osebe nestačí na bezpečnú kryptografickú konštrukciu. Táto práca
-sa zaoberá klasickým Merkleho--Hellmanovým knapsack kryptosystémom, jeho
-matematickým pozadím, známymi slabinami a vybranými historickými variáciami.
-Osobitná pozornosť je venovaná tomu, prečo štruktúra verejného kľúča prezrádza
-viac informácií, než sa pôvodne očakávalo, a ako útoky ako Shamirov
-polynomiálny útok alebo mriežkové útoky na nízkohustotné inštancie narušili
-pôvodnú bezpečnostnú predstavu. Práca ďalej porovnáva viaceré pokusy o
-vylepšenie knapsack kryptosystémov, vrátane iterovaných konštrukcií a
-Chorovho--Rivestovho kryptosystému. Praktická časť obsahuje implementáciu
-klasického, permutovaného a jednoducho iterovaného variantu v jazyku C. Pomocou
-experimentov sa overuje správnosť implementácie, porovnáva sa beh jednotlivých
-variantov a sleduje sa vplyv parametrov na hustotu verejného knapsacku.
-Výsledky ukazujú, že tieto systémy sú dnes významné najmä ako historický a
-vzdelávací príklad rozdielu medzi teoretickou náročnosťou problému a
-bezpečnosťou konkrétnej kryptografickej schémy.
+Knapsack kryptosystémy patria medzi skoré návrhy kryptografie s verejným
+kľúčom založené na probléme subset-sum. Hoci je rozhodovacia verzia tohto
+problému NP-úplná, konkrétne inštancie vytvárané kryptosystémom môžu obsahovať
+štruktúru, ktorú vie útočník využiť. V tejto práci skúmame klasický
+Merkleho--Hellmanov knapsack kryptosystém, jeho matematické pozadie, známe
+slabiny a vybrané historické variácie. Opisujeme najmä úlohu superrastúcich
+postupností, Shamirov polynomiálny útok, nízkohustotné mriežkové útoky,
+iterované konštrukcie a Chorov--Rivestov kryptosystém. Praktická časť práce
+obsahuje implementáciu klasického, permutovaného a jednoducho iterovaného
+variantu v jazyku C. Pomocou experimentov overujeme správnosť implementácie,
+porovnávame beh jednotlivých variantov a sledujeme vplyv parametrov na hustotu
+verejného knapsacku. Výsledky podporujú hlavný záver práce: klasické knapsack
+kryptosystémy sú dnes dôležité najmä ako historický a vzdelávací príklad toho,
+že teoretická náročnosť problému sama osebe nezaručuje bezpečnosť konkrétnej
+kryptografickej konštrukcie.
 
 \paragraph*{Kľúčové slová:} knapsack kryptosystém, subset-sum, Merkle--Hellman, kryptanalýza, mriežkové útoky
 % --- Koniec Abstrakt - Slovensky

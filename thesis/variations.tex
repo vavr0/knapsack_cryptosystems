@@ -308,8 +308,8 @@ knapsack has \(p\) weights. One plaintext block is a binary vector
 \[
     x=(x_0,\dots,x_{p-1}), \qquad x_i\in\{0,1\},
 \]
-with exactly \(h\) entries equal to \(1\). Thus, plaintext blocks in the Chor--Rivest scheme are not arbitrary binary
-strings of length \(p\). They are fixed-weight binary vectors, or equivalently
+with exactly \(h\) entries equal to \(1\). Thus, plaintext blocks in the Chor--Rivest scheme are not every binary
+string of length \(p\). They are fixed-weight binary vectors, or equivalently
 \(h\)-element subsets of \(\{0,\dots,p-1\}\). An ordinary binary message must
 therefore first be mapped to one of these subsets. Since there are
 \[
@@ -332,7 +332,7 @@ of the field and also the required number of ones in a plaintext block.
 For key generation, an element \(t\in GF(p^h)\) of degree \(h\) over \(GF(p)\)
 is chosen, together with a generator \(g\) of the multiplicative group of
 \(GF(p^h)\). In the original construction, \(t\) and \(g\) are chosen randomly
-from suitable field elements satisfying these conditions. For each \(\alpha \in
+from field elements satisfying these requirements. For each \(\alpha \in
 GF(p)\), define
 \[
     g^{a_\alpha}=t+\alpha.
@@ -369,7 +369,8 @@ instead of the greedy method used in Merkle--Hellman~\cite{ChorRivest1988}.
 \subsection{Cryptanalysis of Chor--Rivest}
 
 Although Chor--Rivest avoids the superincreasing trapdoor of Merkle--Hellman,
-its public key is still generated from special hidden algebraic structure.
+its public weights are still derived from finite-field discrete logarithms,
+together with a secret permutation and offset.
 
 Vaudenay's 1998 cryptanalysis showed that the parameters proposed by Chor and
 Rivest can be broken, including the suggested fields $GF(197^{24})$,
