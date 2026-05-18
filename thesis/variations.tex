@@ -549,43 +549,58 @@ are not a common basis for practical public-key encryption.
 
 \subsection{Summary Table of Schemes and Attacks}
 
-\begin{table}[h]
-    \centering
-    \small
-    \begin{tabular}{|p{0.22\textwidth}|p{0.25\textwidth}|p{0.27\textwidth}|p{0.18\textwidth}|}
-        \hline
-        \textbf{Scheme or method} & \textbf{Main idea} & \textbf{Main attack or weakness} & \textbf{Result} \\
-        \hline
-        Basic Merkle--Hellman &
-        Superincreasing sequence hidden by modular multiplication. &
-        Shamir's polynomial-time attack recovers an equivalent trapdoor. &
-        Broken. \\
-        \hline
-        Iterated Merkle--Hellman &
-        Several modular transformations are applied in sequence. &
-        Brickell's attack uses lattice reduction to recover useful hidden structure. &
-        Broken. \\
-        \hline
-        Low-density knapsacks &
-        Public subset-sum instances with large weights compared with message length. &
-        Lagarias--Odlyzko lattice methods can solve many such instances directly. &
-        Insecure for low density. \\
-        \hline
-        Multiplicative knapsack &
-        Trapdoor based on products instead of additive superincreasing sums. &
-        Odlyzko showed attacks on practical parameter choices. &
-        Broken. \\
-        \hline
-        Chor--Rivest &
-        High-density knapsack based on arithmetic in finite fields. &
-        Vaudenay attacked the proposed parameters using algebraic structure. &
-        Proposed parameters broken. \\
-        \hline
-        Modern subset-sum based work &
-        Uses subset-sum as an explicit hardness assumption, not as a hidden superincreasing trapdoor. &
-        Different security model; not the same as classical knapsack cryptosystems. &
-        Mainly theoretical. \\
-        \hline
-    \end{tabular}
-    \caption{Overview of selected knapsack schemes and attacks discussed in this chapter.}
+\begin{table}[htbp]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.25}
+
+\begin{tabular}{|p{0.18\textwidth}|p{0.30\textwidth}|p{0.34\textwidth}|p{0.12\textwidth}|}
+\hline
+\textbf{Scheme or method} &
+\textbf{Main idea} &
+\textbf{Main attack or weakness} &
+\textbf{Result} \\
+\hline
+
+Basic Merkle--Hellman &
+Superincreasing sequence hidden by modular multiplication. &
+Shamir's polynomial-time attack recovers an equivalent trapdoor. &
+Broken. \\
+\hline
+
+Iterated Merkle--Hellman &
+Several modular transformations are applied in sequence. &
+Brickell's attack uses lattice reduction to recover useful hidden structure. &
+Broken. \\
+\hline
+
+Low-density knapsacks &
+Subset-sum instances with large weights compared with the number of message bits. &
+Lagarias--Odlyzko type lattice methods can solve many such instances directly. &
+Insecure for low density. \\
+\hline
+
+Multiplicative knapsack &
+Trapdoor based on products instead of additive superincreasing sums. &
+Odlyzko showed attacks on practical parameter choices. &
+Broken. \\
+\hline
+
+Chor--Rivest &
+High-density knapsack based on arithmetic in finite fields. &
+Vaudenay attacked the proposed parameters using algebraic structure. &
+Proposed parameters broken. \\
+\hline
+
+Modern subset-sum based work &
+Uses subset-sum as an explicit hardness assumption, not as a hidden superincreasing trapdoor. &
+Different security model; not directly comparable with classical trapdoor knapsacks. &
+Mainly theoretical. \\
+\hline
+
+\end{tabular}
+
+\caption{Overview of selected knapsack schemes and attacks discussed in this chapter.}
+\label{tab:schemes-attacks}
 \end{table}

@@ -153,9 +153,9 @@ Supervisor: & \mfskolitel \\
 ~
 
 \vfill
-{\bf Acknowledgments:} Tu môžete poďakovať školiteľovi, prípadne
-ďalším osobám, ktoré vám s prácou nejako pomohli, poradili,
-poskytli dáta a podobne.
+{\bf Acknowledgments:} I would like to thank my supervisor doc. RNDr. Tatiana Jajcayová, PhD.,
+for her guidance, consultations, and helpful comments during the preparation of
+this bachelor thesis.
 
 % --- Koniec poďakovania
 
@@ -163,15 +163,30 @@ poskytli dáta a podobne.
 %   Abstrakt - Slovensky
 % -------------------
 \newpage 
-\section*{Abstrakt}
+\chapter*{Abstrakt}
 
+Knapsack kryptosystémy vznikli ako jeden z prvých pokusov postaviť kryptografiu
+s verejným kľúčom na probléme, ktorý je výpočtovo ťažký. Na prvý pohľad ide o
+veľmi prirodzenú myšlienku: ak je problém subset-sum NP-úplný, potom by malo
+byť ťažké z verejného súčtu zistiť, ktoré prvky boli použité pri šifrovaní.
+História týchto kryptosystémov však ukázala, že všeobecná výpočtová náročnosť
+problému sama osebe nestačí na bezpečnú kryptografickú konštrukciu. Táto práca
+sa zaoberá klasickým Merkleho--Hellmanovým knapsack kryptosystémom, jeho
+matematickým pozadím, známymi slabinami a vybranými historickými variáciami.
+Osobitná pozornosť je venovaná tomu, prečo štruktúra verejného kľúča prezrádza
+viac informácií, než sa pôvodne očakávalo, a ako útoky ako Shamirov
+polynomiálny útok alebo mriežkové útoky na nízkohustotné inštancie narušili
+pôvodnú bezpečnostnú predstavu. Práca ďalej porovnáva viaceré pokusy o
+vylepšenie knapsack kryptosystémov, vrátane iterovaných konštrukcií a
+Chorovho--Rivestovho kryptosystému. Praktická časť obsahuje implementáciu
+klasického, permutovaného a jednoducho iterovaného variantu v jazyku C. Pomocou
+experimentov sa overuje správnosť implementácie, porovnáva sa beh jednotlivých
+variantov a sleduje sa vplyv parametrov na hustotu verejného knapsacku.
+Výsledky ukazujú, že tieto systémy sú dnes významné najmä ako historický a
+vzdelávací príklad rozdielu medzi teoretickou náročnosťou problému a
+bezpečnosťou konkrétnej kryptografickej schémy.
 
-Slovenský abstrakt v rozsahu 100-500 slov, jeden odstavec. Abstrakt
-stručne sumarizuje výsledky práce. Mal by byť pochopiteľný pre bežného
-informatika. Nemal by teda využívať skratky, termíny alebo označenie
-zavedené v práci, okrem tých, ktoré sú všeobecne známe.
-
-\paragraph*{Kľúčové slová:} jedno, druhé, tretie (prípadne štvrté, piate)
+\paragraph*{Kľúčové slová:} knapsack kryptosystém, subset-sum, Merkle--Hellman, kryptanalýza, mriežkové útoky
 % --- Koniec Abstrakt - Slovensky
 
 

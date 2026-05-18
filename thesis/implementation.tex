@@ -152,8 +152,19 @@ thesis, because the implementation is used as an educational and experimental
 tool.
 
 Python is used outside the C program for experiment automation and plotting.
-The scripts in the \texttt{experiments} directory run the compiled program with
-selected parameters, store the CSV output, and generate plots for the results
-chapter. The measured values therefore come from the C implementation, while
-Python is used only to organize and visualize the data.
+The scripts in the \texttt{experiments} directory do not implement the
+cryptographic schemes themselves. Instead, they run the compiled C executable
+with selected parameters, read the CSV output produced by the program, store the
+results, and generate the plots used in the results chapter.
 
+The automation scripts use only simple Python tooling. The standard library
+modules \texttt{pathlib}, \texttt{subprocess}, \texttt{csv}, and \texttt{re}
+are used for locating files, executing the compiled program, parsing CSV output,
+and modifying selected compile-time constants during parameter sweeps. The
+plotting script uses \texttt{pandas} for grouping and averaging the measured CSV
+data and \texttt{matplotlib} for creating the figures.
+
+This separation is important for interpreting the measurements. Key generation,
+encryption, decryption, and the subset-sum solvers are executed by the C
+implementation. Python is used only as an experiment and visualization
+tool. 
