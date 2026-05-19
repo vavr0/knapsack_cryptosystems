@@ -6,7 +6,7 @@ The classical Merkle--Hellman cryptosystem transforms an easy private
 superincreasing sequence into a public knapsack sequence that is intended to
 look like a hard subset-sum instance. This is done by modular multiplication
 and, optionally, by a secret permutation~\cite{MerkleHellman1978}. However,
-this disguise is not strong enough and the public key still retais enough
+this disguise is not strong enough and the public key still retains enough
 structure from its trapdoor construction to make efficient cryptanalysis
 possible.
 
@@ -24,7 +24,7 @@ the message bits corresponding to odd public weights. This does not
 determine the plaintext, but it does rule out some possible messages. Odlyzko
 notes that this observation was not known to give a practical attack by itself,
 but it was still considered suspicious because the ciphertext reveals direct
-information about the plaintext~\cite[pp.~81--82]{OdlyzkoRiseFall}.
+information about the plaintext~\cite{OdlyzkoRiseFall}.
 
 The decisive break of the basic Merkle--Hellman scheme came with Shamir's
 polynomial time attack~\cite{Shamir1982}. Unlike the parity observation above,
@@ -98,9 +98,9 @@ approximation to \(u/m\). This approximation is then used to construct another
 pair of modular parameters that maps the public weights to a superincreasing
 sequence. These parameters do not have to be the original secret values; they
 only have to provide an equivalent trapdoor for
-decryption\cite{OdlyzkoRiseFall}.
+decryption~\cite{OdlyzkoRiseFall}.
 
-Odlyzko also notes that for the attack can be described using continued
+Odlyzko also notes that the attack can be described using continued
 fractions. This method is much simpler, but it is less general and has limited
 applicability to knapsacks~\cite{OdlyzkoRiseFall}. The later use of lattice
 reduction became more important for attacks on other knapsack systems, which
@@ -177,13 +177,13 @@ This shows the cancellation idea behind the lattice construction.
 The important point is that the solution vector is usually not one of the
 original basis vectors. It is hidden as an integer combination of them. Lattice
 basis reduction tries to replace the original basis by another basis of the
-same lattice, but with shorter and more nearly orthogonal vectors. The LLL algorithm
-performs this process in polynomial time. Internally, it uses Gram--Schmidt
-orthogonalization to measure the lengths and directions of basis vectors, and
-then decides when to reduce a vector by another one or when to swap two basis
-vectors. It does not guarantee that the shortest vector will always be found,
-but in many low-density subset-sum instances the solution vector is short
-enough to be revealed by the reduced
+same lattice, but with shorter and more nearly orthogonal vectors. The LLL
+algorithm performs this process in polynomial time. Internally, it uses
+Gram--Schmidt orthogonalization to measure the lengths and directions of basis
+vectors, and then decides when to reduce a vector by another one or when to
+swap two basis vectors. It does not guarantee that the shortest vector will
+always be found, but in many low-density subset-sum instances the solution
+vector is short enough to be revealed by the reduced
 basis~\cite{LenstraLenstraLovasz1982,LagariasOdlyzko1985}.
 
 Lagarias and Odlyzko proposed a lattice-based algorithm that always runs in
@@ -308,10 +308,11 @@ knapsack has \(p\) weights. One plaintext block is a binary vector
 \[
     x=(x_0,\dots,x_{p-1}), \qquad x_i\in\{0,1\},
 \]
-with exactly \(h\) entries equal to \(1\). Thus, plaintext blocks in the Chor--Rivest scheme are not every binary
-string of length \(p\). They are fixed-weight binary vectors, or equivalently
-\(h\)-element subsets of \(\{0,\dots,p-1\}\). An ordinary binary message must
-therefore first be mapped to one of these subsets. Since there are
+with exactly \(h\) entries equal to \(1\). Thus, plaintext blocks in the
+Chor--Rivest scheme are not every binary string of length \(p\). They are
+fixed-weight binary vectors, or equivalently \(h\)-element subsets of
+\(\{0,\dots,p-1\}\). An ordinary binary message must therefore first be mapped
+to one of these subsets. Since there are
 \[
     \binom{p}{h}
 \]
@@ -422,7 +423,7 @@ One important example was Shamir's fast signature scheme, which was designed to
 provide efficient signing rather than encryption. Odlyzko showed that this
 scheme could be attacked quickly using lattice-based methods, without
 recovering the exact original secret information. He also noted that similar
-methods could be adapted to the Schobi--Massey knapsack-based authentication
+methods could be adapted to the Sch\"obi--Massey knapsack-based authentication
 scheme. These examples show that the weaknesses of knapsack constructions were
 not limited to message encryption, but also affected related signature and
 authentication proposals.~\cite{Odlyzko1984Attacks}
@@ -440,12 +441,12 @@ that made cryptanalysis possible.~\cite{Brickell1984,OdlyzkoRiseFall}
 
 \subsection{Parameter Choices, Efficiency, and Complexity}
 
-One of the main reasons why knapsack cryptosystems were attractive was their expected
-speed. Odlyzko compares Merkle--Hellman with RSA using the parameter sizes
-considered reasonable at that time. For about $n \approx 100$, the
+One of the main reasons why knapsack cryptosystems were attractive was their
+expected speed. Odlyzko compares Merkle--Hellman with RSA using the parameter
+sizes considered reasonable at that time. For about $n \approx 100$, the
 singly-iterated Merkle--Hellman scheme was expected to be more than one hundred
 times faster than RSA with a roughly 500-bit
-modulus.~\cite[pp.~80--81]{OdlyzkoRiseFall} The reason was that Merkle--Hellman
+modulus.~\cite{OdlyzkoRiseFall} The reason was that Merkle--Hellman
 uses relatively small numbers and needs only one modular multiplication during
 decryption, while RSA required many modular multiplications. 
 
@@ -456,7 +457,7 @@ Merkle--Hellman public key contains the whole public knapsack sequence. For $n
 $n$ such weights, so its size is about $2n^2$ bits, around 20,000 bits.
 Ciphertexts are also larger than the plaintext blocks. A block of about $n$
 plaintext bits is represented by a ciphertext of about $2n$
-bits~\cite{OdlyzkoRiseFall}
+bits~\cite{OdlyzkoRiseFall}.
 
 The next question is how the parameters affect both efficiency and security.
 The block length $n$ determines both the number of message bits encrypted in
@@ -509,7 +510,7 @@ running time, key size, ciphertext size, and density.
 \subsection{Modern Perspective}
 
 The failure of knapsack cryptosystems did not make the subset-sum problem
-disappeare from cryptography. The difference is that modern work usually
+disappear from cryptography. The difference is that modern work usually
 does not try to hide a superincreasing sequence or another easy knapsack in the
 same way as Merkle--Hellman. Instead, subset-sum is used as an explicit
 hardness assumption. If an attacker breaks the construction, this would also
@@ -523,9 +524,9 @@ gave a public-key encryption scheme whose security is polynomial-time
 equivalent to the hardness of random subset-sum
 instances.~\cite{LyubashevskyPalacioSegev2010} Faust, Masny, and Venturi
 extended this direction to a stronger setting, where the attacker is allowed to
-obtain decryptions of chosen ciphertexts other than the target one. This different
-from classical trapdoor knapsacks. It studies encryption schemes with security
-reductions to random subset-sum, not new disguises of superincreasing
+obtain decryptions of chosen ciphertexts other than the target one. This is
+different from classical trapdoor knapsacks. It studies encryption schemes with
+security reductions to random subset-sum, not new disguises of superincreasing
 sequences.~\cite{FaustMasnyVenturi2015}
 
 Knapsack-like problems also appear in newer lattice-based research. One example
@@ -556,7 +557,7 @@ are not a common basis for practical public-key encryption.
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.25}
 
-\begin{tabular}{|p{0.18\textwidth}|p{0.30\textwidth}|p{0.34\textwidth}|p{0.12\textwidth}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.18\textwidth}|>{\raggedright\arraybackslash}p{0.30\textwidth}|>{\raggedright\arraybackslash}p{0.34\textwidth}|>{\raggedright\arraybackslash}p{0.12\textwidth}|}
 \hline
 \textbf{Scheme or method} &
 \textbf{Main idea} &

@@ -52,6 +52,31 @@ def plot_crypto_keygen_by_scheme(df):
     print("wrote", out)
 
 
+def plot_crypto_density_by_scheme(df):
+    avg = df.groupby(["scheme", "n"], as_index=False)["density"].mean()
+
+    for scheme in avg["scheme"].unique():
+        rows = avg[avg["scheme"] == scheme].sort_values("n")
+        plt.plot(rows["n"], rows["density"], marker="o", label=scheme)
+
+    y_min = max(0.0, avg["density"].min() - 0.01)
+    y_max = min(1.05, avg["density"].max() + 0.01)
+    plt.ylim(y_min, y_max)
+    plt.title("Public knapsack density by scheme")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("density")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+
+    out = PLOTS / "crypto_density_by_scheme.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
+
 def plot_crypto_components(df):
     classic = df[df["scheme"] == "mh-classic"]
     avg = classic.groupby("n", as_index=False)[
@@ -263,13 +288,108 @@ def plot_margin_sweep_density(df):
     print("wrote", out)
 
 
+def plot_iterated_layers_total(df):
+    rows = df.copy()
+    rows["layers"] = rows["layers"].astype(int)
+    avg = rows.groupby(["layers", "n"], as_index=False)["total_ms"].mean()
+
+    for layers in sorted(avg["layers"].unique()):
+        group = avg[avg["layers"] == layers].sort_values("n")
+        plt.plot(group["n"], group["total_ms"], marker="o", label=f"{layers} layers")
+
+    plt.title("Runtime of iterated variant by layer count")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("average total time (ms)")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend(title="total layers")
+    plt.tight_layout()
+
+    out = PLOTS / "iterated_layers_total_ms.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
+
+def plot_iterated_layers_density(df):
+    rows = df.copy()
+    rows["layers"] = rows["layers"].astype(int)
+    avg = rows.groupby(["layers", "n"], as_index=False)["density"].mean()
+
+    for layers in sorted(avg["layers"].unique()):
+        group = avg[avg["layers"] == layers].sort_values("n")
+        plt.plot(group["n"], group["density"], marker="o", label=f"{layers} layers")
+
+    y_min = max(0.0, avg["density"].min() - 0.01)
+    y_max = min(1.05, avg["density"].max() + 0.01)
+    plt.ylim(y_min, y_max)
+    plt.title("Density of iterated variant by layer count")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("density")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend(title="total layers")
+    plt.tight_layout()
+
+    out = PLOTS / "iterated_layers_density.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
+
+def plot_crypto_total_with_iterated_layers(df, layer_df):
+    avg = df.groupby(["scheme", "n"], as_index=False)["total_ms"].mean()
+
+    for scheme in ["mh-classic", "mh-permuted", "mh-iterated"]:
+        rows = avg[avg["scheme"] == scheme].sort_values("n")
+        if rows.empty:
+            continue
+        label = "mh-iterated (2 layers)" if scheme == "mh-iterated" else scheme
+        plt.plot(rows["n"], rows["total_ms"], marker="o", label=label)
+
+    layer_rows = layer_df.copy()
+    layer_rows["layers"] = layer_rows["layers"].astype(int)
+    layer_avg = layer_rows.groupby(["layers", "n"], as_index=False)["total_ms"].mean()
+    for layers in sorted(layer_avg["layers"].unique()):
+        if layers == 2:
+            continue
+        group = layer_avg[layer_avg["layers"] == layers].sort_values("n")
+        plt.plot(
+            group["n"],
+            group["total_ms"],
+            marker="o",
+            linestyle="--",
+            label=f"mh-iterated ({layers} layers)",
+        )
+
+    plt.title("Runtime with additional iterated layers")
+    plt.xlabel("block size n (bits)")
+    plt.ylabel("average total time (ms)")
+    plt.xscale("log", base=2)
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+
+    out = PLOTS / "crypto_total_with_iterated_layers.png"
+    plt.savefig(out, dpi=200)
+    plt.close()
+    print("wrote", out)
+
+
+
 def main():
     PLOTS.mkdir(parents=True, exist_ok=True)
 
     df = pd.read_csv(RESULTS / "crypto_bench.csv")
     plot_crypto_total(df)
     plot_crypto_keygen_by_scheme(df)
+    plot_crypto_density_by_scheme(df)
     plot_crypto_components(df)
+    plot_classic_sum_bits(df)
+    plot_classic_density(df)
+    plot_classic_margin(df)
 
     sweep_path = RESULTS / "param_sweep.csv"
     if sweep_path.exists():
@@ -278,6 +398,13 @@ def main():
         plot_delta_sweep_sum_bits(sweep)
         plot_margin_sweep_margin(sweep)
         plot_margin_sweep_density(sweep)
+
+    iteration_path = RESULTS / "iteration_sweep.csv"
+    if iteration_path.exists():
+        iterations = pd.read_csv(iteration_path)
+        plot_iterated_layers_total(iterations)
+        plot_iterated_layers_density(iterations)
+        plot_crypto_total_with_iterated_layers(df, iterations)
 
     attack_path = RESULTS / "attack_bench.csv"
     if attack_path.exists():
