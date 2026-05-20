@@ -205,7 +205,7 @@ def plot_delta_sweep_density(df):
         group = avg[avg["delta_max"] == delta_max].sort_values("n")
         plt.plot(group["n"], group["density"], marker="o", label=f"Δ={delta_max}")
 
-    plt.title("Effect of superincreasing slack on density")
+    plt.title("Effect of superincreasing increment on density")
     plt.xlabel("block size n (bits)")
     plt.ylabel("density")
     plt.xscale("log", base=2)
@@ -227,7 +227,7 @@ def plot_delta_sweep_sum_bits(df):
         group = avg[avg["delta_max"] == delta_max].sort_values("n")
         plt.plot(group["n"], group["sum_bits"], marker="o", label=f"Δ={delta_max}")
 
-    plt.title("Effect of superincreasing slack on private sum size")
+    plt.title("Effect of superincreasing increment on private sum size")
     plt.xlabel("block size n (bits)")
     plt.ylabel("bit length of sum(W)")
     plt.xscale("log", base=2)

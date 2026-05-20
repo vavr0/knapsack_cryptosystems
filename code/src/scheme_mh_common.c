@@ -1,4 +1,5 @@
 #include "scheme_mh_common.h"
+#include "error.h"
 #include <stdlib.h>
 
 KnapStatus mh_key_alloc(MhKey *key, u64 n) {
@@ -60,6 +61,7 @@ KnapStatus mh_key_build_private(MhKey *key, PrngState *rng) {
     if (!key || !rng || key->n == 0) {
         return KNAP_ERR_INVALID;
     }
+    KnapStatus status;
     mpz_t delta;
     mpz_t sum;
     mpz_t margin;
@@ -81,16 +83,12 @@ KnapStatus mh_key_build_private(MhKey *key, PrngState *rng) {
     mpz_add(key->mod, sum, margin);
 
     // Choose multiplier coprime to m
-    for (;;) {
-        mpz_set_ui(key->mult, prng_rand_u64(rng));
-        mpz_mod(key->mult, key->mult, key->mod);
-        if (mpz_cmp_ui(key->mult, 2u) < 0) {
-            continue;
-        }
-        if (mpz_invert(key->mult_inv, key->mult, key->mod) != 0) {
-            break;
-        }
+    status = mh_choose_multiplier(key->mult, key->mult_inv, key->mod, rng);
+    if (status != KNAP_OK) {
+        mpz_clears(delta, sum, margin, NULL);
+        return status;
     }
+
     mpz_clears(delta, sum, margin, NULL);
 
     return KNAP_OK;
@@ -140,4 +138,65 @@ KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
     mpz_clear(s);
 
     return KNAP_OK;
+}
+
+static void mh_random_bits(mpz_t out, u64 bits, PrngState *rng) {
+    u64 full_words = bits / 32u;
+    u64 rem_bits = bits % 32u;
+
+    mpz_set_ui(out, 0);
+
+    for (u64 i = 0; i < full_words; i++) {
+        mpz_mul_2exp(out, out, 32u);
+        mpz_add_ui(out, out, prng_rand(rng));
+    }
+
+    if (rem_bits != 0) {
+        u32 value = prng_rand(rng);
+        value >>= (32u - rem_bits);
+
+        mpz_mul_2exp(out, out, rem_bits);
+        mpz_add_ui(out, out, value);
+    }
+}
+
+static KnapStatus mh_random_below(mpz_t out, const mpz_t bound,
+                                  PrngState *rng) {
+    u64 bits;
+
+    if (!rng || mpz_cmp_ui(bound, 1u) <= 0) {
+        return KNAP_ERR_INVALID;
+    }
+
+    bits = (u64)mpz_sizeinbase(bound, 2);
+
+    do {
+        mh_random_bits(out, bits, rng);
+    } while (mpz_cmp(out, bound) >= 0);
+
+    return KNAP_OK;
+}
+
+KnapStatus mh_choose_multiplier(mpz_t mult, mpz_t mult_inv, const mpz_t mod,
+                                PrngState *rng) {
+    KnapStatus status;
+
+    if (!rng || mpz_cmp_ui(mod, 3u) <= 0) {
+        return KNAP_ERR_INVALID;
+    }
+
+    for (;;) {
+        status = mh_random_below(mult, mod, rng);
+        if (status != KNAP_OK) {
+            return status;
+        }
+
+        if (mpz_cmp_ui(mult, 2u) < 0) {
+            continue;
+        }
+
+        if (mpz_invert(mult_inv, mult, mod) != 0) {
+            return KNAP_OK;
+        }
+    }
 }

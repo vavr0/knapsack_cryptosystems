@@ -215,6 +215,7 @@ static KnapStatus demo_run(CliFlags *flags) {
     return status;
 }
 
+// test comment
 KnapStatus app_run(int argc, char **argv) {
     CliFlags flags = {0};
     KnapStatus status = parse_args(argc, argv, &flags);

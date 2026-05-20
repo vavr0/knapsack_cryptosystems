@@ -218,7 +218,7 @@ KnapStatus bench_run(CliFlags *flags) {
            "decrypt_ms,total_ms,delta_max,margin_bound,margin,sum_bits,"
            "density\n");
 
-    printf("%s,%llu,%llu,%llu,%lu,%lu,%.6f,%.6f,%.6f,%.6f,%llu,%llu,%llu,"
+    printf("%s,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f,%llu,%llu,%llu,"
            "%llu,%.6f\n",
            scheme->info.id, (unsigned long long)flags->bits_message.length,
            (unsigned long long)reps, (unsigned long long)warmup_reps, seed[0],

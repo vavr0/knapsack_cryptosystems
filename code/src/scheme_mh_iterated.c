@@ -85,6 +85,7 @@ static KnapStatus mh_iterated_layer_build(MhIteratedLayer *layer,
                                           PrngState *rng) {
     mpz_t sum;
     mpz_t margin;
+    KnapStatus status;
 
     if (!layer || !weights || n == 0 || !rng) {
         return KNAP_ERR_INVALID;
@@ -96,23 +97,19 @@ static KnapStatus mh_iterated_layer_build(MhIteratedLayer *layer,
         mpz_add(sum, sum, weights[i]);
     }
 
-    u64 margin_u64 =
-        1 + (prng_rand_u64(rng) % (MH_DEFAULT_MARGIN_FACTOR * n));
+    u64 margin_u64 = 1 + (prng_rand_u64(rng) % (MH_DEFAULT_MARGIN_FACTOR * n));
     mpz_set_ui(margin, margin_u64);
     mpz_add(layer->mod, sum, margin);
 
-    for (;;) {
-        mpz_set_ui(layer->mult, prng_rand_u64(rng));
-        mpz_mod(layer->mult, layer->mult, layer->mod);
-        if (mpz_cmp_ui(layer->mult, 2u) < 0) {
-            continue;
-        }
-        if (mpz_invert(layer->mult_inv, layer->mult, layer->mod) != 0) {
-            break;
-        }
+    status =
+        mh_choose_multiplier(layer->mult, layer->mult_inv, layer->mod, rng);
+    if (status != KNAP_OK) {
+        mpz_clears(sum, margin, NULL);
+        
+        return status;
     }
-
     mpz_clears(sum, margin, NULL);
+
     return KNAP_OK;
 }
 
