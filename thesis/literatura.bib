@@ -6,41 +6,6 @@
 
 
 
-@article{clanok,
-    title = 	{Názov článku z časopisu},
-    author =	{X. Autor1 and Y. Autor2},
-    journal = {Názov časopisu, ktorý článok uverejnil},
-    volume = {4},
-    number = {3},
-    year = {1900},
-    pages = {1-100},
-}
-
-@Book{kniha,
-    author ={X. Autor1 and Y. Autor2},
-    title =        {Názov knihy},
-    publisher =    {Vydavateľstvo},
-    year =         {1900},
-}
-
-
-@techreport{technical_report,
-    author =	{X. Autor1 and Y. Autor2},
-    title= {Názov technickej správy},
-    year={June 1999},
-    institution = {Inštitút vydávajúci správu},
-    number = {TR123/1999}
-}
-
-@inproceedings{clanok_na_konferencii,
-    author =	{X. Autor1 and Y. Autor2},
-    title = {Názov článku (väčšinou z konferencie)},
-    booktitle = {Názov zborníka (väčšinou názov konferencie spolu s ročníkom)},
-    year = {1900},
-    pages = {1-100},
-    publisher = {Vydavateľstvo},
-}    
-    
 @misc{smernica,
  title={Vnútorný predpis č. 7/2018, {Ú}plné znenie vnútorného predpisu
  č. 12/2013 {S}mernice rektora {U}niverzity {K}omenského v
@@ -147,6 +112,16 @@
     url       = {http://www.dtc.umn.edu/~odlyzko/doc/complete.html},
 }
 
+@article{Odlyzko1984Attacks,
+    author  = {A. M. Odlyzko},
+    title   = {Cryptanalytic Attacks on the Multiplicative Knapsack Cryptosystem and on Shamir's Fast Signature Scheme},
+    journal = {IEEE Transactions on Information Theory},
+    volume  = {30},
+    number  = {4},
+    pages   = {594--601},
+    year    = {1984},
+}
+
 
 @article{MerkleHellman1978,
     author  = {Ralph C. Merkle and Martin E. Hellman},
@@ -166,6 +141,16 @@
     pages     = {145--152},
     year      = {1982},
     publisher = {IEEE},
+}
+
+@article{Lenstra1983IntegerProgramming,
+    author  = {H. W. Lenstra Jr.},
+    title   = {Integer Programming with a Fixed Number of Variables},
+    journal = {Mathematics of Operations Research},
+    volume  = {8},
+    number  = {4},
+    pages   = {538--548},
+    year    = {1983},
 }
 
 %LLL foundational
@@ -230,14 +215,111 @@
     publisher = {CSREA Press},
 }
 
-
-@incollection{ChorRivest1985,
-    author    = {Benny Chor and Ronald L. Rivest},
-    title     = {A Knapsack-Type Public Key Cryptosystem Based on Arithmetic in Finite Fields},
-    booktitle = {Advances in Cryptology: Proceedings of CRYPTO '84},
-    series    = {Lecture Notes in Computer Science},
-    volume    = {196},
-    pages     = {54--65},
-    publisher = {Springer-Verlag},
-    year      = {1985},
+@techreport{ONeill2014PCG,
+    author      = {Melissa E. O'Neill},
+    title       = {{PCG}: A Family of Simple Fast Space-Efficient Statistically Good Algorithms for Random Number Generation},
+    institution = {Harvey Mudd College},
+    number      = {HMC-CS-2014-0905},
+    year        = {2014},
+    url         = {https://www.pcg-random.org/pdf/hmc-cs-2014-0905.pdf},
 }
+
+@article{ChorRivest1988,
+    author  = {Benny Chor and Ronald L. Rivest},
+    title   = {A Knapsack-Type Public Key Cryptosystem Based on Arithmetic in Finite Fields},
+    journal = {IEEE Transactions on Information Theory},
+    volume  = {34},
+    number  = {5},
+    pages   = {901--909},
+    month   = sep,
+    year    = {1988},
+}
+
+@inproceedings{Vaudenay1998,
+    author    = {Serge Vaudenay},
+    title     = {Cryptanalysis of the {Chor--Rivest} Cryptosystem},
+    booktitle = {Advances in Cryptology -- CRYPTO '98},
+    series    = {Lecture Notes in Computer Science},
+    volume    = {1462},
+    pages     = {243--256},
+    publisher = {Springer},
+    year      = {1998},
+    doi       = {10.1007/BFb0055732},
+}
+
+@article{ImpagliazzoNaor1996,
+    author  = {Russell Impagliazzo and Moni Naor},
+    title   = {Efficient Cryptographic Schemes Provably as Secure as Subset Sum},
+    journal = {Journal of Cryptology},
+    volume  = {9},
+    pages   = {199--216},
+    year    = {1996},
+}
+
+@misc{LyubashevskyPalacioSegev2010,
+    author       = {Vadim Lyubashevsky and Adriana Palacio and Gil Segev},
+    title        = {Public-Key Cryptographic Primitives Provably as Secure as Subset Sum},
+    howpublished = {Cryptology ePrint Archive, Report 2009/576},
+    year         = {2009},
+    url          = {https://eprint.iacr.org/2009/576},
+}
+
+@misc{FaustMasnyVenturi2015,
+    author       = {Sebastian Faust and Daniel Masny and Daniele Venturi},
+    title        = {Chosen-Ciphertext Security from Subset Sum?},
+    howpublished = {Cryptology ePrint Archive, Report 2015/1223},
+    year         = {2015},
+    url          = {https://eprint.iacr.org/2015/1223},
+}
+
+@misc{BoudgoustSakzadSteinfeld2022,
+    author       = {Katharina Boudgoust and Amin Sakzad and Ron Steinfeld},
+    title        = {Vandermonde Meets Regev: Public Key Encryption Schemes Based on Partial Vandermonde Problems},
+    howpublished = {Cryptology ePrint Archive, Report 2022/679},
+    year         = {2022},
+    url          = {https://eprint.iacr.org/2022/679},
+}
+
+@misc{DasJoux2024,
+    author       = {Dipayan Das and Antoine Joux},
+    title        = {Key Recovery Attack on the Partial Vandermonde Knapsack Problem},
+    howpublished = {Cryptology ePrint Archive, Report 2024/366},
+    year         = {2024},
+    url          = {https://eprint.iacr.org/2024/366},
+}
+
+@article{clanok,
+    title = 	{Názov článku z časopisu},
+    author =	{X. Autor1 and Y. Autor2},
+    journal = {Názov časopisu, ktorý článok uverejnil},
+    volume = {4},
+    number = {3},
+    year = {1900},
+    pages = {1-100},
+}
+
+@Book{kniha,
+    author ={X. Autor1 and Y. Autor2},
+    title =        {Názov knihy},
+    publisher =    {Vydavateľstvo},
+    year =         {1900},
+}
+
+
+@techreport{technical_report,
+    author =	{X. Autor1 and Y. Autor2},
+    title= {Názov technickej správy},
+    year={June 1999},
+    institution = {Inštitút vydávajúci správu},
+    number = {TR123/1999}
+}
+
+@inproceedings{clanok_na_konferencii,
+    author =	{X. Autor1 and Y. Autor2},
+    title = {Názov článku (väčšinou z konferencie)},
+    booktitle = {Názov zborníka (väčšinou názov konferencie spolu s ročníkom)},
+    year = {1900},
+    pages = {1-100},
+    publisher = {Vydavateľstvo},
+}    
+    

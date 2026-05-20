@@ -69,6 +69,7 @@ code/*.csv
 # =======================================
 # Python virtual environments
 code/analysis/venv/
+code/experiments/venv/
 venv/
 env/
 ENV/

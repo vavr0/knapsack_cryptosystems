@@ -1,66 +1,97 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-Cryptography is a fundamental part of modern information security. It enables
-confidential communication by transforming data into forms that are
-unaccessible to unauthorized parties. In today’s digital world, cryptography is
-is being used in almost every secure communication system, from online
-banking and data storage to digital signatures and blockchain technologies. Its
-roots go back thousands of years. From simple substitution ciphers like Ceasar
-cipher used in ancient civilizations, through more complex systems like the
-Vigenère cipher, to the formal mathematical foundations developed in the
-twentieth century.  
+Public-key cryptography is based on the idea that some mathematical operations
+are easy to perform but difficult to reverse without secret information. This
+principle makes it possible to communicate securely without first sharing a
+private key through a secure channel. Since its introduction in the 1970s,
+public-key cryptography has become one of the central parts of modern
+information security. Many public-key systems are based on computational
+problems that are believed to be hard, such as integer factorization, discrete
+logarithms, or variants of lattice problems.
 
-%The main goal of
-% cryptography has always been to ensure confidentiality, integrity, and
-% authenticity of information.
+One of the early ideas for constructing a public-key cryptosystem was to use the
+subset-sum problem, also known as the knapsack problem. In this problem, one is
+given a sequence of positive integers and a target sum, and the task is to decide
+whether some subset of the sequence adds up to the target. The problem is
+important in complexity theory because its decision version is NP-complete. This
+made it an attractive candidate for cryptography: a sender could encrypt a
+message by forming a subset sum, while an attacker would appear to face a hard
+combinatorial problem.
 
-Throughout it's history cryptography reliad mostly on symmetric cryptosystems,
-where both the sender and reciever use the same private key for both encryption
-and decryption. While these systems, such as DES and AES, are efficient and still
-widely used today, they require both parties to securely share the secret key in
-advance. Which comes with it's own problems
+The first well-known cryptosystem based on this idea was proposed by Merkle and
+Hellman~\cite{MerkleHellman1978}. Its construction uses a private
+superincreasing sequence, for which the subset-sum problem can be solved
+efficiently by a greedy algorithm. This easy private instance is transformed by
+modular multiplication, and optionally by a permutation, into a public sequence
+that is intended to look like a hard general subset-sum instance. The legitimate
+receiver can reverse the transformation and solve the easy private problem,
+while an attacker only sees the public knapsack.
 
-A major milestone in the history of cryptography came with the invention of
-public-key cryptography in the 1970s. Unlike classical symmetric systems, where
-both parties share the same secret key, public-key systems use a pair of
-mathematically linked keys. Public key for encryption and a private key for
-decryption. This enables secure communication between parties without
-exchanging keys before communication.  Among the most well-known public-key systems
-are the RSA cryptosystem, based on the difficulty of integer factorization, and
-the Diffie–Hellman key exchange, which relies on the discrete logarithm
-problem.
+This idea is simple and elegant, but its history also shows an important problem
+in cryptographic design. The hardness of the general subset-sum problem does not
+automatically imply the security of a cryptosystem built from it. A
+cryptosystem does not use arbitrary subset-sum instances; it generates instances
+with hidden structure so that the legitimate user can decrypt efficiently. If
+this structure remains visible in the public key, then the system may be much
+weaker than the general problem suggests.
 
-Alongside the first systems such as RSA, one of the earliest public-key systems
-was the Knapsack cryptosystem proposed by Merkle and Hellman in 1978, which
-relied on the computational difficulty of the Knapsack problem, a classic
-example of an NP-complete combinatorial problem. The Knapsack problem asks
-whether a given sum can be formed by selecting specific elements from a set of
-numbers, and while it is easy to verify a solution, finding it is
-computationally hard. This asymmetry between easy verification and hard
-computation makes the problem appealing for cryptographic use. 
+This is exactly what happened to classical knapsack cryptosystems. The basic
+Merkle--Hellman scheme was broken by Shamir, who showed that an equivalent
+trapdoor can be recovered in polynomial time~\cite{Shamir1982}. Later work also
+showed that several modified or iterated knapsack constructions remained
+vulnerable, often through structural or lattice-based attacks. In particular,
+low-density subset-sum instances can often be attacked by lattice reduction
+methods, which makes the density of a knapsack instance an important parameter
+when discussing practical security. These results changed the role of knapsack
+cryptosystems: they are no longer considered suitable for practical public-key
+encryption, but they remain useful for studying the relation between
+computational hardness, trapdoor design, and cryptanalysis.
 
-Although the original Merkle–Hellman system was later shown to be insecure
-against certain attacks, it remains an important milestone in cryptographic
-research. Its concept has inspired numerous modifications and improved versions
-that attempt to overcome the weaknesses of the original design. Studying these
-variations provides valuable insight into both the design principles of secure
-systems and the evolution of cryptographic thinking.
+The aim of this thesis is to study the classical Merkle--Hellman knapsack
+cryptosystem, explain its mathematical background, compare selected variations,
+and implement several related constructions for experimentation. The thesis does
+not try to propose a secure modern knapsack cryptosystem. Instead, it treats
+knapsack cryptography as a historical and educational case study. The main focus
+is on understanding how the original construction works, why its security
+assumption was too optimistic, and how different modifications tried to repair
+its weaknesses.
 
-The aim of this thesis is to study, analyze, compare, and implement various
-versions of the Knapsack cryptosystem. The work begins with an overview of
-basic cryptographic concepts and the theoretical background of the Knapsack
-problem. It then describes the classical Merkle–Hellman Knapsack cryptosystem
-in detail, including its key generation, encryption, and decryption procedures.
-The following sections analyze its security, explain known cryptanalytic
-attacks, and present selected improvements and modern adaptations. Finally, an
-implementation of the system is provided, demonstrating its functionality and
-allowing comparison between different variants.
+The first chapter introduces the theoretical background needed for the rest of
+the thesis. It explains basic cryptographic terminology, the distinction between
+symmetric and asymmetric cryptography, the role of computational hardness, and
+the subset-sum problem. It then describes the Merkle--Hellman cryptosystem in
+detail, including key generation, encryption, and decryption.
 
-% The motivation for this thesis lies in understanding how mathematical problems
-% from combinatorics and number theory can be used to construct cryptographic
-% systems, as well as in exploring the challenges of balancing efficiency and
-% security. By studying the Knapsack cryptosystem and its developments, this work
-% contributes to a broader comprehension of public-key cryptography and its
-% diverse mathematical foundations.
+The second chapter discusses weaknesses and variations of knapsack
+cryptosystems. It first explains why the basic Merkle--Hellman construction is
+vulnerable, including Shamir's polynomial-time attack and low-density
+lattice-based attacks. It then presents selected attempts to modify or improve
+the original construction, such as permuted and iterated variants, and also
+discusses the Chor--Rivest knapsack-type cryptosystem. The chapter emphasizes
+the difference between the theoretical hardness of subset-sum and the concrete
+security of structured public keys.
 
+The third chapter describes the implementation used in this thesis. The program
+implements the classical Merkle--Hellman scheme and selected variants in a
+common framework. It supports key generation, encryption, decryption, benchmark
+runs, and simple subset-sum solver experiments. The implementation is intended
+mainly as an experimental tool for checking correctness, comparing running
+times, and illustrating how parameter choices influence generated knapsack
+instances.
+
+The fourth chapter presents the experimental results. The experiments verify
+that the implemented schemes correctly encrypt and decrypt tested inputs,
+compare the running time of the implemented variants, and examine the influence
+of key-generation parameters on knapsack density. Additional experiments compare
+brute force and meet-in-the-middle subset-sum solvers on small instances. These
+experiments are not security proofs, but they support the theoretical discussion
+by showing the behaviour of the implemented schemes and the practical growth of
+simple solving methods.
+
+Overall, this thesis uses knapsack cryptosystems to illustrate a broader lesson
+in cryptography: a hard mathematical problem is not enough by itself. The way
+the problem is used, the structure of generated instances, and the available
+cryptanalytic methods are equally important. The history of knapsack
+cryptography is therefore a useful example of why cryptographic constructions
+must be analyzed as concrete systems, not only as applications of hard problems.

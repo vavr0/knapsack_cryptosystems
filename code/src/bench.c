@@ -1,10 +1,13 @@
 #include "bench.h"
-#include "bitvec.h"
+#include "buffer.h"
 #include "common.h"
 #include "error.h"
 #include "rand.h"
 #include "scheme.h"
+#include "scheme_mh_common.h"
 #include "seed.h"
+#include "utils.h"
+#include <stdio.h>
 
 typedef struct {
     f64 keygen_ms;
@@ -12,6 +15,14 @@ typedef struct {
     f64 decrypt_ms;
     f64 total_ms;
 } BenchSample;
+
+typedef struct {
+    u64 delta_max;
+    u64 margin_bound;
+    u64 margin;
+    u64 sum_bits;
+    f64 density;
+} BenchKeyStats;
 
 static void bench_sample_add(BenchSample *sum, const BenchSample *sample) {
     sum->keygen_ms += sample->keygen_ms;
@@ -26,31 +37,40 @@ static void bench_sample_div(BenchSample *sample, u64 reps) {
     sample->total_ms /= (f64)reps;
 }
 
-// TODO
-static KnapStatus fill_message_random(BitBuf *message_bits, u64 n,
-                                      PrngState *rng) {
-    if (!message_bits || n == 0) {
+static KnapStatus bench_key_stats_from_mh(const MhKey *key,
+                                          BenchKeyStats *out) {
+    mpz_t sum;
+    mpz_t margin;
+    u64 max_public_bits = 0;
+
+    if (!key || !out || key->n == 0) {
         return KNAP_ERR_INVALID;
     }
 
-    KnapStatus status = bit_buf_alloc(message_bits, (size_t)n);
-    if (status != KNAP_OK) {
-        return status;
+    *out = (BenchKeyStats){0};
+    mpz_inits(sum, margin, NULL);
+
+    for (u64 i = 0; i < key->n; i++) {
+        u64 bits;
+
+        mpz_add(sum, sum, key->priv_weights[i]);
+
+        bits = (u64)mpz_sizeinbase(key->pub_weights[i], 2);
+        if (bits > max_public_bits) {
+            max_public_bits = bits;
+        }
     }
 
-    for (u64 i = 0; i < n; i++) {
-        message_bits->data[i] = (u8)(prng_rand(rng) & 1);
-    }
+    mpz_sub(margin, key->mod, sum);
 
+    out->delta_max = MH_DEFAULT_DELTA_MAX;
+    out->margin_bound = MH_DEFAULT_MARGIN_FACTOR * key->n;
+    out->margin = mpz_get_ui(margin);
+    out->sum_bits = (u64)mpz_sizeinbase(sum, 2);
+    out->density = (f64)key->n / (f64)max_public_bits;
+
+    mpz_clears(sum, margin, NULL);
     return KNAP_OK;
-}
-
-static f64 now_ms(void) {
-    struct timespec ts;
-    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-        return 0.0;
-    }
-    return (f64)ts.tv_sec * 1000.0 + (f64)ts.tv_nsec / 1000000.0;
 }
 
 static KnapStatus bench_measure_once(const SchemeOps *scheme, BitView message,
@@ -141,11 +161,11 @@ KnapStatus bench_run(CliFlags *flags) {
     }
     prng_seed(&rng, seed[0], seed[1]);
 
-    if (flags->message_bits.length == 0) {
+    if (flags->bits_message.length == 0) {
         if (flags->n == 0) {
             return KNAP_ERR_INVALID;
         }
-        status = fill_message_random(&flags->message_bits, flags->n, &rng);
+        status = fill_message_random(&flags->bits_message, flags->n, &rng);
         if (status != KNAP_OK) {
             return status;
         }
@@ -157,13 +177,27 @@ KnapStatus bench_run(CliFlags *flags) {
     if (!scheme) {
         return KNAP_ERR_INVALID;
     }
-    params.n = flags->message_bits.length;
+    params.n = flags->bits_message.length;
     params.initstate = seed[0];
     params.initseq = seed[1];
     params.flags = 0;
 
+    BenchKeyStats key_stats = {0};
+    SchemeKey stats_key = {0};
+
+    status = scheme->keygen(&params, &stats_key);
+    if (status != KNAP_OK) {
+        return status;
+    }
+
+    status = bench_key_stats_from_mh((const MhKey *)stats_key.data, &key_stats);
+    scheme->scheme_key_clear(&stats_key);
+    if (status != KNAP_OK) {
+        return status;
+    }
+
     for (u64 i = 0; i < warmup_reps; i++) {
-        status = bench_measure_once(scheme, bit_buf_view(&flags->message_bits),
+        status = bench_measure_once(scheme, bit_buf_view(&flags->bits_message),
                                     &params, &sample);
         if (status != KNAP_OK) {
             return status;
@@ -171,7 +205,7 @@ KnapStatus bench_run(CliFlags *flags) {
     }
 
     for (u64 i = 0; i < reps; i++) {
-        status = bench_measure_once(scheme, bit_buf_view(&flags->message_bits),
+        status = bench_measure_once(scheme, bit_buf_view(&flags->bits_message),
                                     &params, &sample);
         if (status != KNAP_OK) {
             return status;
@@ -181,14 +215,18 @@ KnapStatus bench_run(CliFlags *flags) {
     bench_sample_div(&avg, reps);
 
     printf("scheme,n,reps,warmup_reps,initstate,initseq,keygen_ms,encrypt_ms,"
-           "decrypt_ms,"
-           "total_ms\n");
+           "decrypt_ms,total_ms,delta_max,margin_bound,margin,sum_bits,"
+           "density\n");
 
-    printf("%s,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f\n", scheme->info.id,
-           (unsigned long long)flags->message_bits.length,
+    printf("%s,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f,%llu,%llu,%llu,"
+           "%llu,%.6f\n",
+           scheme->info.id, (unsigned long long)flags->bits_message.length,
            (unsigned long long)reps, (unsigned long long)warmup_reps, seed[0],
-           seed[1], avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms,
-           avg.total_ms);
+           seed[1], avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms, avg.total_ms,
+           (unsigned long long)key_stats.delta_max,
+           (unsigned long long)key_stats.margin_bound,
+           (unsigned long long)key_stats.margin,
+           (unsigned long long)key_stats.sum_bits, key_stats.density);
 
     return KNAP_OK;
 }

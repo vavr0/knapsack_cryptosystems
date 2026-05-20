@@ -1,16 +1,28 @@
 #include "cli.h"
-#include "bitvec.h"
+#include "buffer.h"
 #include "error.h"
 #include "scheme.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
+void cli_flags_clear(CliFlags *flags) {
+    if (!flags) {
+        return;
+    }
+
+    bit_buf_clear(&flags->bits_message);
+    text_buf_clear(&flags->text_message);
+    *flags = (CliFlags){0};
+}
+
 static KnapStatus parse_mode(int argc, char **argv, CliFlags *out) {
     if (!out || argc < 2 || !argv) {
+
         return KNAP_STATUS_HELP;
     }
     const char *mode = argv[1];
+
     if (strcmp(mode, "demo") == 0) {
         out->mode = CLI_MODE_DEMO;
         return KNAP_OK;
@@ -19,13 +31,26 @@ static KnapStatus parse_mode(int argc, char **argv, CliFlags *out) {
         out->mode = CLI_MODE_BENCH;
         return KNAP_OK;
     }
-    if (strcmp(mode, "--help") == 0 || strcmp(mode, "-h") == 0) {
+    if (strcmp(mode, "attack") == 0) {
+        out->mode = CLI_MODE_ATTACK;
+        return KNAP_OK;
+    }
+    if (strcmp(mode, "--help") == 0 || strcmp(mode, "-h") == 0 ||
+        strcmp(mode, "help") == 0) {
         return KNAP_STATUS_HELP;
     }
 
     return KNAP_ERR_INVALID;
 }
 
+static b8 is_attack_id_valid(const char *id) {
+    if (!id) {
+        return 0;
+    }
+    return (b8)(strcmp(id, "brute") == 0 || strcmp(id, "mitm") == 0);
+}
+
+// Parse an unsigned decimal integer; optionally reject zero.
 static KnapStatus parse_u64_str(const char *s, u64 *out, b8 allow_zero) {
     char *end = NULL;
     unsigned long long value;
@@ -57,20 +82,48 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
     for (i32 i = 2; i < argc; i++) {
         const char *flag = argv[i];
 
-        if (strcmp(flag, "--msg") == 0) {
+        if (strcmp(flag, "--bits") == 0) {
             if (i + 1 >= argc) {
                 return KNAP_ERR_INVALID;
             }
-            status = bit_buf_from_cstr(&out->message_bits, argv[++i]);
+            if (out->input_mode != CLI_INPUT_NONE) {
+                return KNAP_ERR_INVALID;
+            }
+
+            status = bit_buf_from_cstr(&out->bits_message, argv[++i]);
             if (status != KNAP_OK) {
                 return KNAP_ERR_INVALID;
             }
+            out->input_mode = CLI_INPUT_BITS;
+        } else if (strcmp(flag, "--msg") == 0) {
+            if (i + 1 >= argc) {
+                return KNAP_ERR_INVALID;
+            }
+            if (out->mode != CLI_MODE_DEMO) {
+                return KNAP_ERR_INVALID;
+            }
+            if (out->input_mode != CLI_INPUT_NONE) {
+                return KNAP_ERR_INVALID;
+            }
+
+            status = text_buf_from_cstr(&out->text_message, argv[++i]);
+            if (status != KNAP_OK) {
+                return KNAP_ERR_INVALID;
+            }
+            out->input_mode = CLI_INPUT_TEXT;
         } else if (strcmp(flag, "--scheme") == 0) {
             if (i + 1 >= argc) {
                 return KNAP_ERR_INVALID;
             }
             out->scheme_id = argv[++i];
-        } else if (strcmp(flag, "--seed") == 0) {
+        } else if (strcmp(flag, "--attack") == 0) {
+            if (i + 1 >= argc) {
+                return KNAP_ERR_INVALID;
+            }
+            out->attack_id = argv[++i];
+        }
+
+        else if (strcmp(flag, "--seed") == 0) {
             u64 value;
             if (i + 1 >= argc) {
                 return KNAP_ERR_INVALID;
@@ -82,12 +135,7 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
             }
             out->seed = value;
             out->has_seed = 1;
-        } else if (strcmp(flag, "--format") == 0) {
-            if (i + 1 >= argc) {
-                return KNAP_ERR_INVALID;
-            }
-            out->format = argv[++i];
-        }  else if (strcmp(flag, "--n") == 0) {
+        } else if (strcmp(flag, "--n") == 0) {
             if (i + 1 >= argc) {
                 return KNAP_ERR_INVALID;
             }
@@ -105,7 +153,6 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
             if (status != KNAP_OK) {
                 return KNAP_ERR_INVALID;
             }
-
         } else if (strcmp(flag, "-h") == 0 || strcmp(flag, "--help") == 0) {
             return KNAP_STATUS_HELP;
         } else {
@@ -115,12 +162,14 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
     return KNAP_OK;
 }
 
+// Validate option combinations after parsing.
 static KnapStatus validate_flags(const CliFlags *flags) {
     if (!flags) {
         return KNAP_ERR_INVALID;
     }
 
-    if (flags->mode != CLI_MODE_DEMO && flags->mode != CLI_MODE_BENCH) {
+    if (flags->mode != CLI_MODE_DEMO && flags->mode != CLI_MODE_BENCH &&
+        flags->mode != CLI_MODE_ATTACK) {
         return KNAP_ERR_INVALID;
     }
 
@@ -128,29 +177,80 @@ static KnapStatus validate_flags(const CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
 
-    if (flags->format) {
-        if (strcmp(flags->format, "csv") != 0) {
+    if (flags->input_mode == CLI_INPUT_NONE) {
+        if (flags->bits_message.length != 0 ||
+            flags->text_message.data != NULL ||
+            flags->text_message.length != 0) {
             return KNAP_ERR_INVALID;
         }
-        if (flags->mode != CLI_MODE_BENCH) {
+    } else if (flags->input_mode == CLI_INPUT_BITS) {
+        if (flags->bits_message.length == 0 ||
+            flags->text_message.data != NULL ||
+            flags->text_message.length != 0) {
             return KNAP_ERR_INVALID;
         }
+    } else if (flags->input_mode == CLI_INPUT_TEXT) {
+        if (flags->text_message.data == NULL ||
+            flags->text_message.length == 0 ||
+            flags->bits_message.length != 0) {
+            return KNAP_ERR_INVALID;
+        }
+    } else {
+        return KNAP_ERR_INVALID;
     }
 
     if (flags->mode == CLI_MODE_DEMO) {
-        if (flags->n != 0 || flags->reps != 0 || flags->format != NULL) {
+        if (flags->reps != 0) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->input_mode == CLI_INPUT_TEXT && flags->n != 0 &&
+            (flags->n % 8u) != 0) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->attack_id != NULL) {
             return KNAP_ERR_INVALID;
         }
     }
 
     if (flags->mode == CLI_MODE_BENCH) {
-        if (flags->message_bits.length == 0 && flags->n == 0) {
+        if (flags->input_mode == CLI_INPUT_TEXT) {
+            return KNAP_ERR_INVALID;
+        }
+        if (flags->bits_message.length == 0 && flags->n == 0) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->attack_id != NULL) {
             return KNAP_ERR_INVALID;
         }
     }
 
-    // TODO check from utils ig
-    if (!bit_buf_is_valid(&flags->message_bits)) {
+    if (flags->mode == CLI_MODE_ATTACK) {
+        if (!is_attack_id_valid(flags->attack_id)) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->reps != 0) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->input_mode == CLI_INPUT_TEXT) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->bits_message.length == 0 && flags->n == 0) {
+            return KNAP_ERR_INVALID;
+        }
+
+        if (flags->scheme_id && strcmp(flags->scheme_id, "mh") != 0 &&
+            strcmp(flags->scheme_id, "mh-classic") != 0) {
+            return KNAP_ERR_INVALID;
+        }
+    }
+
+    if (!bit_buf_is_valid(&flags->bits_message)) {
         return KNAP_ERR_INVALID;
     }
 
@@ -165,14 +265,20 @@ KnapStatus parse_args(int argc, char **argv, CliFlags *out) {
     *out = (CliFlags){0};
     status = parse_mode(argc, argv, out);
     if (status != KNAP_OK) {
+        cli_flags_clear(out);
+
         return status;
     }
     status = parse_flags(argc, argv, out);
     if (status != KNAP_OK) {
+        cli_flags_clear(out);
+
         return status;
     }
     status = validate_flags(out);
     if (status != KNAP_OK) {
+        cli_flags_clear(out);
+
         return status;
     }
 
