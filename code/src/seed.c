@@ -20,6 +20,8 @@
 #endif
 #endif
 
+// SplitMix64-style avalanche mixer used to expand one CLI seed 
+// into the two 64-bit values required by PCG initialization.
 static u64 mix_u64(u64 x) {
     x ^= x >> 30;
     x *= 0xbf58476d1ce4e5b9ULL;
@@ -38,6 +40,7 @@ void seed_expand_u64(u64 seed, u64 out[2]) {
     out[1] = mix_u64(seed ^ 0xd1b54a32d192ed03ULL);
 }
 
+// Get seed from OS entropy 
 KnapStatus seed_get_entropy(void *buf, size_t len) {
     if (!buf && len > 0) {
         return KNAP_ERR_INVALID;

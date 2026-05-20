@@ -17,7 +17,7 @@ typedef struct {
 } MhIteratedLayer;
 
 typedef struct {
-    MhKey key;
+    MhKey base;
     u64 layer_count;
     MhIteratedLayer *extra_layers;
 } MhIteratedKey;
@@ -39,7 +39,7 @@ static KnapStatus mh_iterated_key_alloc(MhIteratedKey *key, u64 n,
 
     *key = (MhIteratedKey){0};
 
-    status = mh_key_alloc(&key->key, n);
+    status = mh_key_alloc(&key->base, n);
     if (status != KNAP_OK) {
         return status;
     }
@@ -52,7 +52,7 @@ static KnapStatus mh_iterated_key_alloc(MhIteratedKey *key, u64 n,
     key->extra_layers =
         malloc((size_t)extra_layer_count * sizeof(*key->extra_layers));
     if (!key->extra_layers) {
-        mh_key_clear(&key->key);
+        mh_key_clear(&key->base);
         *key = (MhIteratedKey){0};
         return KNAP_ERR_ALLOC;
     }
@@ -75,7 +75,7 @@ static void mh_iterated_key_clear(MhIteratedKey *key) {
                    key->extra_layers[i].mult_inv, NULL);
     }
     free(key->extra_layers);
-    mh_key_clear(&key->key);
+    mh_key_clear(&key->base);
 
     *key = (MhIteratedKey){0};
 }
@@ -105,7 +105,7 @@ static KnapStatus mh_iterated_layer_build(MhIteratedLayer *layer,
         mh_choose_multiplier(layer->mult, layer->mult_inv, layer->mod, rng);
     if (status != KNAP_OK) {
         mpz_clears(sum, margin, NULL);
-        
+
         return status;
     }
     mpz_clears(sum, margin, NULL);
@@ -124,25 +124,25 @@ static void mh_iterated_layer_apply(const MhIteratedLayer *layer,
 static KnapStatus mh_iterated_key_build(MhIteratedKey *key, PrngState *rng) {
     KnapStatus status;
 
-    if (!key || !rng || key->key.n == 0) {
+    if (!key || !rng || key->base.n == 0) {
         return KNAP_ERR_INVALID;
     }
 
-    status = mh_key_build_private(&key->key, rng);
+    status = mh_key_build_private(&key->base, rng);
     if (status != KNAP_OK) {
         return status;
     }
 
-    mh_key_build_public(&key->key, NULL);
+    mh_key_build_public(&key->base, NULL);
 
     for (u64 i = 0; i < key->layer_count; i++) {
-        status = mh_iterated_layer_build(&key->extra_layers[i],
-                                         key->key.pub_weights, key->key.n, rng);
+        status = mh_iterated_layer_build(
+            &key->extra_layers[i], key->base.pub_weights, key->base.n, rng);
         if (status != KNAP_OK) {
             return status;
         }
-        mh_iterated_layer_apply(&key->extra_layers[i], key->key.pub_weights,
-                                key->key.n);
+        mh_iterated_layer_apply(&key->extra_layers[i], key->base.pub_weights,
+                                key->base.n);
     }
 
     return KNAP_OK;
@@ -210,7 +210,7 @@ static KnapStatus mh_iterated_encrypt(const SchemeKey *scheme_key,
         return KNAP_ERR_INTERNAL;
     }
 
-    mh_encrypt_impl(&key->key, message, out_ciphertext);
+    mh_encrypt_impl(&key->base, message, out_ciphertext);
     return KNAP_OK;
 }
 
@@ -244,7 +244,7 @@ static KnapStatus mh_iterated_decrypt(const SchemeKey *scheme_key,
         mpz_mod(s, s, key->extra_layers[i].mod);
     }
 
-    status = mh_decrypt_impl(&key->key, s, out_message);
+    status = mh_decrypt_impl(&key->base, s, out_message);
     mpz_clear(s);
     if (status != KNAP_OK) {
         bit_buf_clear(out_message);

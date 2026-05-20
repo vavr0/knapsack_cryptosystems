@@ -67,8 +67,7 @@ KnapStatus mh_key_build_private(MhKey *key, PrngState *rng) {
     mpz_t margin;
     mpz_inits(delta, sum, margin, NULL);
 
-    // Build superinceasing sequencce
-    // larger delta -> lower density -> easier for lattice-style attacks
+    // Build a compact superincreasing sequence.
     for (u64 i = 0; i < key->n; i++) {
         mpz_set_ui(delta, 1 + (prng_rand(rng) % MH_DEFAULT_DELTA_MAX));
         mpz_add(delta, delta, sum);
@@ -76,13 +75,13 @@ KnapStatus mh_key_build_private(MhKey *key, PrngState *rng) {
         mpz_add(sum, sum, key->priv_weights[i]);
     }
 
-    // Choose mod > sum(W)
+    // Choose m > sum(W).
     u64 margin_u64 =
         1 + (prng_rand_u64(rng) % (MH_DEFAULT_MARGIN_FACTOR * key->n));
     mpz_set_ui(margin, margin_u64);
     mpz_add(key->mod, sum, margin);
 
-    // Choose multiplier coprime to m
+    // Choose multiplier over the full range modulo m.
     status = mh_choose_multiplier(key->mult, key->mult_inv, key->mod, rng);
     if (status != KNAP_OK) {
         mpz_clears(delta, sum, margin, NULL);
@@ -117,7 +116,7 @@ KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
     mpz_t s;
     mpz_init(s);
 
-    // Compute s = (C * n_inv) mod m
+    // Compute s = (C * mult_inv) mod m.
     mpz_mul(s, ciphertext, key->mult_inv);
     mpz_mod(s, s, key->mod);
 
@@ -140,6 +139,7 @@ KnapStatus mh_decrypt_impl(const MhKey *key, const mpz_t ciphertext,
     return KNAP_OK;
 }
 
+// Build random integer in 0 <= out < 2^bits.
 static void mh_random_bits(mpz_t out, u64 bits, PrngState *rng) {
     u64 full_words = bits / 32u;
     u64 rem_bits = bits % 32u;
@@ -160,6 +160,7 @@ static void mh_random_bits(mpz_t out, u64 bits, PrngState *rng) {
     }
 }
 
+// Rejection-sample random integer in 0 <= out < bound.
 static KnapStatus mh_random_below(mpz_t out, const mpz_t bound,
                                   PrngState *rng) {
     u64 bits;

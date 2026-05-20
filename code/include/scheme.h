@@ -17,7 +17,7 @@ typedef struct {
 } SchemeKeygenParams;
 
 typedef struct {
-    const char *id; // e.g. "mh-classic"
+    const char *id;
     const char *name;
 } SchemeInfo;
 

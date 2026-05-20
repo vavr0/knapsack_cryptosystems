@@ -16,6 +16,8 @@ typedef enum {
     CLI_MODE_ATTACK,
 } CliMode;
 
+// Parsed and validated 
+// command-line options.
 typedef struct {
     CliMode mode;
     CliInputMode input_mode;
@@ -29,5 +31,6 @@ typedef struct {
     u64 reps;
 } CliFlags;
 
+// Parse and validate command-line arguments.
 KnapStatus parse_args(int argc, char **argv, CliFlags *out);
 void cli_flags_clear(CliFlags *flags);

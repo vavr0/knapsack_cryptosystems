@@ -50,6 +50,7 @@ static b8 is_attack_id_valid(const char *id) {
     return (b8)(strcmp(id, "brute") == 0 || strcmp(id, "mitm") == 0);
 }
 
+// Parse an unsigned decimal integer; optionally reject zero.
 static KnapStatus parse_u64_str(const char *s, u64 *out, b8 allow_zero) {
     char *end = NULL;
     unsigned long long value;
@@ -161,6 +162,7 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
     return KNAP_OK;
 }
 
+// Validate option combinations after parsing.
 static KnapStatus validate_flags(const CliFlags *flags) {
     if (!flags) {
         return KNAP_ERR_INVALID;
@@ -248,7 +250,6 @@ static KnapStatus validate_flags(const CliFlags *flags) {
         }
     }
 
-    // TODO check from utils ig
     if (!bit_buf_is_valid(&flags->bits_message)) {
         return KNAP_ERR_INVALID;
     }

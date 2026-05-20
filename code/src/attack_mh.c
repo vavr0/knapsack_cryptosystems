@@ -20,6 +20,7 @@ static void subset_sum(const mpz_t *weights, u64 offset, u64 count, u64 mask,
     }
 }
 
+// Brute-foce subset-sum search over all bit masks.
 static KnapStatus attack_brute_force(MhPublicKeyView pub_key,
                                      const mpz_t ciphertext,
                                      AttackResult *result) {
@@ -98,6 +99,7 @@ static KnapStatus mitm_build_message(u64 left_mask, u64 left_n, u64 right_mask,
     return KNAP_OK;
 }
 
+// Meet-in-the-middle search using left sums and C - right sums.
 static KnapStatus attack_meet_in_middle(MhPublicKeyView pub_key,
                                         const mpz_t ciphertext,
                                         AttackResult *result) {
