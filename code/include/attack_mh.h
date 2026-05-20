@@ -9,15 +9,19 @@
 #define ATTACK_BRUTE_MAX_N 30u
 #define ATTACK_MITM_MAX_HALF_N 20u
 
-// Public subset-sum instance used by 
-// MH attacks.
+/*
+Public subset-sum instance used by
+MH attacks.
+*/
 typedef struct {
     u64 n;
     const mpz_t *weights;
 } MhPublicKeyView;
 
-// Result and measured work counters 
-// for one attack run.
+/*
+Result and measured work counters
+for one attack run.
+*/
 typedef struct {
     BitBuf message;
     u64 checked_count;

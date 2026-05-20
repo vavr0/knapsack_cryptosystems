@@ -12,8 +12,10 @@
 // Default factor for modulus margin bound: margin <= factor * n.
 #define MH_DEFAULT_MARGIN_FACTOR 64u
 
-// Classic Merkle-Hellman
-// key pair+trapdoor.
+/*
+Classic Merkle-Hellman
+key pair+trapdoor.
+*/
 typedef struct {
     u64 n;               // number of weights / block size
     mpz_t *priv_weights; // private superincreasing sequence

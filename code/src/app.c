@@ -18,8 +18,10 @@
 
 #define DEFAULT_TEXT_BLOCK_SIZE 128u
 
-// Read one non-empty plaintext line 
-// from stdin.
+/*
+Read one non-empty plaintext line
+from stdin.
+*/
 static KnapStatus read_message(TextBuf *out) {
     char line[512];
 
@@ -43,8 +45,10 @@ static KnapStatus read_message(TextBuf *out) {
     return text_buf_from_cstr(out, line);
 }
 
-// Allocate an array of initialized GMP ciphertext 
-// integers.
+/*
+Allocate an array of initialized GMP ciphertext
+integers.
+*/
 static KnapStatus ciphertexts_alloc(mpz_t **out, u64 count) {
     mpz_t *ciphertexts;
 
@@ -79,8 +83,10 @@ static void ciphertexts_clear(mpz_t *ciphertexts, u64 count) {
     free(ciphertexts);
 }
 
-// Run demo flow: prepare input blocks, 
-// encrypt, decrypt, and print result.
+/*
+Run demo flow: prepare input blocks,
+encrypt, decrypt, and print result.
+*/
 static KnapStatus demo_run(CliFlags *flags) {
     KnapStatus status;
     const SchemeOps *scheme;

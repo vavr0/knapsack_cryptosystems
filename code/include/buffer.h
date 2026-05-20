@@ -2,23 +2,29 @@
 #include "common.h"
 #include "error.h"
 
-// Non-owning view of bits 
-// stored as 0/1 bytes.
+/*
+Non-owning view of bits
+stored as 0/1 bytes.
+*/
 typedef struct {
     const u8 *data;
     u64 length;
 } BitView;
 
-// Owning bit buffer 
-// storing bits as 0/1 
-// bytes.
+/*
+Owning bit buffer
+storing bits as 0/1
+bytes.
+*/
 typedef struct {
     u8 *data;
     u64 length;
 } BitBuf;
 
-// Owning UTF-8/plain 
-// byte text buffer.
+/*
+Owning UTF-8/plain
+byte text buffer.
+*/
 typedef struct {
     char *data;
     u64 length;

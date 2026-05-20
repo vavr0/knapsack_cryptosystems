@@ -16,8 +16,10 @@ typedef enum {
     CLI_MODE_ATTACK,
 } CliMode;
 
-// Parsed and validated 
-// command-line options.
+/*
+Parsed and validated
+command-line options.
+*/
 typedef struct {
     CliMode mode;
     CliInputMode input_mode;
