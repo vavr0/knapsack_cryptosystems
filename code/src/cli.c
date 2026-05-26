@@ -153,6 +153,15 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
             if (status != KNAP_OK) {
                 return KNAP_ERR_INVALID;
             }
+        } else if (strcmp(flag, "--layers") == 0) {
+            if (i + 1 >= argc) {
+                return KNAP_ERR_INVALID;
+            }
+
+            status = parse_u64_str(argv[++i], &out->layers, 0);
+            if (status != KNAP_OK) {
+                return KNAP_ERR_INVALID;
+            }
         } else if (strcmp(flag, "-h") == 0 || strcmp(flag, "--help") == 0) {
             return KNAP_STATUS_HELP;
         } else {
@@ -164,6 +173,8 @@ static KnapStatus parse_flags(int argc, char **argv, CliFlags *out) {
 
 // Validate option combinations after parsing.
 static KnapStatus validate_flags(const CliFlags *flags) {
+    const SchemeOps *scheme;
+
     if (!flags) {
         return KNAP_ERR_INVALID;
     }
@@ -173,8 +184,18 @@ static KnapStatus validate_flags(const CliFlags *flags) {
         return KNAP_ERR_INVALID;
     }
 
-    if (flags->scheme_id && scheme_resolve(flags->scheme_id) == NULL) {
+    scheme = scheme_resolve(flags->scheme_id);
+    if (flags->scheme_id && scheme == NULL) {
         return KNAP_ERR_INVALID;
+    }
+
+    if (flags->layers != 0) {
+        if (!scheme || strcmp(scheme->info.id, "mh-iterated") != 0) {
+            return KNAP_ERR_INVALID;
+        }
+        if (flags->layers > SCHEME_MH_ITERATED_MAX_LAYERS) {
+            return KNAP_ERR_INVALID;
+        }
     }
 
     if (flags->input_mode == CLI_INPUT_NONE) {

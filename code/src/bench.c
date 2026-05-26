@@ -180,6 +180,7 @@ KnapStatus bench_run(CliFlags *flags) {
     params.n = flags->bits_message.length;
     params.initstate = seed[0];
     params.initseq = seed[1];
+    params.iterated_layers = flags->layers;
     params.flags = 0;
 
     BenchKeyStats key_stats = {0};
@@ -221,8 +222,9 @@ KnapStatus bench_run(CliFlags *flags) {
     printf("%s,%llu,%llu,%llu,%llu,%llu,%.6f,%.6f,%.6f,%.6f,%llu,%llu,%llu,"
            "%llu,%.6f\n",
            scheme->info.id, (unsigned long long)flags->bits_message.length,
-           (unsigned long long)reps, (unsigned long long)warmup_reps, seed[0],
-           seed[1], avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms, avg.total_ms,
+           (unsigned long long)reps, (unsigned long long)warmup_reps,
+           (unsigned long long)seed[0], (unsigned long long)seed[1],
+           avg.keygen_ms, avg.encrypt_ms, avg.decrypt_ms, avg.total_ms,
            (unsigned long long)key_stats.delta_max,
            (unsigned long long)key_stats.margin_bound,
            (unsigned long long)key_stats.margin,

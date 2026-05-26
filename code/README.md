@@ -106,6 +106,7 @@ Demo mode accepts:
 - `--msg TEXT` - plaintext input converted to bits
 - `--n BITS` - demo block size in bits; plaintext input defaults to 128-bit blocks
 - `--scheme ID` - `mh-classic`, `mh`, `mh-permuted`, or `mh-iterated`
+- `--layers N` - mh-iterated layer count; default 2, range 1-20
 - `--seed SEED` - deterministic seed
 
 Bench mode accepts:
@@ -114,6 +115,7 @@ Bench mode accepts:
 - `--n BITS` - random message length in bits
 - `--reps N` - repetitions; default is 10
 - `--scheme ID` - `mh-classic`, `mh`, `mh-permuted`, or `mh-iterated`
+- `--layers N` - mh-iterated layer count; default 2, range 1-20
 - `--seed SEED` - deterministic seed
 
 Bench CSV includes timing columns and key-structure columns:
@@ -166,7 +168,7 @@ Generate plots from available CSV files:
 ./experiments/venv/bin/python3 experiments/plot_results.py
 ```
 
-Experiment scripts write CSV files to `experiments/results/` and plots to `experiments/plots/`. Sweep scripts temporarily change compile-time constants, rebuild the binary, validate the reported parameters, and restore the source afterward.
+Experiment scripts write CSV files to `experiments/results/` and plots to `experiments/plots/`. Parameter sweep scripts temporarily change compile-time constants, rebuild the binary, validate the reported parameters, and restore the source afterward. The iterated-layer sweep uses `--layers` and does not rewrite source.
 
 ## Implementation notes
 

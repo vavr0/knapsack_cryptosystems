@@ -31,6 +31,7 @@ typedef struct {
     b8 has_seed;
     u64 n;
     u64 reps;
+    u64 layers;
 } CliFlags;
 
 // Parse and validate command-line arguments.

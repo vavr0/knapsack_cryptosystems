@@ -4,6 +4,9 @@
 #include "error.h"
 #include <gmp.h>
 
+#define SCHEME_MH_ITERATED_DEFAULT_LAYERS 2u
+#define SCHEME_MH_ITERATED_MAX_LAYERS 20u
+
 typedef struct {
     void *data; // scheme-specific keypair/context
     u64 n;      // key/message length
@@ -13,6 +16,7 @@ typedef struct {
     u64 n;
     u64 initstate;
     u64 initseq;
+    u64 iterated_layers; // mh-iterated only; 0 means scheme default
     u32 flags;
 } SchemeKeygenParams;
 

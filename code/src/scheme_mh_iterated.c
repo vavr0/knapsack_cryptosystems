@@ -8,8 +8,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#define MH_ITERATED_DEFAULT_LAYERS 2u
-
 typedef struct {
     mpz_t mod;
     mpz_t mult;
@@ -161,8 +159,17 @@ static KnapStatus mh_iterated_keygen(const SchemeKeygenParams *params,
     PrngState rng = {0};
     MhIteratedKey *key;
     KnapStatus status;
+    u64 layer_count;
 
     if (!params || !out_scheme_key || params->n == 0) {
+        return KNAP_ERR_INVALID;
+    }
+
+    layer_count = params->iterated_layers;
+    if (layer_count == 0) {
+        layer_count = SCHEME_MH_ITERATED_DEFAULT_LAYERS;
+    }
+    if (layer_count > SCHEME_MH_ITERATED_MAX_LAYERS) {
         return KNAP_ERR_INVALID;
     }
 
@@ -175,7 +182,7 @@ static KnapStatus mh_iterated_keygen(const SchemeKeygenParams *params,
         return KNAP_ERR_ALLOC;
     }
 
-    status = mh_iterated_key_alloc(key, params->n, MH_ITERATED_DEFAULT_LAYERS);
+    status = mh_iterated_key_alloc(key, params->n, layer_count);
     if (status != KNAP_OK) {
         free(key);
         return status;

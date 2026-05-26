@@ -150,6 +150,7 @@ static KnapStatus demo_run(CliFlags *flags) {
     params.n = blocks.block_size;
     params.initstate = seed[0];
     params.initseq = seed[1];
+    params.iterated_layers = flags->layers;
     params.flags = 0;
 
     status = scheme->keygen(&params, &scheme_key);
