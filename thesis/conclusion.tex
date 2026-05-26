@@ -1,2 +1,62 @@
 \chapter*{Conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
+
+This thesis studied classical knapsack cryptosystems through the Merkle--Hellman
+construction and several related variants. The theoretical part explained how a
+superincreasing private sequence gives an efficient trapdoor for subset-sum, how
+modular multiplication is used to form the public key, and why this connection
+to an NP-complete problem is not enough to guarantee cryptographic security.
+The history of attacks on knapsack cryptosystems shows that the generated public
+instances must be analyzed as concrete structured objects, not only as examples
+of a hard worst-case problem.
+
+The implementation confirmed the basic behaviour of the classical scheme. It
+also made explicit several choices that are often left open in high-level
+descriptions of the cryptosystem: how the superincreasing sequence is generated,
+how much margin is added before choosing the modulus, and how the multiplier is
+sampled. In the implemented generator, each private weight is chosen just above
+the sum of previous weights, with a bounded random increment. The modulus is the
+private sum plus a bounded random margin, and the multiplier is sampled from the
+full modular range until it is invertible. These choices are not proposed as
+secure parameters; they are compact educational choices that make the effects of
+parameter changes visible in experiments.
+
+The experiments showed that key generation dominates the runtime of the
+implemented schemes for the tested block sizes. The permuted variant behaves
+similarly to the classical variant, while additional iterated layers noticeably
+increase the cost. The iterated-layer sweep also showed that adding modular
+layers lowers the measured density of the public knapsack, especially for small
+block sizes. This agrees with the theoretical warning that iteration does not
+remove the fundamental weakness and may even move the construction toward
+size-related properties associated with low-density attacks.
+
+The parameter sweeps showed that the details of the private sequence generator
+matter. Increasing the random increment bound makes the private sum and public
+weights slightly larger and therefore lowers the measured density, most visibly
+for smaller block sizes. The modulus margin mainly demonstrates the necessary
+condition for decryption: the modulus must be larger than every possible private
+subset sum. These results do not measure security directly, but they connect the
+implementation to the density discussion from the theoretical part.
+
+The brute-force and meet-in-the-middle experiments illustrated the growth of
+direct subset-sum solving methods on small instances. Meet-in-the-middle extends
+the feasible range compared with brute force, but it still requires exponential
+memory. These solvers are therefore useful as educational baselines, while the
+real cryptanalytic weakness of Merkle--Hellman comes from structural attacks
+such as Shamir's attack and from lattice-based methods.
+
+Overall, the work supports the main lesson of classical knapsack cryptography:
+a hard mathematical problem does not automatically produce a secure public-key
+cryptosystem. The trapdoor construction, the distribution of generated public
+keys, and the available cryptanalytic methods are decisive. Merkle--Hellman and
+its variants are no longer suitable for practical encryption, but they remain a
+valuable historical example because they show clearly how implementation
+choices, parameter choices, and hidden structure interact in public-key
+cryptography.
+
+Possible extensions of this work would include implementing Shamir's structural
+attack or an LLL-based low-density solver, adding more historical variants, or
+measuring key and ciphertext sizes in more detail. These additions would make
+the experimental comparison closer to the cryptanalytic history, but they would
+not change the main conclusion: classical trapdoor knapsack cryptosystems are
+best treated as educational systems rather than secure cryptographic tools.

@@ -20,7 +20,7 @@ static void subset_sum(const mpz_t *weights, u64 offset, u64 count, u64 mask,
     }
 }
 
-// Brute-foce subset-sum search over all bit masks.
+// Brute-force subset-sum search over all bit masks.
 static KnapStatus attack_brute_force(MhPublicKeyView pub_key,
                                      const mpz_t ciphertext,
                                      AttackResult *result) {

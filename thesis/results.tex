@@ -22,19 +22,20 @@ For the cryptographic benchmarks, the tested block sizes were
 Each configuration was tested with three deterministic seeds. For each seed,
 the benchmark used five measured repetitions after three warm-up repetitions.
 The compared schemes were \texttt{mh-classic}, \texttt{mh-permuted}, and
-\texttt{mh-iterated}. The measured times therefore describe the behaviour of
-this implementation and this test environment. They are not security claims
-about the schemes.
+\texttt{mh-iterated}. The final measurements were run on an Arch Linux desktop
+with an Intel Core i9-10850K CPU, GCC 16.1.1, and GMP 6.3.0. The measured times
+therefore describe the behaviour of this implementation and this test
+environment. They are not security claims about the schemes.
 
 A separate sweep was also run for the iterated variant. In this experiment, the
 number of total modular transformation layers was changed to
 \[
     L \in \{2,3,4,5\}.
 \]
-The implementation was rebuilt for each value of \(L\), and the same block
-sizes and deterministic seeds were used. This experiment was included to show
-how additional modular layers affect runtime and the measured density of the
-public knapsack.
+The same release binary was invoked with \texttt{--layers} for each value of
+\(L\), and the same block sizes and deterministic seeds were used. This
+experiment was included to show how additional modular layers affect runtime
+and the measured density of the public knapsack.
 
 The attack experiments used only the public knapsack instance of the classical
 Merkle--Hellman scheme. The implemented solvers are brute-force search and
@@ -64,12 +65,12 @@ exact ordering for the smallest block sizes should not be overinterpreted.
 However, the growth with increasing \(n\) is visible.
 
 For example, the average total time of the classical variant increased from
-about \(0.011\) ms for \(n=128\) to about \(0.790\) ms for \(n=4096\). The
-permuted variant had very similar behaviour, because the permutation changes
-the order of the weights but does not change the main arithmetic operations.
-The default iterated variant became slower for larger block sizes. For
-\(n=4096\), its average total time was about \(1.404\) ms. This is expected,
-because it applies an additional modular transformation layer.
+about \(0.016\) ms for \(n=128\) to about \(11.020\) ms for \(n=4096\). The
+permuted variant had similar behaviour, because the permutation changes the
+order of the weights but does not change the main arithmetic operations. The
+default iterated variant became slower for larger block sizes. For \(n=4096\),
+its average total time was about \(30.561\) ms. This is expected, because it
+applies an additional modular transformation layer.
 
 \begin{figure}[htbp]
     \centering
@@ -82,8 +83,8 @@ Figure~\ref{fig:crypto-components-classic} shows the operation breakdown for
 the classical variant. In this implementation, key generation is the largest
 part of the measured runtime. Encryption and decryption are faster, because they
 mainly process one sequence of weights for a fixed-size block. At \(n=4096\),
-the average key-generation time was about \(0.622\) ms, while encryption took
-about \(0.075\) ms and decryption about \(0.094\) ms. This difference is
+the average key-generation time was about \(10.861\) ms, while encryption took
+about \(0.086\) ms and decryption about \(0.073\) ms. This difference is
 reasonable, because key generation allocates and initializes the key material,
 constructs the private sequence, chooses the modulus and multiplier, and builds
 the public weights.
@@ -108,9 +109,9 @@ and decryption.
 Figure~\ref{fig:crypto-total-with-iterated-layers} compares the default
 variants with iterated variants using more layers. The runtime increases as the
 number of layers grows. For \(n=4096\), the average total time of the iterated
-variant increased from about \(1.347\) ms with two layers to about \(3.156\) ms
-with five layers. The growth is still small in absolute terms for this
-educational implementation, but the cost of adding layers is visible.
+variant increased from about \(30.600\) ms with two layers to about
+\(88.423\) ms with five layers. The growth is still small in absolute terms for
+this educational implementation, but the cost of adding layers is visible.
 
 \begin{figure}[htbp]
     \centering
@@ -123,9 +124,9 @@ Figure~\ref{fig:iterated-layers-density} shows the density of the iterated
 variant for different layer counts. Adding more layers tends to reduce the
 measured density, because later modular transformations work with larger
 intermediate values and moduli. The effect is more visible for small block
-sizes. For \(n=128\), the average density changed from about \(0.934\) with two
-layers to about \(0.826\) with five layers. For \(n=4096\), the change was
-smaller, from about \(0.998\) to about \(0.993\). This supports the theoretical
+sizes. For \(n=128\), the average density changed from about \(0.916\) with two
+layers to about \(0.812\) with five layers. For \(n=4096\), the change was
+smaller, from about \(0.996\) to about \(0.988\). This supports the theoretical
 warning that iteration can increase size-related costs and move the construction
 toward lower-density instances, without giving a security guarantee.
 
@@ -193,9 +194,9 @@ an exponential table of partial sums.
 Figure~\ref{fig:attack-ms} shows the measured running time of both solvers. The
 vertical axis is logarithmic. The brute-force solver becomes expensive already
 for small values of \(n\). In these measurements, it was tested only up to
-\(n=22\), where the average running time was about \(188\) ms. The
+\(n=22\), where the average running time was about \(186\) ms. The
 meet-in-the-middle solver handled larger values in this experiment. It reached
-\(n=40\), where the average running time was about \(614\) ms.
+\(n=40\), where the average running time was about \(748\) ms.
 
 \begin{figure}[htbp]
     \centering

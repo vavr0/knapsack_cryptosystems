@@ -169,7 +169,8 @@ static KnapStatus mh_iterated_keygen(const SchemeKeygenParams *params,
     if (layer_count == 0) {
         layer_count = SCHEME_MH_ITERATED_DEFAULT_LAYERS;
     }
-    if (layer_count > SCHEME_MH_ITERATED_MAX_LAYERS) {
+    if (layer_count < SCHEME_MH_ITERATED_MIN_LAYERS ||
+        layer_count > SCHEME_MH_ITERATED_MAX_LAYERS) {
         return KNAP_ERR_INVALID;
     }
 

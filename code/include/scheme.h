@@ -5,6 +5,7 @@
 #include <gmp.h>
 
 #define SCHEME_MH_ITERATED_DEFAULT_LAYERS 2u
+#define SCHEME_MH_ITERATED_MIN_LAYERS 2u
 #define SCHEME_MH_ITERATED_MAX_LAYERS 20u
 
 typedef struct {

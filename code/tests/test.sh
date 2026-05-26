@@ -44,6 +44,11 @@ if "$BIN" bench --scheme mh-classic --layers 3 --n 8 >/dev/null 2>&1; then
     exit 1
 fi
 
+if "$BIN" bench --scheme mh-iterated --layers 1 --n 8 >/dev/null 2>&1; then
+    echo "expected layers=1 to fail" >&2
+    exit 1
+fi
+
 if "$BIN" bench --scheme mh-iterated --layers 21 --n 8 >/dev/null 2>&1; then
     echo "expected layers=21 to fail" >&2
     exit 1

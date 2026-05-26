@@ -193,7 +193,8 @@ static KnapStatus validate_flags(const CliFlags *flags) {
         if (!scheme || strcmp(scheme->info.id, "mh-iterated") != 0) {
             return KNAP_ERR_INVALID;
         }
-        if (flags->layers > SCHEME_MH_ITERATED_MAX_LAYERS) {
+        if (flags->layers < SCHEME_MH_ITERATED_MIN_LAYERS ||
+            flags->layers > SCHEME_MH_ITERATED_MAX_LAYERS) {
             return KNAP_ERR_INVALID;
         }
     }

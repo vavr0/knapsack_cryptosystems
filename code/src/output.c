@@ -17,10 +17,11 @@ void print_usage(const char *prog) {
         "  --n BITS           Demo block size in bits; text default is 128\n");
     fprintf(stderr, "  --scheme ID        Scheme: mh-classic, mh, mh-permuted, "
                     "mh-iterated\n");
-    fprintf(stderr,
-            "  --layers N         mh-iterated layers; default %u, range 1-%u\n",
-            SCHEME_MH_ITERATED_DEFAULT_LAYERS,
-            SCHEME_MH_ITERATED_MAX_LAYERS);
+    fprintf(
+        stderr,
+        "  --layers N         mh-iterated layers; default %u, range %u-%u\n",
+        SCHEME_MH_ITERATED_DEFAULT_LAYERS, SCHEME_MH_ITERATED_MIN_LAYERS,
+        SCHEME_MH_ITERATED_MAX_LAYERS);
     fprintf(stderr, "  --seed SEED        Deterministic seed\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Bench options:\n");
@@ -30,10 +31,11 @@ void print_usage(const char *prog) {
             "  --reps N           Measurement repetitions; default is 10\n");
     fprintf(stderr, "  --scheme ID        Scheme: mh-classic, mh, mh-permuted, "
                     "mh-iterated\n");
-    fprintf(stderr,
-            "  --layers N         mh-iterated layers; default %u, range 1-%u\n",
-            SCHEME_MH_ITERATED_DEFAULT_LAYERS,
-            SCHEME_MH_ITERATED_MAX_LAYERS);
+    fprintf(
+        stderr,
+        "  --layers N         mh-iterated layers; default %u, range %u-%u\n",
+        SCHEME_MH_ITERATED_DEFAULT_LAYERS, SCHEME_MH_ITERATED_MIN_LAYERS,
+        SCHEME_MH_ITERATED_MAX_LAYERS);
     fprintf(stderr, "  --seed SEED        Deterministic seed\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Attack options:\n");

@@ -19,14 +19,14 @@ DELTA_VALUES = [1, 2, 4, 8, 16, 32, 64, 128]
 MARGIN_VALUES = [1, 4, 16, 64, 256, 1024]
 
 
-def run(cmd):
+def run(cmd, check=True):
     result = subprocess.run(
         cmd,
         cwd=ROOT,
         text=True,
         capture_output=True,
     )
-    if result.returncode != 0:
+    if check and result.returncode != 0:
         print("command failed:", " ".join(cmd))
         print(result.stdout)
         print(result.stderr)
@@ -110,6 +110,16 @@ def write_rows(rows):
     print("wrote", OUT)
 
 
+def restore_source_and_binary(original_header):
+    HEADER.write_text(original_header)
+    run(["make", "clean"], check=False)
+    result = run(["make", "release"], check=False)
+    if result.returncode != 0:
+        print("warning: restored source but could not rebuild default binary")
+        print(result.stdout)
+        print(result.stderr)
+
+
 def main():
     original_header = HEADER.read_text()
     rows = []
@@ -123,7 +133,7 @@ def main():
 
         write_rows(rows)
     finally:
-        HEADER.write_text(original_header)
+        restore_source_and_binary(original_header)
 
 
 if __name__ == "__main__":
