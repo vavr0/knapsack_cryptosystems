@@ -136,13 +136,16 @@ where
 \[
     \mu \in \{1,\dots,\texttt{MH\_DEFAULT\_MARGIN\_FACTOR}\cdot n\}.
 \]
-The multiplier is then chosen randomly until it has an inverse modulo \(m\).
-These constants are later varied in the parameter-sweep experiments.
+The multiplier is then sampled from the range \(2 \le r < m\) until it has
+an inverse modulo \(m\). These constants are later varied in the
+parameter-sweep experiments.
 
 The permuted variant adds a secret permutation of the private weights before
 the public weights are created. The iterated variant applies more than one
 modular transformation layer and removes these layers in reverse order during
-decryption.
+decryption. In the command-line interface, the default iterated variant uses two
+modular transformation layers. The option \texttt{--layers} can be used with
+\texttt{mh-iterated} to choose a value from 2 to 20 layers.
 
 \subsection{Data Representation and Support Modules}
 

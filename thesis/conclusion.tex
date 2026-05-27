@@ -1,25 +1,51 @@
 \chapter*{Conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
 
-This thesis studied classical knapsack cryptosystems through the Merkle--Hellman
-construction and several related variants. The theoretical part explained how a
-superincreasing private sequence gives an efficient trapdoor for subset-sum, how
-modular multiplication is used to form the public key, and why this connection
-to an NP-complete problem is not enough to guarantee cryptographic security.
-The history of attacks on knapsack cryptosystems shows that the generated public
-instances must be analyzed as concrete structured objects, not only as examples
-of a hard worst-case problem.
+The aim of this thesis was to understand, study, analyze, and implement
+classical knapsack cryptosystems. The thesis did not focus only on the original
+Merkle--Hellman variant, but also analyzed and compared selected related
+variants by looking at their design, efficiency, and known weaknesses. The main
+motivation was to show why the difficulty of the underlying mathematical
+problem is not enough to assume that a cryptosystem is secure, especially when
+the trapdoor is based on an easy structured version of that problem.
 
-The implementation confirmed the basic behaviour of the classical scheme. It
-also made explicit several choices that are often left open in high-level
-descriptions of the cryptosystem: how the superincreasing sequence is generated,
-how much margin is added before choosing the modulus, and how the multiplier is
-sampled. In the implemented generator, each private weight is chosen just above
-the sum of previous weights, with a bounded random increment. The modulus is the
-private sum plus a bounded random margin, and the multiplier is sampled from the
-full modular range until it is invertible. These choices are not proposed as
-secure parameters; they are compact educational choices that make the effects of
-parameter changes visible in experiments.
+The theoretical part firstly introduced cryptographic and complexity-theory
+background needed for the topic. Special focus was given to the distinction
+between general subset-sum hardness and the structured instances used in
+cryptosystems. It then described the Merkle--Hellman construction, including
+the role of the superincreasing private sequence, how modular multiplication
+creates the public key, and how encryption and decryption work. It then
+described subset-sum as the underlying mathematical problem for the
+Merkle--Hellman cryptosystem. After defining the problem, it explained that the
+decision version of subset-sum is NP-complete and why this fact was important
+for early knapsack cryptography. The role of the superincreasing private
+sequence and modular multiplication was explained before moving to the
+individual phases of the system: key generation, encryption, and decryption.
+The later sections discussed why the basic construction does not hide its
+trapdoor structure well enough and is therefore vulnerable. The main attacks
+described were Shamir's structural attack and low-density lattice-based
+attacks. The thesis also described selected variants, including permuted and
+iterated Merkle--Hellman constructions and the Chor--Rivest knapsack-type
+cryptosystem, together with their known cryptanalysis.
+
+The practical part of the thesis focused on implementing the classical
+Merkle--Hellman cryptosystem and selected variants in modular C
+program. The implementation was not intended to be a secure cryptographic
+library, but rather an experimental tool with separate modes for demonstration,
+benchmarking, and simple solver experiments.
+
+The program implements complete procces with key-generation, encryption and
+decryption. The benchmark mode measured key generation, encryption, and
+decryption times and recorded values such as density, modulus margin, and the
+bit length of the private-weight sum. The solver experiments tested direct
+subset-sum methods such as brute force and meet-in-the-middle search on small
+generated instances. 
+
+During implementation, it also made several design
+choices that are often left open in high-level descriptions of the
+cryptosystem. For example how the superincreasing sequence is generated, how
+much margin is added before choosing the modulus, and how the multiplier is
+sampled.
 
 The experiments showed that key generation dominates the runtime of the
 implemented schemes for the tested block sizes. The permuted variant behaves
