@@ -13,8 +13,10 @@ PLOTS = ROOT / "experiments" / "plots"
 def plot_crypto_total(df):
     avg = df.groupby(["scheme", "n"], as_index=False)["total_ms"].mean()
 
-    for scheme in avg["scheme"].unique():
+    for scheme in ["mh-classic", "mh-permuted", "mh-iterated"]:
         rows = avg[avg["scheme"] == scheme].sort_values("n")
+        if rows.empty:
+            continue
         plt.plot(rows["n"], rows["total_ms"], marker="o", label=scheme)
 
     plt.title("Merkle-Hellman variant runtime")

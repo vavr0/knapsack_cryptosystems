@@ -11,9 +11,10 @@ parameters influence the generated knapsack instances.
 
 The experiments were run with the C implementation described in the previous
 chapter. The benchmark mode measures key generation, encryption, and decryption
-separately and prints the results in CSV format. The plotted values were then
-created from these CSV files using the Python scripts in the
-\texttt{experiments} directory.
+separately and prints the results in CSV format. The plotted values used in this
+chapter were created from the Arch Linux CSV files using the Python scripts in
+the \texttt{experiments} directory. The same scripts were also run on a macOS
+machine as a sanity check, but only the Linux measurements are reported here.
 
 For the cryptographic benchmarks, the tested block sizes were
 \[
@@ -164,18 +165,16 @@ extra bits compared with the full size of a long superincreasing sequence.
     \label{fig:sweep-delta-density}
 \end{figure}
 
-The same behaviour is visible in Figure~\ref{fig:sweep-delta-sum-bits}, which
-shows the bit length of the private-weight sum. Larger increment bounds produce
-slightly larger private sums. Since the public weights are derived from this
-private sequence and the modulus, the bit length of the generated values is one
-of the reasons why the density decreases.
+The same behaviour is visible in the recorded bit length of the private-weight
+sum. Larger increment bounds produce slightly larger private sums. Since the
+public weights are derived from this private sequence and the modulus, the bit
+length of the generated values is one of the reasons why the density decreases.
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\textwidth]{../code/experiments/plots/sweep_delta_sum_bits.png}
-    \caption{Effect of the superincreasing increment parameter on the bit length of the private-weight sum.}
-    \label{fig:sweep-delta-sum-bits}
-\end{figure}
+The sweep of the modulus margin had a weaker effect. Increasing the margin bound
+changed the sampled value of \(m-\sum_i w_i\), but it did not noticeably change
+the measured density. This is expected for this compact generator, because the
+private sum grows roughly exponentially with \(n\), while the added margin is
+only linear in \(n\).
 
 These results should be interpreted carefully. They do not show resistance to
 lattice attacks; they only show how this particular generator changes the
@@ -224,8 +223,9 @@ measurements show that the implementation is fast for educational parameter
 sizes, with key generation being the largest part of the cost in the classical
 variant. The additional iteration experiment shows that more modular layers
 increase the runtime and can lower the measured density of the public knapsack.
-The parameter sweep shows that the construction of the private superincreasing
-sequence also influences density through the size of the generated weights.
+The parameter sweeps show that the construction of the private superincreasing
+sequence influences density through the size of the generated weights, while the
+modulus margin has little effect under this compact generator.
 
 The subset-sum solver experiments demonstrate the rapid growth of direct
 message-recovery methods. However, these simple solvers are not the main reason
