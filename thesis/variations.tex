@@ -20,11 +20,11 @@ then reducing the equation modulo \(2\) gives
 \]
 In this equation, only public weights that are odd contribute their
 corresponding message bit to the sum. Then, \(C \bmod 2\) reveals the parity of
-the message bits corresponding to odd public weights. This does not
-determine the plaintext, but it does rule out some possible messages. Odlyzko
-notes that this observation was not known to give a practical attack by itself,
-but it was still considered suspicious because the ciphertext reveals direct
-information about the plaintext~\cite{OdlyzkoRiseFall}.
+the message bits corresponding to odd public weights. This does not determine
+the plaintext, but it does rule out some possible messages.
+Odlyzko~\cite{OdlyzkoRiseFall} notes that this observation was not known to
+give a practical attack by itself, but it was still considered suspicious
+because the ciphertext reveals direct information about the plaintext.
 
 The decisive break of the basic Merkle--Hellman scheme came with Shamir's
 polynomial time attack~\cite{Shamir1982}. Unlike the parity observation above,
@@ -100,9 +100,9 @@ sequence. These parameters do not have to be the original secret values; they
 only have to provide an equivalent trapdoor for
 decryption~\cite{OdlyzkoRiseFall}.
 
-Odlyzko also notes that the attack can be described using continued
+Odlyzko~\cite{OdlyzkoRiseFall} also notes that the attack can be described using continued
 fractions. This method is much simpler, but it is less general and has limited
-applicability to knapsacks~\cite{OdlyzkoRiseFall}. The later use of lattice
+applicability to knapsacks. The later use of lattice
 reduction became more important for attacks on other knapsack systems, which
 leads to the low-density attacks discussed next.
 
@@ -186,13 +186,13 @@ always be found, but in many low-density subset-sum instances the solution
 vector is short enough to be revealed by the reduced
 basis~\cite{LenstraLenstraLovasz1982,LagariasOdlyzko1985}.
 
-Lagarias and Odlyzko proposed a lattice-based algorithm that always runs in
-polynomial time, but may fail to find a solution. Their analysis showed that,
-for almost all subset-sum instances with density below about \(0.645\), the
-target solution vector is the shortest non-zero vector in the constructed
-lattice. Since LLL is only an approximate reduction algorithm, the rigorous
-success guarantee is weaker, but the result still explains why low-density
-knapsack instances are vulnerable in practice~\cite{LagariasOdlyzko1985}.
+Lagarias and Odlyzko~\cite{LagariasOdlyzko1985} proposed a lattice-based
+algorithm that always runs in polynomial time, but may fail to find a solution.
+Their analysis showed that, for almost all subset-sum instances with density
+below about \(0.645\), the target solution vector is the shortest non-zero
+vector in the constructed lattice. Since LLL is only an approximate reduction
+algorithm, the rigorous success guarantee is weaker, but the result still
+explains why low-density knapsack instances are vulnerable in practice.
 
 \subsection{Why NP-Completeness Does Not Guarantee Security}
 
@@ -201,9 +201,9 @@ complexity of the general decision problem. A cryptosystem, however, generates
 structured instances that must remain easy for the legitimate user to solve
 with the help of secret information. Because of this, worst-case hardness alone
 does not say enough about the security of the concrete public keys used in
-practice. As Diffie and Hellman already observed, complexity theory gives no
+practice. As Diffie and Hellman~\cite[p.~654]{diffie1976newDirections} already observed, complexity theory gives no
 indication of the difficulty of a particular knapsack
-instance~\cite[p.~654]{diffie1976newDirections}.
+instance.
 
 The history of knapsack cryptography illustrates this limitation clearly. The
 Merkle--Hellman scheme was motivated by the NP-completeness of subset-sum, yet
@@ -226,12 +226,12 @@ the construction more substantially.
 \subsection{Modified Merkle--Hellman Schemes}
 
 The first modifications of the Merkle--Hellman idea stayed close to the
-original construction. They did not replace the superincreasing trapdoor,
-but tried to disguise it more strongly. Merkle and Hellman already noted
-that the code breaker's task could be complicated by scrambling the order of
-the public weights and by adding different multiples of the modulus to
-them.~\cite[p.~526]{MerkleHellman1978} In modular notation, the public
-weights still satisfy a relation of the form
+original construction. They did not replace the superincreasing trapdoor, but
+tried to disguise it more strongly. Merkle and
+Hellman~\cite[p.~526]{MerkleHellman1978} already noted that the code breaker's
+task could be complicated by scrambling the order of the public weights and by
+adding different multiples of the modulus to them. In modular notation, the
+public weights still satisfy a relation of the form
 \[
     b_i \equiv r w_{\pi(i)}
     \pmod{m}, 
@@ -260,12 +260,12 @@ that several layers would hide the original structure better than one
 layer~\cite{Brickell1984,OdlyzkoRiseFall}.
 
 This comes with a cost. Each additional iteration increases the size of the
-numbers that have to be handled and stored. More importantly, Brickell notes
-that iteration reduces the information rate of the knapsack. In the density
-terminology used above, this means that the public weights become large
-relative to the number of message bits. As a result, repeated iteration can
-make the system more exposed to low-density attacks, even though it was
-intended to hide the original trapdoor better~\cite{Brickell1984}.
+numbers that have to be handled and stored. More importantly,
+Brickell~\cite{Brickell1984} notes that iteration reduces the information rate
+of the knapsack. In the density terminology used above, this means that the
+public weights become large relative to the number of message bits. As a
+result, repeated iteration can make the system more exposed to low-density
+attacks, even though it was intended to hide the original trapdoor better.
 
 \subsection{Brickell's Attack on Iterated Knapsacks}
 
@@ -273,9 +273,9 @@ Brickell's attack targets the iterated construction itself, not only individual
 ciphertexts. The attack uses lattice basis reduction on selected subsets of the
 public weights. The reduced lattice basis is expected to contain short vectors
 that come from the hidden modular relations between the successive
-transformations. Brickell calls the useful short vectors desirable vectors, and
+transformations. Brickell~\cite[pp.~344--348]{Brickell1984} calls the useful short vectors desirable vectors, and
 uses them to recover information about the hidden order and structure of the
-knapsack.~\cite[pp.~344--348]{Brickell1984}
+knapsack.
 
 From these short vectors, the attacker can reconstruct enough information to
 obtain a sequence that behaves like a superincreasing sequence for most
@@ -284,11 +284,11 @@ sense, the attack does not need to recover the exact original private key. It
 is sufficient to recover an equivalent structure that makes decryption
 efficient.~\cite[pp.~349--355]{Brickell1984}
 
-Although Brickell did not claim a proof that the attack succeeds for every
-parameter choice, he reported successful attacks on examples with $n=100$ and
-with $Y=5$, $10$, and $20$, which showed that iteration was not only
-theoretically questionable but also practically fragile.~\cite[pp.~343,
-356--357]{Brickell1984} 
+Although Brickell~\cite[pp.~343,356--357]{Brickell1984} did not claim a proof
+that the attack succeeds for every parameter choice, he reported successful
+attacks on examples with $n=100$ and with $Y=5$, $10$, and $20$, which showed
+that iteration was not only theoretically questionable but also practically
+fragile. 
 
 These results support the warning from the previous paragraph. Iteration did
 not repair the Merkle--Hellman idea. It only changed the form of the weakness
@@ -373,9 +373,9 @@ Although Chor--Rivest avoids the superincreasing trapdoor of Merkle--Hellman,
 its public weights are still derived from finite-field discrete logarithms,
 together with a secret permutation and offset.
 
-Vaudenay's 1998 cryptanalysis showed that the parameters proposed by Chor and
+Vaudenay's 1998 cryptanalysis~\cite[pp.~243--245]{Vaudenay1998} showed that the parameters proposed by Chor and
 Rivest can be broken, including the suggested fields $GF(197^{24})$,
-$GF(211^{24})$, $GF(243^{24})$, and $GF(256^{25})$.~\cite[pp.~243--245]{Vaudenay1998}
+$GF(211^{24})$, $GF(243^{24})$, and $GF(256^{25})$.
 
 The attack is not the low-density attack described earlier. Chor--Rivest was
 designed to have density close to one, for example density about $0.93$ for the
@@ -414,9 +414,9 @@ sequence.~\cite[pp.~526--527]{MerkleHellman1978} In this construction, the
 public values are related to discrete logarithms, and decryption uses the
 secret parameters to transform the ciphertext into a product that can be
 factored easily by the legitimate receiver. This idea tried to combine the
-knapsack problem with number-theoretic structure, but Odlyzko later showed that
-simple variants of the multiplicative knapsack are also vulnerable under
-practical parameter choices.~\cite{Odlyzko1984Attacks}
+knapsack problem with number-theoretic structure, but
+Odlyzko~\cite{Odlyzko1984Attacks} later showed that simple variants of the
+multiplicative knapsack are also vulnerable under practical parameter choices.
 
 Knapsack ideas were also proposed for authentication and digital signatures.
 One important example was Shamir's fast signature scheme, which was designed to
@@ -442,13 +442,13 @@ that made cryptanalysis possible.~\cite{Brickell1984,OdlyzkoRiseFall}
 \subsection{Parameter Choices, Efficiency, and Complexity}
 
 One of the main reasons why knapsack cryptosystems were attractive was their
-expected speed. Odlyzko compares Merkle--Hellman with RSA using the parameter
-sizes considered reasonable at that time. For about $n \approx 100$, the
-singly-iterated Merkle--Hellman scheme was expected to be more than one hundred
-times faster than RSA with a roughly 500-bit
-modulus.~\cite{OdlyzkoRiseFall} The reason was that Merkle--Hellman
-uses relatively small numbers and needs only one modular multiplication during
-decryption, while RSA required many modular multiplications. 
+expected speed. Odlyzko~\cite{OdlyzkoRiseFall} compares Merkle--Hellman with
+RSA using the parameter sizes considered reasonable at that time. For about $n
+\approx 100$, the singly-iterated Merkle--Hellman scheme was expected to be
+more than one hundred times faster than RSA with a roughly 500-bit modulus. The
+reason was that Merkle--Hellman uses relatively small numbers and needs only
+one modular multiplication during decryption, while RSA required many modular
+multiplications. 
 
 The disadvantage was storage size. RSA public keys contain only a small number
 of large integers, mainly the modulus and public exponent. In contrast, a
@@ -486,7 +486,7 @@ but also check these conditions. These conditions are necessary for decryption,
 but they reduce the range of possible public keys and are part of the structure
 that cryptanalytic attacks can use.
 
-Odlyzko gives a useful warning about parameter choices. A private
+Odlyzko~\cite{OdlyzkoRiseFall} gives a useful warning about parameter choices. A private
 superincreasing sequence may look efficient and still leave visible structure
 after the modular transformation. For example, if the private weights have a
 very regular geometric form, then neighbouring public weights can satisfy
@@ -499,7 +499,7 @@ relations such as
 By comparing values of the form \(b_i-2b_j\), the hidden modulus \(m\) may
 appear repeatedly and can be recovered. This example shows that compact or
 regular parameter choices can make the public key far from a random-looking
-subset-sum instance~\cite{OdlyzkoRiseFall}.
+subset-sum instance.
 
 
 This gives a natural connection to the implementation chapter. Since the

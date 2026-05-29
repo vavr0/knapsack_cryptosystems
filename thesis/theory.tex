@@ -21,9 +21,9 @@ cipher, which shifts each letter by a fixed number of positions in the
 alphabet. The cipher is obviously easy to break by trying all possibilities
 because number of possible shifts is really small. A more advanced classical
 cipher is the Vigen\`ere cipher, which uses a keyword to vary the shift applied
-to each letter. Classical ciphers were historically important, yet their
-security was too weak for modern communication 
-systems~\cite{aumasson2017serious}.
+to each letter. Such ciphers are still vulnerable to frequency and statistical
+analysis. Classical ciphers were historically important, but their security was
+too weak for modern communication systems~\cite{aumasson2017serious}.
 
 Later, more sophisticated systems were developed, including mechanical rotor
 machines such as the Enigma machine used for scrambling war messages during
@@ -41,10 +41,9 @@ section~\cite{diffie1976newDirections}.
 \section{P, NP, and Computational Hardness}
 
 The security of many modern cryptosystems depends on the assumption that a
-related computational problem is hard to solve efficiently. For this reason,
-computational complexity theory provides a way to describe computational
-difficulty. The following concepts introduce the basic language used to discuss
-this.
+related computational problem is hard to solve efficiently. Computational
+complexity theory provides a way to describe computational difficulty. The
+following concepts introduce the basic language used to discuss this.
 
 To describe computational difficulty more precisely, problems are organized
 into complexity classes. They reflect how the running time of an algorithm
@@ -85,7 +84,7 @@ polynomial time.
 A related notion is $\mathcal{NP}$-hard. Informally, a problem is
 $\mathcal{NP}$-hard if it is at least as difficult as the
 $\mathcal{NP}$-complete problems under polynomial reductions. The
-$\mathcal{NP}$-complete problems form the part of this broader category that
+$\mathcal{NP}$-complete problems form the part of this broader class that
 also belongs to $\mathcal{NP}$.~\cite[pp.~34--35, 37]{garey1979computers}
 
 Modern cryptography often relies on mathematical problems for which no
@@ -136,20 +135,21 @@ secret~\cite[pp.~644--645]{diffie1976newDirections}. Messages encrypted with
 the public key can only be decrypted with the corresponding private key. This
 removes the need to exchange a secret encryption key through a secure channel
 beforehand, although the public key itself still has to be authenticated in
-practice. Diffie and Hellman also described a key distribution approach in
-which two users communicating over a public channel can obtain a shared secret
-key, which can then be used in a conventional symmetric cryptosystem. This
-shows that symmetric and asymmetric cryptography do not replace one another,
-and can be used together~\cite[pp.~644, 648--649]{diffie1976newDirections}.
+practice. Diffie and Hellman also described a key exchange
+protocol~\cite[pp.~644, 648--649]{diffie1976newDirections} in which two users
+communicating over a public channel can obtain a shared secret key, which can
+then be used in a conventional symmetric cryptosystem. This shows that
+symmetric and asymmetric cryptography do not replace one another, and can be
+used together.
 
 The security of asymmetric systems is based on the idea of one-way and trapdoor
-functions. Diffie and Hellman described these as functions that are easy to
-compute, but difficult to invert without additional secret information, and
-suggested the knapsack problem as one possible foundation for such
-systems.~\cite[pp.~650, 652--654]{diffie1976newDirections} In the cryptosystem
-studied in this thesis, the underlying problem is subset-sum, also known as the
-knapsack problem. The following sections introduce this problem and explain how
-it can be used to construct a public-key encryption scheme.
+functions. Diffie and Hellman~\cite[pp.~650, 652--654]{diffie1976newDirections}
+described these as functions that are easy to compute, but difficult to invert
+without additional secret information, and suggested the knapsack problem as
+one possible foundation for such systems. In the cryptosystem studied in this
+thesis, the underlying problem is subset-sum, also known as the knapsack
+problem. The following sections introduce this problem and explain how it can
+be used to construct a public-key encryption scheme.
 
 \section{The Subset-Sum Problem}
 
@@ -238,9 +238,11 @@ Key generation starts from an easy private subset-sum instance and transforms
 it into a public sequence by a modular transformation intended to make it look
 hard. First, a superincreasing sequence $W=(w_1,\dots,w_n)$ is chosen as the
 private sequence. Then a modulus $m$ larger than $\sum_{i=1}^n w_i$ and a
-multiplier $r$ satisfying $\gcd(r,m)=1$ are selected. The public sequence
-$B=(b_1,\dots,b_n)$ is computed from the private sequence using the multiplier
-$r$ modulo $m$, where
+multiplier $r$ are selected so that $\gcd(r,m)=1$, where $\gcd$ denotes the
+greatest common divisor. This means that \(r\) and \(m\) are coprime and
+guarantees that \(r\) has a multiplicative inverse modulo \(m\). The public
+sequence $B=(b_1,\dots,b_n)$ is computed from the private sequence using the
+multiplier $r$ modulo $m$, where
 \[
 b_i \equiv r w_i \pmod m.
 \]

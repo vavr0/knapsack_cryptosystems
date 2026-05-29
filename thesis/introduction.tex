@@ -1,97 +1,53 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-Public-key cryptography is based on the idea that some mathematical operations
-are easy to perform but difficult to reverse without secret information. This
-principle makes it possible to communicate securely without first sharing a
-private key through a secure channel. Since its introduction in the 1970s,
-public-key cryptography has become one of the central parts of modern
-information security. Many public-key systems are based on computational
-problems that are believed to be hard, such as integer factorization, discrete
-logarithms, or variants of lattice problems.
+Public-key cryptography was introduced in the 1970s as a way to solve the
+problem of secure communication without first sharing a secret key through a
+secure channel. Its basic idea is to use mathematical operations that are easy
+to perform in one direction, but difficult to reverse without secret
+information. Because of this, the security of many public-key systems depends
+on computational problems that are believed to be hard, such as integer
+factorization or discrete logarithms.
 
-One of the early ideas for constructing a public-key cryptosystem was to use the
-subset-sum problem, also known as the knapsack problem. In this problem, one is
-given a sequence of positive integers and a target sum, and the task is to decide
-whether some subset of the sequence adds up to the target. The problem is
-important in complexity theory because its decision version is NP-complete. This
-made it an attractive candidate for cryptography: a sender could encrypt a
-message by forming a subset sum, while an attacker would appear to face a hard
-combinatorial problem.
+The problem most relevant to this thesis is the subset-sum problem. Given a
+sequence of positive integers and a target sum, the problem asks whether some
+subset of the sequence has sum equal to the target. In knapsack cryptosystems,
+public weights corresponding to message bits equal to $1$ are added during
+encryption.
 
 The first well-known cryptosystem based on this idea was proposed by Merkle and
 Hellman~\cite{MerkleHellman1978}. Its construction uses a private
 superincreasing sequence, for which the subset-sum problem can be solved
-efficiently by a greedy algorithm. This easy private instance is transformed by
-modular multiplication, and optionally by a permutation, into a public sequence
-that is intended to look like a hard general subset-sum instance. The legitimate
-receiver can reverse the transformation and solve the easy private problem,
-while an attacker only sees the public knapsack.
+directly by a greedy algorithm. This private sequence is transformed by modular
+multiplication, and optionally by a permutation, into a public key that is
+intended to look like a general subset-sum instance. The legitimate receiver
+can reverse the transformation and solve the easy private problem, while an
+attacker sees only a public knapsack that appears to be a hard subset-sum
+instance. However, the public knapsack is still generated from the private
+superincreasing sequence. If the public key leaks useful information about the
+private sequence, an attacker can try to recover an equivalent trapdoor or
+solve ciphertexts directly.
 
-This idea is simple and elegant, but its history also shows an important problem
-in cryptographic design. The hardness of the general subset-sum problem does not
-automatically imply the security of a cryptosystem built from it. A
-cryptosystem does not use arbitrary subset-sum instances; it generates instances
-with hidden structure so that the legitimate user can decrypt efficiently. If
-this structure remains visible in the public key, then the system may be much
-weaker than the general problem suggests.
+This is what happened to the original Merkle--Hellman cryptosystem.
+Shamir~\cite{Shamir1982} showed that an equivalent trapdoor can be recovered in
+polynomial time. Later work also showed that several modified knapsack
+constructions remained vulnerable. Brickell~\cite{Brickell1984} attacked
+iterated variants through their structure, and Lagarias and
+Odlyzko~\cite{LagariasOdlyzko1985} showed that some low-density subset-sum
+instances can be solved directly with lattice reduction.
 
-This is exactly what happened to classical knapsack cryptosystems. The basic
-Merkle--Hellman scheme was broken by Shamir, who showed that an equivalent
-trapdoor can be recovered in polynomial time~\cite{Shamir1982}. Later work also
-showed that several modified or iterated knapsack constructions remained
-vulnerable, often through structural or lattice-based attacks. In particular,
-low-density subset-sum instances can often be attacked by lattice reduction
-methods, which makes the density of a knapsack instance an important parameter
-when discussing practical security. These results changed the role of knapsack
-cryptosystems: they are no longer considered suitable for practical public-key
-encryption, but they remain useful for studying the relation between
-computational hardness, trapdoor design, and cryptanalysis.
+The aim of this thesis is to study this development through the classical
+Merkle--Hellman cryptosystem and selected variants. The thesis focuses on how
+the construction works, why the hidden superincreasing structure leads to
+weaknesses, and how later variants tried to avoid these problems. It does not
+propose a new secure knapsack cryptosystem, but treats the topic as a
+historical and educational case study.
 
-The aim of this thesis is to study the classical Merkle--Hellman knapsack
-cryptosystem, explain its mathematical background, compare selected variations,
-and implement several related constructions for experimentation. The thesis does
-not try to propose a secure modern knapsack cryptosystem. Instead, it treats
-knapsack cryptography as a historical and educational case study. The main focus
-is on understanding how the original construction works, why its security
-assumption was too optimistic, and how different modifications tried to repair
-its weaknesses.
+The practical part complements the theoretical discussion with an implementation
+of the classical, permuted, and iterated variants in C. The experiments
+compare the implemented variants, examine selected key-generation parameters,
+and test simple subset-sum solvers on small instances.
 
-The first chapter introduces the theoretical background needed for the rest of
-the thesis. It explains basic cryptographic terminology, the distinction between
-symmetric and asymmetric cryptography, the role of computational hardness, and
-the subset-sum problem. It then describes the Merkle--Hellman cryptosystem in
-detail, including key generation, encryption, and decryption.
-
-The second chapter discusses weaknesses and variations of knapsack
-cryptosystems. It first explains why the basic Merkle--Hellman construction is
-vulnerable, including Shamir's polynomial-time attack and low-density
-lattice-based attacks. It then presents selected attempts to modify or improve
-the original construction, such as permuted and iterated variants, and also
-discusses the Chor--Rivest knapsack-type cryptosystem. The chapter emphasizes
-the difference between the theoretical hardness of subset-sum and the concrete
-security of structured public keys.
-
-The third chapter describes the implementation used in this thesis. The program
-implements the classical Merkle--Hellman scheme and selected variants in a
-common framework. It supports key generation, encryption, decryption, benchmark
-runs, and simple subset-sum solver experiments. The implementation is intended
-mainly as an experimental tool for checking correctness, comparing running
-times, and illustrating how parameter choices influence generated knapsack
+This makes them useful mainly as an example of why an NP-complete problem does
+not guarantee security when the cryptosystem generates structured public
 instances.
-
-The fourth chapter presents the experimental results. The experiments verify
-that the implemented schemes correctly encrypt and decrypt tested inputs,
-compare the running time of the implemented variants, and examine the influence
-of key-generation parameters on knapsack density. Additional experiments compare
-brute force and meet-in-the-middle subset-sum solvers on small instances. These
-experiments are not security proofs, but they support the theoretical discussion
-by showing the behaviour of the implemented schemes and the practical growth of
-simple solving methods.
-
-Overall, this thesis uses knapsack cryptosystems to illustrate a broader lesson
-in cryptography: a hard mathematical problem is not enough by itself. The way
-the problem is used, the structure of generated instances, and the available
-cryptanalytic methods are equally important. The history of knapsack
-cryptography is therefore a useful example of why cryptographic constructions
-must be analyzed as concrete systems, not only as applications of hard problems.
