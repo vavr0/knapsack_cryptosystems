@@ -178,12 +178,33 @@ this bachelor thesis.
 \newpage 
 \chapter*{Abstrakt}
 
-Slovenský abstrakt v rozsahu 100-500 slov, jeden odstavec. Abstrakt
-stručne sumarizuje výsledky práce. Mal by byť pochopiteľný pre bežného
-informatika. Nemal by teda využívať skratky, termíny alebo označenie
-zavedené v práci, okrem tých, ktoré sú všeobecne známe.
+Merkleho--Hellmanov knapsack kryptosystém patril medzi prvé pokusy o
+vytvorenie kryptosystému s verejným kľúčom. Je založený na probléme
+subset-sum, čo robilo túto myšlienku atraktívnou, pretože rozhodovacia verzia
+tohto problému je NP-úplná. Neskorší vývoj však ukázal, že táto skutočnosť
+sama osebe nestačí na bezpečnosť a že verejné knapsack inštancie generované
+kryptosystémom môžu obsahovať skrytú štruktúru, ktorú vie útočník využiť.
+Práca sa zameriava na to, ako táto konštrukcia funguje, prečo je zraniteľná a
+ako sa vybrané varianty pokúšali vyhnúť jej slabinám. Vysvetľuje
+superrastúci trapdoor, Shamirov polynomiálny útok na pôvodný
+Merkleho--Hellmanov kryptosystém a dôvod, prečo môžu byť knapsack inštancie s
+nízkou hustotou zraniteľné voči útokom založeným na mriežkach. Praktická časť
+implementuje klasický, permutovaný a iterovaný variant v programovacom jazyku
+C. Každý variant obsahuje potrebné operácie kryptosystému, konkrétne
+generovanie kľúčov, šifrovanie a dešifrovanie. Experimenty porovnávajú čas
+behu jednotlivých variantov, skúmajú vplyv vybraných parametrov generovania
+kľúčov na vytvorené inštancie a testujú brute-force a meet-in-the-middle
+riešiče na malých subset-sum inštanciách. Hlavným záverom je, že klasické
+knapsack kryptosystémy nie sú vhodné na praktické šifrovanie s verejným
+kľúčom. Dôvodom je, že ich verejné kľúče sú generované zo superrastúcej
+trapdoor štruktúry, ktorá je omnoho jednoduchšia než všeobecná subset-sum
+inštancia. Ak verejný kľúč prezrádza informácie o tomto jednoduchom skrytom
+probléme, útoky môžu tieto informácie využiť na obnovenie správy alebo
+ekvivalentného trapdooru. Problém subset-sum a súvisiace mriežkové problémy sa
+naďalej skúmajú ako teoretické a algoritmické problémy, ale klasické trapdoor
+knapsack kryptosystémy dnes slúžia najmä na historické a vzdelávacie účely.
 
-\paragraph*{Kľúčové slová:} jedno, druhé, tretie (prípadne štvrté, piate)
+\paragraph*{Kľúčové slová:} knapsack kryptosystém, subset-sum, Merkle--Hellman, kryptoanalýza
 % --- Koniec Abstrakt - Slovensky
 
 

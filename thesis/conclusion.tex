@@ -6,9 +6,9 @@ cryptosystems. The thesis did not focus only on the original Merkle--Hellman
 variant, but also analyzed and compared selected related variants by looking at
 their design, efficiency, known weaknesses, and attacks. The motivation was to
 understand why basing a cryptosystem on an NP-complete problem is not enough
-for security when the system generates structured public instances. The work
-connected this theoretical background with the practical behaviour of
-implemented Merkle--Hellman-style constructions.
+for security when the system generates structured public instances. The
+implementation and experiments were used to compare the selected variants and
+to observe how parameter choices affect the generated knapsack instances.
 
 The theoretical part first introduced cryptographic and complexity-theory
 background needed for the topic. Special focus was given to the distinction
@@ -20,11 +20,12 @@ fact was important for early knapsack cryptography. The role of the
 superincreasing private sequence and modular multiplication was explained
 before moving to the individual phases of the system. The later sections
 discussed why the basic construction does not hide its trapdoor structure well
-enough and is therefore vulnerable. The main attacks described were Shamir's
-structural attack and low-density lattice-based attacks. The thesis also
-described selected variants, including permuted and iterated Merkle--Hellman
-constructions and the Chor--Rivest knapsack-type cryptosystem, together with
-their known cryptanalysis.
+enough and is therefore vulnerable. Shamir's attack was presented as a
+structural attack that can recover an equivalent trapdoor, while low-density
+lattice attacks were presented as direct attacks on suitable subset-sum
+instances. The thesis also described selected variants, including permuted and
+iterated Merkle--Hellman constructions and the Chor--Rivest knapsack-type
+cryptosystem, together with their known cryptanalysis.
 
 The practical part of the thesis focused on implementing the classical
 Merkle--Hellman cryptosystem and selected variants in the C programming

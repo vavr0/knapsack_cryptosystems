@@ -379,38 +379,38 @@ $GF(211^{24})$, $GF(243^{24})$, and $GF(256^{25})$.
 
 The attack is not the low-density attack described earlier. Chor--Rivest was
 designed to have density close to one, for example density about $0.93$ for the
-parameters $p=197$ and $h=24$. Instead, Vaudenay's cryptanalysis uses the
+parameters $p=197$ and $h=24$. Instead, Vaudenay's cryptanalysis~\cite[pp.~244--245]{Vaudenay1998} uses the
 algebraic structure of the public key. The public weights come from discrete
 logarithms of finite-field elements of the form $t+\alpha$, followed by a
 permutation and an offset. This additional structure gives the attacker
 information that would not be present in a random subset-sum
-instance.~\cite[pp.~244--245]{Vaudenay1998}
+instance.
 
-Vaudenay gave dedicated attacks for the proposed parameter choices. For the
+Vaudenay~\cite[pp.~252--255]{Vaudenay1998} gave dedicated attacks for the proposed parameter choices. For the
 case $GF(197^{24})$, he estimated about $2^{29}$ operations in $GF(197)$, and
 reported that recovering the secret key from the public key took about fifteen
 minutes on an old laptop. He also extended the method to the proposed
-$GF(256^{25})$ case.~\cite[pp.~252--255]{Vaudenay1998} These practical results
+$GF(256^{25})$ case. These practical results
 show that increasing the density and replacing the superincreasing sequence by
 finite-field arithmetic did not remove the main problem. The public key was
 still generated from a special trapdoor structure.
 
-Vaudenay's conclusion also indicates why repairing the system is not
+Vaudenay's conclusion~\cite[p.~255]{Vaudenay1998} also indicates why repairing the system is not
 straightforward. He suggests that one would have to choose parameters more
 carefully and avoid publishing all the coefficients, but then it becomes unclear
 how to keep the desired density and efficient key generation. For this thesis,
 the important lesson is that Chor--Rivest moved away from the direct
 Merkle--Hellman weaknesses, but its algebraic design still produced exploitable
-public keys.~\cite[p.~255]{Vaudenay1998}
+public keys.
 
 
 \subsection{Other Historical Proposals (Brief Overview)}
 
 Several other knapsack-based constructions were proposed during the early
-development of public-key cryptography. Merkle and Hellman also described a
+development of public-key cryptography. Merkle and Hellman~\cite[pp.~526--527]{MerkleHellman1978} also described a
 multiplicative trapdoor knapsack, where the trapdoor is based on products of
 relatively prime integers rather than on a superincreasing additive
-sequence.~\cite[pp.~526--527]{MerkleHellman1978} In this construction, the
+sequence. In this construction, the
 public values are related to discrete logarithms, and decryption uses the
 secret parameters to transform the ciphertext into a product that can be
 factored easily by the legitimate receiver. This idea tried to combine the
@@ -420,13 +420,13 @@ multiplicative knapsack are also vulnerable under practical parameter choices.
 
 Knapsack ideas were also proposed for authentication and digital signatures.
 One important example was Shamir's fast signature scheme, which was designed to
-provide efficient signing rather than encryption. Odlyzko showed that this
+provide efficient signing rather than encryption. Odlyzko~\cite{Odlyzko1984Attacks} showed that this
 scheme could be attacked quickly using lattice-based methods, without
 recovering the exact original secret information. He also noted that similar
 methods could be adapted to the Sch\"obi--Massey knapsack-based authentication
 scheme. These examples show that the weaknesses of knapsack constructions were
 not limited to message encryption, but also affected related signature and
-authentication proposals.~\cite{Odlyzko1984Attacks}
+authentication proposals.
 
 Other proposals, such as Graham--Shamir knapsacks, generalized knapsacks, and
 so-called ultimate knapsack variants, also appeared as attempts to repair or
@@ -517,26 +517,26 @@ hardness assumption. If an attacker breaks the construction, this would also
 give a way to solve the assumed hard subset-sum instances.
 
 One important direction is provable cryptography based on subset sum.
-Impagliazzo and Naor constructed efficient primitives such as pseudorandom
+Impagliazzo and Naor~\cite{ImpagliazzoNaor1996} constructed efficient primitives such as pseudorandom
 generators and universal one-way hash functions from the subset-sum
-problem.~\cite{ImpagliazzoNaor1996} Later, Lyubashevsky, Palacio, and Segev
+problem. Later, Lyubashevsky, Palacio, and Segev~\cite{LyubashevskyPalacioSegev2010}
 gave a public-key encryption scheme whose security is polynomial-time
 equivalent to the hardness of random subset-sum
-instances.~\cite{LyubashevskyPalacioSegev2010} Faust, Masny, and Venturi
+instances. Faust, Masny, and Venturi~\cite{FaustMasnyVenturi2015}
 extended this direction to a stronger setting, where the attacker is allowed to
 obtain decryptions of chosen ciphertexts other than the target one. This is
 different from classical trapdoor knapsacks. It studies encryption schemes with
 security reductions to random subset-sum, not new disguises of superincreasing
-sequences.~\cite{FaustMasnyVenturi2015}
+sequences.
 
 Knapsack-like problems also appear in newer lattice-based research. One example
 is the partial Vandermonde knapsack problem, which has been studied as a basis
 for efficient public-key encryption and related
 constructions.~\cite{BoudgoustSakzadSteinfeld2022} This direction is relevant
 because the knapsack problem is again combined with extra structure. Again, the
-cryptanalysis followed quickly. Das and Joux published key-recovery attacks against
+cryptanalysis followed quickly. Das and Joux~\cite{DasJoux2024} published key-recovery attacks against
 the partial Vandermonde knapsack problem for several parameter choices from the
-literature only two years later.~\cite{DasJoux2024} This does not mean that all
+literature only two years later. This does not mean that all
 subset-sum based research is insecure, but it shows that structured
 knapsack-like assumptions still require detailed cryptanalysis.
 
