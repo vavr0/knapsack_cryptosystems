@@ -211,10 +211,12 @@ The important point is that the solution vector is usually not one of the
 original basis vectors. It is hidden as an linear combination of them. Lattice
 basis reduction tries to replace the original basis by another basis of the
 same lattice, but with shorter and more nearly orthogonal vectors. The LLL
-algorithm performs this process in polynomial time. Internally, it uses
-Gram--Schmidt orthogonalization to measure the lengths and directions of basis
-vectors, and then decides when to reduce a vector by another one or when to
-swap two basis vectors. It does not guarantee that the shortest vector will
+algorithm, named after Lenstra, Lenstra, and Lov\'asz, is a polynomial-time
+lattice basis reduction algorithm. It takes a lattice basis as input and returns
+another basis of the same lattice with shorter and more nearly orthogonal
+vectors. Internally, it uses Gram--Schmidt orthogonalization to measure the
+lengths and directions of basis vectors, and then decides when to reduce a
+vector by another one or when to swap two basis vectors. It does not guarantee that the shortest vector will
 always be found, but in many low-density subset-sum instances the solution
 vector is short enough to be revealed by the reduced
 basis~\cite{LenstraLenstraLovasz1982,LagariasOdlyzko1985}.
