@@ -318,21 +318,38 @@ greatest common divisor. This means that $r$ and $m$ are coprime and guarantees
 that $r$ has a multiplicative inverse modulo $m$~\cite[pp.~212--213]{stanoyevitch2011}.
 
 The inverse can be found in polynomial time by the extended Euclidean
-algorithm~\cite[pp.~216--217, p.~492]{stanoyevitch2011}. This algorithm finds
-integers $a$ and $b$ such that
+algorithm~\cite[pp.~216--217, p.~492]{stanoyevitch2011}. The ordinary Euclidean
+algorithm first computes $\gcd(r,m)$ by repeated divisions with remainders. In
+one division step, a number $A$ is divided by a divisor $D$:
+\[
+    A = qD + R,
+\]
+where $q$ is the quotient and $R$ is the remainder. The next step uses the
+previous divisor $D$ and the new remainder $R$. This continues until the
+remainder becomes $0$. The last non-zero remainder is $\gcd(r,m)$.
+
+The extended Euclidean algorithm adds backward substitution to these same
+divisions. It starts with the equation whose remainder is the greatest common
+divisor. If this equation still contains an intermediate remainder, that
+remainder is replaced by the expression obtained from the previous division.
+Repeating this substitution removes all intermediate remainders and writes the
+greatest common divisor using only the original numbers $r$ and $m$. In this
+way the algorithm finds integers $a$ and $b$ such that
 \[
     ar + bm = \gcd(r,m).
 \]
-When $\gcd(r,m)=1$, this gives
+Since key generation chooses $r$ so that $\gcd(r,m)=1$, this gives
 \[
     ar + bm = 1.
 \]
-Modulo $m$, the term $bm$ disappears because it is a multiple of $m$. Therefore
+Reducing this equation modulo $m$ removes the term $bm$, because it is divisible
+by $m$, so
 \[
     ar \equiv 1 \pmod m.
 \]
-This is exactly the condition for $a$ to be the inverse of $r$ modulo $m$, or
-equivalently $r^{-1}\equiv a \pmod m$~\cite[pp.~216--217]{stanoyevitch2011}.
+Thus the coefficient $a$ is the inverse of $r$ modulo $m$, that is,
+$r^{-1}\equiv a \pmod m$.
+
 
 In the original description, the order of the transformed sequence may also be
 permuted to further obscure its structure.~\cite[p.~526]{MerkleHellman1978} The
@@ -389,43 +406,11 @@ bit positions are restored according to the secret permutation.
 
 \subsection*{Example}
 
-For decryption, the inverse of $r=9$ modulo $47$ is needed. To find it, we use
-the extended Euclidean algorithm. First, the Euclidean algorithm repeatedly
-divides the larger number by the smaller one and keeps the remainder. Dividing
-$47$ by $9$ gives quotient $5$ and remainder $2$, so
-\[
-    47 = 5\cdot9 + 2.
-\]
-Then dividing $9$ by $2$ gives quotient $4$ and remainder $1$, so
-\[
-    9 = 4\cdot2 + 1.
-\]
-The last non-zero remainder is $1$, so $\gcd(9,47)=1$.
-
-The extended part now rewrites this remainder as a combination of $9$ and
-$47$. From the second division,
-\[
-    1 = 9 - 4\cdot2.
-\]
-From the first division,
-\[
-    2 = 47 - 5\cdot9.
-\]
-Substituting this value of $2$ gives
-\[
-    1 = 9 - 4(47 - 5\cdot9) = 21\cdot9 - 4\cdot47.
-\]
-Modulo $47$, the term $-4\cdot47$ disappears. Therefore
-\[
-    21\cdot9 \equiv 1 \pmod{47},
-\]
-so $r^{-1}\equiv 21 \pmod{47}$.
-
 Consider a private superincreasing sequence
 \[
     W=(2,\,5,\,11,\,23),
 \]
-with $m=47$ and $r=9$, where $\gcd(r,m)=1$ and $m > 2+5+11+23 = 41$.
+with $m=47$ and $r=9$. Here $\gcd(9,47)=1$, so an inverse of $9$ modulo $47$ exists, and $m > 2+5+11+23 = 41$.
 The public key is computed as
 \[
     \begin{aligned}
@@ -445,13 +430,15 @@ For message $x=(1,0,1,0)$, encryption gives
 \]
 This ciphertext can be sent over the public channel.
 
-For decryption, the inverse of $r=9$ modulo $47$ is needed. The Euclidean
-divisions are
+For decryption, it is not enough to know that this inverse exists; its actual
+value is needed. The Euclidean divisions are
 \[
     47 = 5\cdot 9 + 2,\qquad 9 = 4\cdot 2 + 1.
 \]
-The second division gives $1=9-4\cdot2$. From the first division,
-$2=47-5\cdot9$. Substituting this value of $2$ gives
+The last remainder $1$ confirms that $\gcd(9,47)=1$. The same divisions can be
+read backwards to write $1$ as a combination of $9$ and $47$. The second
+division gives $1=9-4\cdot2$. From the first division, $2=47-5\cdot9$.
+Substituting this value of $2$ gives
 \[
     1 = 9 - 4(47 - 5\cdot 9) = 21\cdot 9 - 4\cdot 47.
 \]
@@ -459,7 +446,7 @@ Modulo $47$, the term $-4\cdot47$ disappears. Therefore
 \[
     21\cdot 9 \equiv 1 \pmod{47},
 \]
-so $r^{-1}\equiv 21 \pmod{47}$. Then
+so the needed inverse is $r^{-1}\equiv 21 \pmod{47}$. Then
 \[
     S' \equiv r^{-1}C \equiv 21\cdot 23 \equiv 13 \pmod{47}.
 \]

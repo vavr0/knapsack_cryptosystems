@@ -182,30 +182,32 @@ this bachelor thesis.
 \chapter*{Abstrakt}
 
 Merkleho--Hellmanov batohový kryptosystém bol jedným z prvých pokusov o
-vytvorenie kryptosystému s verejným kľúčom. Je založený na probléme súčtu podmnožiny, čo
-robilo túto myšlienku atraktívnou, pretože rozhodovacia verzia tohto problému je NP-úplná. Neskorší
-vývoj týchto systémov ukázal, že táto skutočnosť sama osebe nestačí na
-bezpečnosť a že verejné batohové inštancie generované kryptosystémom môžu
-obsahovať skrytú štruktúru, ktorú môže útočník zneužiť. Práca sa zameriava na to,
-ako táto konštrukcia funguje, prečo je zraniteľná a ako sa vybrané varianty
-pokúsili vyhnúť jej slabým miestam. Vysvetľuje superrastúcu trapdoorovú štruktúru,
-Shamirov útok v polynomiálnom čase na pôvodný Merkleho--Hellmanov kryptosystém
-a prečo môžu byť batohové inštancie s nízkou hustotou zraniteľné voči útokom
-založeným na mriežkach. Praktická časť implementuje klasické, permutované a iterované
-varianty v programovacom jazyku C. Každý variant obsahuje potrebné
-operácie kryptosystému, a to generovanie kľúčov, šifrovanie a
-dešifrovanie. Experimenty porovnávajú čas behu variantov, skúmajú,
-ako vybrané parametre generovania kľúčov ovplyvňujú generované inštancie a testujú
-riešiče typu brute-force a meet-in-the-middle na malých inštanciách problému súčtu podmnožiny. Hlavným
-záverom je, že klasické batohové kryptosystémy nie sú vhodné na
-praktické šifrovanie s verejným kľúčom. Dôvodom je, že ich verejné kľúče sú
-generované zo superrastúcej trapdoorovej štruktúry, ktorá je oveľa jednoduchšia ako
-všeobecná inštancia problému súčtu podmnožiny. Ak verejný kľúč prezradí informáciu o
-základnom jednoduchom probléme, útoky môžu túto informáciu využiť na obnovenie
-správy alebo ekvivalentnej trapdoorovej štruktúry. Problém súčtu podmnožiny a súvisiace problémy na mriežkach sa
-stále študujú ako teoretické a algoritmické problémy, ale klasické trapdoorové
-batohové kryptosystémy sa dnes používajú najmä na historické a vzdelávacie
-účely.
+vytvorenie kryptosystému s verejným kľúčom. Je založený na probléme súčtu
+podmnožiny, čo robilo túto myšlienku atraktívnou, pretože rozhodovacia verzia
+tohto problému je NP-úplná. Neskorší vývoj týchto systémov ukázal, že táto
+skutočnosť sama osebe nestačí na bezpečnosť a že verejné batohové inštancie
+generované kryptosystémom môžu obsahovať skrytú štruktúru, ktorú môže útočník
+zneužiť. Práca sa zameriava na to, ako táto konštrukcia funguje, prečo je
+zraniteľná a ako sa vybrané varianty pokúsili odstrániť jej nedostatky.
+Vysvetľuje superrastúcu trapdoorovú štruktúru, Shamirov útok v polynomiálnom
+čase na pôvodný Merkleho--Hellmanov kryptosystém a dôvody pre ktoré môžu byť
+batohové inštancie s nízkou hustotou zraniteľné voči útokom založeným na
+mriežkach. Praktická časť implementuje klasické, permutované a iterované
+varianty v programovacom jazyku C. Každý variant obsahuje potrebné operácie
+kryptosystému, a to generovanie kľúčov, šifrovanie a dešifrovanie. Experimenty
+porovnávajú čas behu jednotlivých variantov, skúmajú, ako vybrané parametre
+generovania kľúčov ovplyvňujú generované inštancie a testujú riešiče typu
+brute-force a meet-in-the-middle na malých inštanciách problému súčtu
+podmnožiny. Hlavným záverom je, že klasické batohové kryptosystémy nie sú
+vhodné na praktické asymetrické šifrovanie. Dôvodom je, že ich verejné kľúče sú
+generované zo superrastúcej trapdoorovej štruktúry, ktorá je podstatne
+jednoduchšia ako všeobecná inštancia problému súčtu podmnožiny. Ak verejný kľúč
+prezrádza informácie o jednoduchom probléme, na ktorom je systém postavený,
+môžu túto informáciu útoky využiť na obnovenie správy alebo ekvivalentnej
+trapdoorovej štruktúry. Problém súčtu podmnožiny a súvisiace mriežkové problémy
+sa stále študujú ako teoretické a algoritmické problémy, ale klasické
+trapdoorové batohové kryptosystémy sa dnes používajú najmä na historické a
+vzdelávacie účely.
 
 \paragraph*{Kľúčové slová:} batohový kryptosystém, problém súčtu podmnožiny, Merkle--Hellman, kryptoanalýza
 % --- Koniec Abstrakt - Slovensky
