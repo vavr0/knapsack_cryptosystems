@@ -318,15 +318,20 @@ greatest common divisor. This means that $r$ and $m$ are coprime and guarantees
 that $r$ has a multiplicative inverse modulo $m$~\cite[pp.~212--213]{stanoyevitch2011}.
 
 The inverse can be found in polynomial time by the extended Euclidean
-algorithm~\cite[pp.~216--217, p.~492]{stanoyevitch2011}. The ordinary Euclidean
-algorithm first computes $\gcd(r,m)$ by repeated divisions with remainders. In
-one division step, a number $A$ is divided by a divisor $D$:
+algorithm~\cite[pp.~216--217, p.~492]{stanoyevitch2011}. The ordinary Euclidean algorithm first computes $\gcd(r,m)$ by repeated
+division with remainders. Since $0<r<m$, the first division uses $m$ as the dividend and $r$ as the divisor.
+It gives a quotient $q_1$ and a remainder $R_1$, so
 \[
-    A = qD + R,
+    m = q_1 r + R_1,\qquad 0 \le R_1 < r.
 \]
-where $q$ is the quotient and $R$ is the remainder. The next step uses the
-previous divisor $D$ and the new remainder $R$. This continues until the
-remainder becomes $0$. The last non-zero remainder is $\gcd(r,m)$.
+If $R_1$ is not zero, the next division uses $r$ as the dividend and $R_1$ as
+the divisor, so
+\[
+    r = q_2R_1 + R_2,\qquad 0 \le R_2 < R_1.
+\]
+The algorithm continues by using the divisor and remainder from the previous
+step as the next two numbers. It stops when a remainder
+becomes $0$, and the last non-zero remainder is $\gcd(r,m)$.
 
 The extended Euclidean algorithm adds backward substitution to these same
 divisions. It starts with the equation whose remainder is the greatest common
@@ -410,7 +415,36 @@ Consider a private superincreasing sequence
 \[
     W=(2,\,5,\,11,\,23),
 \]
-with $m=47$ and $r=9$. Here $\gcd(9,47)=1$, so an inverse of $9$ modulo $47$ exists, and $m > 2+5+11+23 = 41$.
+with $m=47$ and $r=9$. The modulus is valid because
+$m > 2+5+11+23 = 41$. Also, $\gcd(9,47)=1$, so the multiplier has an inverse
+modulo $47$. This inverse depends only on the private key values $r$ and $m$,
+so it can be computed during key generation.
+
+To find the inverse, use the extended Euclidean algorithm. The ordinary
+divisions are
+\[
+    47 = 5\cdot 9 + 2,\qquad 9 = 4\cdot 2 + 1.
+\]
+The last non-zero remainder is $1$, so the numbers are coprime. To get the
+inverse, write this $1$ using the original numbers $9$ and $47$. From the
+second division,
+\[
+    1=9-4\cdot2.
+\]
+From the first division,
+\[
+    2=47-5\cdot9.
+\]
+Substituting this value of $2$ gives
+\[
+    1 = 9 - 4(47 - 5\cdot 9) = 21\cdot 9 - 4\cdot 47.
+\]
+After reducing modulo $47$, the term $-4\cdot47$ disappears, and therefore
+\[
+    21\cdot 9 \equiv 1 \pmod{47}.
+\]
+Thus the inverse used for decryption is $r^{-1}\equiv 21 \pmod{47}$.
+
 The public key is computed as
 \[
     \begin{aligned}
@@ -430,23 +464,7 @@ For message $x=(1,0,1,0)$, encryption gives
 \]
 This ciphertext can be sent over the public channel.
 
-For decryption, it is not enough to know that this inverse exists; its actual
-value is needed. The Euclidean divisions are
-\[
-    47 = 5\cdot 9 + 2,\qquad 9 = 4\cdot 2 + 1.
-\]
-The last remainder $1$ confirms that $\gcd(9,47)=1$. The same divisions can be
-read backwards to write $1$ as a combination of $9$ and $47$. The second
-division gives $1=9-4\cdot2$. From the first division, $2=47-5\cdot9$.
-Substituting this value of $2$ gives
-\[
-    1 = 9 - 4(47 - 5\cdot 9) = 21\cdot 9 - 4\cdot 47.
-\]
-Modulo $47$, the term $-4\cdot47$ disappears. Therefore
-\[
-    21\cdot 9 \equiv 1 \pmod{47},
-\]
-so the needed inverse is $r^{-1}\equiv 21 \pmod{47}$. Then
+During decryption, the stored inverse is applied to the ciphertext:
 \[
     S' \equiv r^{-1}C \equiv 21\cdot 23 \equiv 13 \pmod{47}.
 \]
