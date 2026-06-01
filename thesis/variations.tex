@@ -104,13 +104,19 @@ unknowns are the integers \(k_i,k_j\)~\cite{Shamir1982,OdlyzkoRiseFall}.
 Shamir's main observation was that, for a fixed number of selected indices, the
 unknown integers \(k_i\) can be found in polynomial time using Lenstra's
 integer programming algorithm in fixed
-dimension~\cite{Lenstra1983IntegerProgramming}. Here the dimension is fixed
-because the attack uses only a fixed number of selected indices, not all \(n\)
-weights at once. If the private sequence was permuted, the attacker does not
-know in advance which public weights correspond to the smallest private
-weights. However, the attacker can try all choices of this fixed number of
-public indices, and this is still only a polynomial number of
-cases~\cite{OdlyzkoRiseFall}.
+dimension~\cite{Lenstra1983IntegerProgramming}. Lenstra's algorithm is not
+specific to knapsack cryptosystems. It gives a polynomial-time method for
+integer-programming problems when the number of integer variables is fixed in
+advance. The internal details of the algorithm are outside the scope of this
+thesis. In Shamir's attack, this fixed dimension comes from using only a fixed
+number of selected public-key positions, not all \(n\) weights at once. If the
+private sequence was permuted, the attacker does not know in advance which
+public weights correspond to the smallest private weights. However, the
+attacker does not have to try all \(n!\) permutations. If the attack uses a
+fixed number \(t\) of public indices, then the attacker only has to try all
+\(t\)-element subsets of the public key. There are \(\binom{n}{t}=O(n^t)\) such
+choices, which is polynomial in \(n\) because \(t\) is
+fixed~\cite{OdlyzkoRiseFall}.
 
 Once the relevant \(k_i\)'s are found, the ratios \(k_i/b_i\) give an
 approximation to \(u/m\). This approximation is then used to construct another
@@ -139,9 +145,13 @@ knapsack may be solvable much more efficiently than by brute-force
 search~\cite{OdlyzkoRiseFall}.
 
 A standard measure used in this context is the density of the subset-sum
-instance, usually defined as
+instance. If
 \[
-    d=\frac{n}{\log_2(\max_i b_i)},
+    A=\max\{b_1,\dots,b_n\},
+\]
+then the density is usually defined as
+\[
+    d=\frac{n}{\log_2 A},
 \]
 where \(b_1,\dots,b_n\) are the public weights~\cite{LagariasOdlyzko1985}. When
 \(d\) is small, the largest public weights require many bits compared with the
@@ -180,10 +190,11 @@ Thus the solution appears inside the lattice as a vector with only \(0\) and
 \(1\) in the first coordinates and zero in the last coordinate. This makes it
 short compared with many other lattice vectors.
 
-For example, take \(b=(7,31,55)\) and \(C=86\). Here
-\(d=3/\log_2(55)\approx 0.52\), so the example has low density, although it is
-still far too small to be a secure parameter choice. The solution is
-\(x=(0,1,1)\), since \(86=31+55\). The corresponding basis vectors include
+For example, suppose the public weights are \(b=(7,31,55)\) and the ciphertext
+is \(C=86\). The unknown message vector is \(x\). Here
+\(d=3/\log_2(55)\approx 0.52\), so the example has low density. Of course,
+this is still only a small toy instance, not a secure parameter choice. The solution is
+\(x=(0,1,1)\), since \(86=31+55\). The corresponding rows of the basis matrix are
 \[
     v_2=(0,1,0,-31),\quad v_3=(0,0,1,-55),\quad v_4=(0,0,0,86),
 \]
@@ -191,10 +202,13 @@ and therefore
 \[
     v_2+v_3+v_4=(0,1,1,0).
 \]
-This shows the cancellation idea behind the lattice construction.
+In this vector, the first three coordinates are the message bits, and the last
+coordinate is zero because the selected weights sum to the ciphertext:
+\(86-31-55=0\). Thus the subset-sum solution appears as the short vector
+\((0,1,1,0)\).
 
 The important point is that the solution vector is usually not one of the
-original basis vectors. It is hidden as an integer combination of them. Lattice
+original basis vectors. It is hidden as an linear combination of them. Lattice
 basis reduction tries to replace the original basis by another basis of the
 same lattice, but with shorter and more nearly orthogonal vectors. The LLL
 algorithm performs this process in polynomial time. Internally, it uses

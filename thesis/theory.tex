@@ -437,13 +437,14 @@ $m > 2+5+11+23 = 41$. Also, $\gcd(9,47)=1$, so the multiplier has an inverse
 modulo $47$. This inverse depends only on the private key values $r$ and $m$,
 so it can be computed during key generation.
 
-To find the inverse, use the extended Euclidean algorithm. The ordinary
-divisions are
+The inverse is found by the extended Euclidean algorithm. For $m=47$ and
+$r=9$, the Euclidean algorithm gives
 \[
     47 = 5\cdot 9 + 2,\qquad 9 = 4\cdot 2 + 1.
 \]
 The last non-zero remainder is $1$, so the numbers are coprime. To get the
-inverse, write this $1$ using the original numbers $9$ and $47$. From the
+inverse, we express this remainder $1$ as a combination of the original numbers
+$9$ and $47$. From the
 second division,
 \[
     1=9-4\cdot2.
@@ -471,7 +472,7 @@ The public key is computed as
         9\cdot 23 &\equiv 19 \pmod{47}.
     \end{aligned}
 \]
-Thus
+Thus the public weights, which form the public key, are
 \[
     B=(18,\,45,\,5,\,19).
 \]
@@ -489,11 +490,11 @@ This is the private subset sum. Greedy recovery on $W$ gives
 \[
     13=11+2,
 \]
-so the recovered bits are $x=(1,0,1,0)$.
+so the recovered bits are $x=(1,0,1,0)$, which matches the original message.
 
 This is only a toy example chosen to show the arithmetic by hand. Real
-cryptographic instances and the experiments in the implementation use much
-larger block lengths.
+cryptographic instances use much larger block lengths. In the experiments, the
+implementation is tested with block lengths from $128$ to $4096$ bits.
 
 The basic construction does not hide the superincreasing structure well enough,
 and later cryptanalysis showed that an equivalent private key can be recovered
