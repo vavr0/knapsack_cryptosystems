@@ -317,43 +317,60 @@ multiplier $r$ are selected so that $\gcd(r,m)=1$, where $\gcd$ means the
 greatest common divisor. This means that $r$ and $m$ are coprime and guarantees
 that $r$ has a multiplicative inverse modulo $m$~\cite[pp.~212--213]{stanoyevitch2011}.
 
-The inverse can be found in polynomial time by the extended Euclidean
-algorithm~\cite[pp.~216--217, p.~492]{stanoyevitch2011}. The ordinary Euclidean algorithm first computes $\gcd(r,m)$ by repeated
-division with remainders. Since $0<r<m$, the first division uses $m$ as the dividend and $r$ as the divisor.
-It gives a quotient $q_1$ and a remainder $R_1$, so
+The inverse $r^{-1}$ can be found in polynomial time by the extended Euclidean
+algorithm~\cite[pp.~216--217, p.~492]{stanoyevitch2011}. This algorithm is
+useful for two reasons. It checks that the chosen multiplier is coprime to the
+modulus, and when the gcd is $1$, it also gives the inverse value needed for
+decryption. The ordinary Euclidean algorithm first computes $\gcd(r,m)$ by repeated
+division with remainders. Since $0<r<m$, the first step writes the result of dividing $m$ by $r$:
 \[
-    m = q_1 r + R_1,\qquad 0 \le R_1 < r.
+    m = q_1 r + \rho_1,\qquad 0 \le \rho_1 < r.
 \]
-If $R_1$ is not zero, the next division uses $r$ as the dividend and $R_1$ as
-the divisor, so
+Here $q_1$ is the quotient and $\rho_1$ is the remainder. If $\rho_1\ne 0$,
+the next step writes the result of dividing $r$ by this remainder:
 \[
-    r = q_2R_1 + R_2,\qquad 0 \le R_2 < R_1.
+    r = q_2\rho_1 + \rho_2,\qquad 0 \le \rho_2 < \rho_1.
 \]
-The algorithm continues by using the divisor and remainder from the previous
-step as the next two numbers. It stops when a remainder
-becomes $0$, and the last non-zero remainder is $\gcd(r,m)$.
+Here $\rho_2$ is the new remainder. The algorithm continues in this way until a
+zero remainder is reached. The last non-zero remainder is $\gcd(r,m)$.
 
 The extended Euclidean algorithm adds backward substitution to these same
-divisions. It starts with the equation whose remainder is the greatest common
-divisor. If this equation still contains an intermediate remainder, that
-remainder is replaced by the expression obtained from the previous division.
-Repeating this substitution removes all intermediate remainders and writes the
-greatest common divisor using only the original numbers $r$ and $m$. In this
-way the algorithm finds integers $a$ and $b$ such that
+divisions. It starts with the equation where the last non-zero remainder
+appears. This remainder is first isolated on the left side. In the notation
+above, if this remainder is $\rho_2$, then the second division
+\[
+    r = q_2\rho_1 + \rho_2
+\]
+is rewritten as
+\[
+    \rho_2 = r - q_2\rho_1.
+\]
+The right side still contains the intermediate remainder $\rho_1$. This
+remainder is isolated from the previous division as
+\[
+    \rho_1 = m - q_1r
+\]
+and substituted into the current equation. Repeating this step removes all
+intermediate remainders. At the end, the greatest common divisor is written
+using only the original numbers $r$ and $m$. The concrete substitution with
+numbers is shown in the example at the end of this section. In this way the
+algorithm finds integers $a$ and $b$ such that
 \[
     ar + bm = \gcd(r,m).
 \]
-Since key generation chooses $r$ so that $\gcd(r,m)=1$, this gives
+When the chosen multiplier passes the gcd check, we have $\gcd(r,m)=1$, so this gives
 \[
     ar + bm = 1.
 \]
-Reducing this equation modulo $m$ removes the term $bm$, because it is divisible
-by $m$, so
+Reducing this equation modulo $m$ removes the term $bm$, so
 \[
     ar \equiv 1 \pmod m.
 \]
-Thus the coefficient $a$ is the inverse of $r$ modulo $m$, that is,
-$r^{-1}\equiv a \pmod m$.
+This means that multiplying $r$ by $a$ gives $1$ modulo $m$, which is the
+condition for $a$ to be a modular inverse of $r$. Therefore we can write
+\[
+    r^{-1}\equiv a \pmod m.
+\]
 
 
 In the original description, the order of the transformed sequence may also be
@@ -443,7 +460,7 @@ After reducing modulo $47$, the term $-4\cdot47$ disappears, and therefore
 \[
     21\cdot 9 \equiv 1 \pmod{47}.
 \]
-Thus the inverse used for decryption is $r^{-1}\equiv 21 \pmod{47}$.
+So the inverse used for decryption is $r^{-1}\equiv 21 \pmod{47}$.
 
 The public key is computed as
 \[
