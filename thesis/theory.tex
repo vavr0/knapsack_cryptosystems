@@ -21,9 +21,10 @@ cipher, which shifts each letter by a fixed number of positions in the
 alphabet. The cipher is obviously easy to break by trying all possibilities
 because number of possible shifts is really small. A more advanced classical
 cipher is the Vigen\`ere cipher, which uses a keyword to vary the shift applied
-to each letter. Such ciphers are still vulnerable to frequency and statistical
-analysis. Classical ciphers were historically important, but their security was
-too weak for modern communication systems~\cite{aumasson2017serious}.
+to each letter, but these ciphers are still vulnerable to frequency and
+statistical analysis of the text. Classical ciphers were historically important, but their
+security was too weak for modern communication
+systems~\cite{aumasson2017serious}.
 
 Later, more sophisticated systems were developed, including mechanical rotor
 machines such as the Enigma machine used for scrambling war messages during
@@ -34,9 +35,9 @@ ciphers~\cite{schneider2024ibmhistory}.
 Their eventual defeat showed that security could not rely only on increasingly
 complicated substitutions. From the 1970s onward, cryptography began to move
 toward mathematically defined constructions whose security depended on the
-difficulty of underlying computational problems. This shift marks the beginning
+difficulty of underlying computational problems~\cite{diffie1976newDirections}. This shift marks the beginning
 of modern cryptography and motivates the discussion in the next
-section~\cite{diffie1976newDirections}.
+section.
 
 \section{P, NP, and Computational Hardness}
 
@@ -48,11 +49,15 @@ following concepts introduce the basic language used to discuss this.
 To describe computational difficulty more precisely, problems are organized
 into complexity classes. They reflect how the running time of an algorithm
 grows with the size of the input. In complexity theory, $\mathcal{P}$ and
-$\mathcal{NP}$ are classes of decision problems with yes or no
-answers.~\cite[pp.~18--19]{garey1979computers} The class $\mathcal{P}$ contains
-those decision problems that can be solved in polynomial time with respect to
-the input size and they are commonly regarded as efficiently
-solvable.~\cite[p.~27]{garey1979computers}
+$\mathcal{NP}$ are classes of decision problems, which are computational
+problems that ask whether a given input satisfies a specified condition. Each
+valid input is answered by either yes or
+no.~\cite[pp.~18--19]{garey1979computers} 
+
+The class $\mathcal{P}$ contains those decision problems that can be solved in
+polynomial time with respect to the input size, and they are commonly regarded
+as efficiently solvable. Here, efficient means solvable in polynomial time with
+respect to the input size~\cite[p.~27]{garey1979computers}.
 
 The class $\mathcal{NP}$, which stands for nondeterministic polynomial time,
 contains decision problems for which a proposed solution can be checked in
@@ -91,15 +96,16 @@ Modern cryptography often relies on mathematical problems for which no
 efficient algorithm is known. This is especially important in public-key
 cryptography, where security depends on assumptions about computational
 hardness rather than on keeping the method secret. Different cryptosystems rely
-on different hardness assumptions, such as integer factorization, discrete
+on different computational problems, such as integer factorization, discrete
 logarithms, or subset-sum.
 
 One problem especially relevant for this thesis is the subset-sum problem,
 whose decision version is
-$\mathcal{NP}$-complete.~\cite[p.~223]{garey1979computers} Its apparent
-hardness was one of the reasons why knapsack-type constructions were originally
-considered promising for cryptographic
-use.~\cite[pp.~653--654]{diffie1976newDirections}
+$\mathcal{NP}$-complete.~\cite[p.~223]{garey1979computers} The hardness of
+this problem was one of the reasons why knapsack-type constructions were
+originally considered promising for cryptographic use. The subset-sum problem
+and the Merkle--Hellman construction are introduced later in
+Sections~\ref{sec:subset-sum-problem} and~\ref{sec:merkle-hellman}.
 
 However, this connection must be interpreted carefully.
 $\mathcal{NP}$-completeness refers to the worst-case hardness of the general
@@ -152,6 +158,7 @@ problem. The following sections introduce this problem and explain how it can
 be used to construct a public-key encryption scheme.
 
 \section{The Subset-Sum Problem}
+\label{sec:subset-sum-problem}
 
 The subset-sum problem, often also referred to as the knapsack problem, is
 defined as follows. Given a sequence of positive integers
@@ -168,9 +175,9 @@ such that
 \sum_{i=1}^{n} x_i w_i = s.
 \]
 Here, each variable $x_i$ indicates whether the weight $w_i$ is included in the
-subset. The related decision problem asks whether such a vector exists. This
-decision version is $\mathcal{NP}$-complete.
-~\cite[p.~223]{garey1979computers}
+subset or not. The related decision problem asks whether such a vector exists.
+This decision version is
+$\mathcal{NP}$-complete~\cite[p.~223]{garey1979computers}.
 
 The distinction between the decision and search versions is important for
 cryptography. In encryption, the attacker is not only interested in if a
@@ -181,43 +188,111 @@ this vector represents the encrypted message.~\cite[pp.~75--76]{OdlyzkoRiseFall}
 
 Consider the sequence
 \[
-W = (3,\, 8,\, 12,\, 19)
+W = (3,\, 8,\, 12,\, 15,\, 19)
 \]
 and the target value
 \[
 s = 27.
 \]
-To determine whether some subset sums to \(27\), one must consider possible
-combinations of the weights. In this case, one valid solution is
+To check if some subset sums to $27$, we can examine different combinations
+of the weights. In this case, there are two valid solutions. The first one is
 \[
 8 + 19 = 27,
 \]
 which corresponds to the vector
 \[
-x = (0,\,1,\,0,\,1).
+x = (0,\,1,\,0,\,0,\,1).
 \]
-For general instances, finding such a vector may require checking many possible
-subsets.
+The second one is
+\[
+12 + 15 = 27,
+\]
+which corresponds to
+\[
+x = (0,\,0,\,1,\,1,\,0).
+\]
+This example is intentionally small, so the definition is easy to understand.
+It does not mean that the general problem is easy. For a sequence of length
+$n$, there are $2^n$ possible subsets, and the decision version of subset-sum
+is $\mathcal{NP}$-complete, as stated above.
+
+\subsection*{Simple solving methods}
+
+A simple way to solve the search version of subset-sum is brute-force search.
+This method checks possible binary vectors $x\in\{0,1\}^n$ one by one and
+computes whether
+\[
+    \sum_{i=1}^{n} x_i w_i = s.
+\]
+In the worst case, it may have to check all $2^n$ vectors, so its running time
+grows exponentially with the length of the instance. This makes it useful only
+for small examples and experiments.
+
+A better method is the meet-in-the-middle algorithm. It splits the weights into
+two parts. First, it computes all possible subset sums of the first half. For
+the second half, it computes all values obtained by subtracting each possible
+subset sum of the second half from $s$. Creating these two lists already takes
+exponential time, because each half has roughly $2^{n/2}$ possible subsets.
+After the two lists are sorted, they are scanned for a common value. If the
+same value appears in both lists, then the subset from the first half has the
+same sum as $s$ minus the subset sum from the second half. Together, these two
+subsets therefore sum to $s$. The total running time is roughly $n2^{n/2}$
+operations. The disadvantage is that the partial sums have to be stored, so the
+method also needs $2^{n/2}$ storage space~\cite[pp.~75--76]{OdlyzkoRiseFall}.
+
+There are more advanced subset-sum algorithms and time-memory trade-offs, but
+they are not the focus of this thesis. The implementation part uses brute-force
+search and meet-in-the-middle search as simple comparison methods for message
+recovery on small generated instances.
 
 \subsection*{Superincreasing sequences}
 
-A special easy case is given by superincreasing sequences. A sequence $W$ is
-called \emph{superincreasing} if every element is strictly larger than the sum
-of all previous elements:
+Superincreasing sequences form a special easy case of subset-sum. This is
+important for the Merkle--Hellman cryptosystem because the legitimate receiver
+needs a private subset-sum instance that can be solved quickly. A sequence $W$
+is called \emph{superincreasing} if every element is strictly larger than the
+sum of all previous elements:
 \[
     w_i > \sum_{j=1}^{i-1} w_j \qquad \text{for } i \ge 2.
 \]
-For such a sequence, subset-sum can be solved greedily. Starting from the
-largest weight, the algorithm includes the current weight if it does not exceed
-the remaining target value, and otherwise skips it. The superincreasing
-condition guarantees that this choice is safe. 
 
-This easy structure is the reason why superincreasing sequences are useful in
-the Merkle--Hellman cryptosystem. The private key contains an easy
+For superincreasing sequences, subset-sum can be solved by the greedy
+algorithm. Starting from the largest weight, the algorithm includes the current
+weight if it is not larger than the remaining target value, and otherwise skips
+it. This works because all smaller weights together have a smaller sum than the
+current weight. If the current weight is needed, the smaller weights cannot
+replace it.
+
+For example, let
+\[
+    W=(2,\,5,\,11,\,23,\,42)
+\]
+and let the target be $s=28$. The greedy algorithm starts from the largest
+weight. It skips $42$, because it is larger than the remaining target value.
+It then includes $23$, so the remaining value becomes $5$. Next it skips $11$,
+includes $5$, and ends with remaining value $0$. Thus
+\[
+    28 = 23 + 5,
+\]
+which corresponds to the vector
+\[
+    x=(0,\,1,\,0,\,1,\,0).
+\]
+This example is again intentionally small, so the steps of the greedy algorithm
+are easy to follow.
+
+A superincreasing sequence ensures that only one solution can exist for a given
+target, because the largest selected weight cannot be replaced by any
+combination of smaller weights. This is different from general subset-sum
+instances, where several subsets may have the same target sum. The fact that
+superincreasing instances are easy to solve and have unique solutions is why
+they are useful in the Merkle--Hellman cryptosystem. The private key contains a
 superincreasing instance, while the public key is intended to look like a
-general subset-sum instance.~\cite[pp.~525--526]{MerkleHellman1978}\cite[pp.~77--79]{OdlyzkoRiseFall}
+general subset-sum instance~\cite[pp.~525--526]{MerkleHellman1978}\cite[pp.~77--79]{OdlyzkoRiseFall}.
+This idea is explained in more detail in the next section.
 
 \section{The Merkle--Hellman Knapsack Cryptosystem}
+\label{sec:merkle-hellman}
 
 The Merkle--Hellman cryptosystem was one of the earliest public-key encryption
 schemes. It is based on the subset-sum problem.~\cite{MerkleHellman1978} Its
@@ -227,7 +302,7 @@ like a hard general subset-sum instance. Although the idea was influential,
 later cryptanalysis showed that the basic construction is
 insecure.~\cite{Shamir1982}
 
-The main parameters are the block length $n$, the private superincreasing
+The main parameters of the cryptosystem are the block length $n$, the private superincreasing
 sequence $W=(w_1,\dots,w_n)$, the modulus $m$, the multiplier $r$, and
 optionally a secret permutation $\pi$. The value $n$ determines both the number
 of public weights and the number of message bits encrypted in one block.
@@ -236,16 +311,29 @@ of public weights and the number of message bits encrypted in one block.
 
 Key generation starts from an easy private subset-sum instance and transforms
 it into a public sequence by a modular transformation intended to make it look
-hard. First, a superincreasing sequence $W=(w_1,\dots,w_n)$ is chosen as the
+hard. First, a superincreasing sequence $W=(w_1,\dots,w_n)$ is chosen as a
 private sequence. Then a modulus $m$ larger than $\sum_{i=1}^n w_i$ and a
-multiplier $r$ are selected so that $\gcd(r,m)=1$, where $\gcd$ denotes the
-greatest common divisor. This means that \(r\) and \(m\) are coprime and
-guarantees that \(r\) has a multiplicative inverse modulo \(m\). The public
-sequence $B=(b_1,\dots,b_n)$ is computed from the private sequence using the
-multiplier $r$ modulo $m$, where
+multiplier $r$ are selected so that $\gcd(r,m)=1$, where $\gcd$ means the
+greatest common divisor. This means that $r$ and $m$ are coprime and guarantees
+that $r$ has a multiplicative inverse modulo $m$~\cite[pp.~212--213]{stanoyevitch2011}.
+
+The inverse can be found in polynomial time by the extended Euclidean
+algorithm~\cite[pp.~216--217, p.~492]{stanoyevitch2011}. This algorithm finds
+integers $a$ and $b$ such that
 \[
-b_i \equiv r w_i \pmod m.
+    ar + bm = \gcd(r,m).
 \]
+When $\gcd(r,m)=1$, this gives
+\[
+    ar + bm = 1.
+\]
+Modulo $m$, the term $bm$ disappears because it is a multiple of $m$. Therefore
+\[
+    ar \equiv 1 \pmod m.
+\]
+This is exactly the condition for $a$ to be the inverse of $r$ modulo $m$, or
+equivalently $r^{-1}\equiv a \pmod m$~\cite[pp.~216--217]{stanoyevitch2011}.
+
 In the original description, the order of the transformed sequence may also be
 permuted to further obscure its structure.~\cite[p.~526]{MerkleHellman1978} The
 public key is the final transformed sequence, while the private key consists of
@@ -274,27 +362,25 @@ to $1$ are added. Encryption is therefore straightforward and efficient, since
 it requires only additions over public weights.~\cite{MerkleHellman1978}
 
 \subsection{Decryption}
+
 To decrypt a ciphertext $C$, the receiver first computes
 \[
 S' \equiv r^{-1} C \pmod m,
 \]
-where $r^{-1}$ is the modular inverse of $r$ modulo $m$. Because the public
-weights were constructed from the private superincreasing sequence, this step
-maps the problem back to an equivalent subset-sum instance over the private
-sequence. The resulting value $S'$ is then solved by a greedy procedure,
-starting from the largest private weight and moving downward. At each step, if
-the current weight does not exceed the remaining sum, the corresponding bit is
-set to 1 and the weight is subtracted; otherwise the bit is set to 0. If
-permutation is used during key generation, bit positions are restored according
-to the secret key order after greedy
-recovery.~\cite[pp.~525--526]{MerkleHellman1978}
+where $r^{-1}$ is the modular inverse of $r$ modulo $m$. This multiplication
+removes the multiplier from the public weights and maps the ciphertext back to
+a subset-sum instance over the private superincreasing sequence.
 
-The reason decryption works is the relation between the public and private
-weights. Since $b_i \equiv r w_i \pmod m$, multiplying the ciphertext by
-$r^{-1}$ gives
+Since $b_i \equiv r w_i \pmod m$ and
 \[
-    r^{-1}C \equiv \sum_{i=1}^{n} x_i w_i \pmod m.
+    C=\sum_{i=1}^{n} x_i b_i,
 \]
+we get
+\[
+    r^{-1}C \equiv r^{-1}\sum_{i=1}^{n}x_i b_i
+    \equiv \sum_{i=1}^{n}x_i w_i \pmod m.
+\]
+
 The modulus was chosen so that $m > \sum_{i=1}^{n} w_i$. Therefore every
 possible private subset sum is smaller than $m$, and the value obtained after
 the modular reduction is the actual private subset sum. The receiver can then
@@ -302,25 +388,90 @@ recover the message bits by the greedy algorithm. If a permutation is used, the
 bit positions are restored according to the secret permutation.
 
 \subsection*{Example}
+
+For decryption, the inverse of $r=9$ modulo $47$ is needed. To find it, we use
+the extended Euclidean algorithm. First, the Euclidean algorithm repeatedly
+divides the larger number by the smaller one and keeps the remainder. Dividing
+$47$ by $9$ gives quotient $5$ and remainder $2$, so
+\[
+    47 = 5\cdot9 + 2.
+\]
+Then dividing $9$ by $2$ gives quotient $4$ and remainder $1$, so
+\[
+    9 = 4\cdot2 + 1.
+\]
+The last non-zero remainder is $1$, so $\gcd(9,47)=1$.
+
+The extended part now rewrites this remainder as a combination of $9$ and
+$47$. From the second division,
+\[
+    1 = 9 - 4\cdot2.
+\]
+From the first division,
+\[
+    2 = 47 - 5\cdot9.
+\]
+Substituting this value of $2$ gives
+\[
+    1 = 9 - 4(47 - 5\cdot9) = 21\cdot9 - 4\cdot47.
+\]
+Modulo $47$, the term $-4\cdot47$ disappears. Therefore
+\[
+    21\cdot9 \equiv 1 \pmod{47},
+\]
+so $r^{-1}\equiv 21 \pmod{47}$.
+
 Consider a private superincreasing sequence
 \[
-W=(2,\,5,\,11,\,23),
+    W=(2,\,5,\,11,\,23),
 \]
 with $m=47$ and $r=9$, where $\gcd(r,m)=1$ and $m > 2+5+11+23 = 41$.
-The public key is
+The public key is computed as
 \[
-B=(18,\,45,\,5,\,19),
+    \begin{aligned}
+        9\cdot 2 &\equiv 18 \pmod{47},\\
+        9\cdot 5 &\equiv 45 \pmod{47},\\
+        9\cdot 11 &\equiv 5 \pmod{47},\\
+        9\cdot 23 &\equiv 19 \pmod{47}.
+    \end{aligned}
 \]
-computed as $b_i \equiv r w_i \pmod m$.
+Thus
+\[
+    B=(18,\,45,\,5,\,19).
+\]
 For message $x=(1,0,1,0)$, encryption gives
 \[
-C=18+5=23.
+    C=18+5=23.
 \]
-For decryption, $r^{-1}\equiv 21 \pmod{47}$, so
+This ciphertext can be sent over the public channel.
+
+For decryption, the inverse of $r=9$ modulo $47$ is needed. The Euclidean
+divisions are
 \[
-S' \equiv r^{-1}C \equiv 21\cdot 23 \equiv 13 \pmod{47}.
+    47 = 5\cdot 9 + 2,\qquad 9 = 4\cdot 2 + 1.
 \]
-Using greedy recovery on $W$: $13=11+2$, so recovered bits are $x=(1,0,1,0)$.
+The second division gives $1=9-4\cdot2$. From the first division,
+$2=47-5\cdot9$. Substituting this value of $2$ gives
+\[
+    1 = 9 - 4(47 - 5\cdot 9) = 21\cdot 9 - 4\cdot 47.
+\]
+Modulo $47$, the term $-4\cdot47$ disappears. Therefore
+\[
+    21\cdot 9 \equiv 1 \pmod{47},
+\]
+so $r^{-1}\equiv 21 \pmod{47}$. Then
+\[
+    S' \equiv r^{-1}C \equiv 21\cdot 23 \equiv 13 \pmod{47}.
+\]
+This is the private subset sum. Greedy recovery on $W$ gives
+\[
+    13=11+2,
+\]
+so the recovered bits are $x=(1,0,1,0)$.
+
+This is only a toy example chosen to show the arithmetic by hand. Real
+cryptographic instances and the experiments in the implementation use much
+larger block lengths.
 
 The basic construction does not hide the superincreasing structure well enough,
 and later cryptanalysis showed that an equivalent private key can be recovered

@@ -14,14 +14,33 @@ A more general warning sign is the linear form of knapsack encryption. If
 \[
     C = \sum_{i=1}^{n} x_i b_i,
 \]
-then reducing the equation modulo \(2\) gives
+then reducing both the ciphertext and the public weights modulo $2$ gives
 \[
     C \equiv \sum_{i=1}^{n} x_i(b_i \bmod 2) \pmod{2}.
 \]
-In this equation, only public weights that are odd contribute their
-corresponding message bit to the sum. Then, \(C \bmod 2\) reveals the parity of
-the message bits corresponding to odd public weights. This does not determine
-the plaintext, but it does rule out some possible messages.
+The two occurrences of modulo $2$ have different roles. The term $b_i \bmod 2$
+replaces each public weight by $0$ if it is even and by $1$ if it is odd. The
+modulo $2$ at the end is applied to the whole sum. Even public weights remove
+their message bits from the equation, and only the message bits next to odd
+public weights remain in the equation. The value of $C\bmod 2$ then tells
+whether their sum is even or odd.
+
+For example, if
+\[
+    B=(18,\,45,\,5,\,19),
+\]
+then reducing the public weights modulo $2$ gives
+\[
+    B\bmod 2=(0,\,1,\,1,\,1).
+\]
+The parity equation becomes
+\[
+    C \equiv x_2+x_3+x_4 \pmod{2}.
+\]
+If $C$ is odd, then $x_2+x_3+x_4$ must be odd. If $C$ is even, then
+$x_2+x_3+x_4$ must be even. This does not determine the message, but it rules
+out some possible bit vectors.
+
 Odlyzko~\cite{OdlyzkoRiseFall} notes that this observation was not known to
 give a practical attack by itself, but it was still considered suspicious
 because the ciphertext reveals direct information about the plaintext.
@@ -110,7 +129,7 @@ leads to the low-density attacks discussed next.
 
 Shamir's attack showed that the classical Merkle--Hellman scheme can fail
 because its hidden trapdoor structure is not concealed well enough. Later
-analysis showed that this is only part of the picture. Another important class
+analysis showed that this is only part of the problem. Another important class
 of attacks does not try to recover the original trapdoor at all. Instead, it
 solves the subset-sum problem formed by the public weights and the ciphertext,
 with the goal of recovering the message vector directly. These attacks are

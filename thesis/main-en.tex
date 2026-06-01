@@ -151,10 +151,13 @@ Supervisor: & \mfskolitel \\
 I hereby declare that I prepared this bachelor thesis independently and used
 only the literature and sources listed in the bibliography.
 
-During the preparation of the thesis, I used artificial intelligence tools as
-supporting tools, mainly for language correction, stylistic suggestions,
-structural feedback, LaTeX assistance, and help with checking and debugging the
-implementation. The tools were not used as a substitute for my own work. I
+During the preparation of the thesis, I used artificial intelligence and
+translation tools only as supporting tools. These included ChatGPT by OpenAI, a terminal-based agent harness, and DeepL Translator. I used these tools mainly
+for language correction, stylistic suggestions, structural feedback, LaTeX
+assistance, debugging assistance, and translation support. I used artificial
+intelligence tools in accordance with relevant legal regulations, academic
+rights and freedoms, ethical and moral principles, and while maintaining
+academic integrity. The tools were not used as a substitute for my own work. I
 checked their outputs and I am responsible for the final text, implementation,
 experiments, and conclusions.
 
@@ -178,33 +181,33 @@ this bachelor thesis.
 \newpage 
 \chapter*{Abstrakt}
 
-Merkleho--Hellmanov knapsack kryptosystém patril medzi prvé pokusy o
-vytvorenie kryptosystému s verejným kľúčom. Je založený na probléme
-subset-sum, čo robilo túto myšlienku atraktívnou, pretože rozhodovacia verzia
-tohto problému je NP-úplná. Neskorší vývoj však ukázal, že táto skutočnosť
-sama osebe nestačí na bezpečnosť a že verejné knapsack inštancie generované
-kryptosystémom môžu obsahovať skrytú štruktúru, ktorú vie útočník využiť.
-Práca sa zameriava na to, ako táto konštrukcia funguje, prečo je zraniteľná a
-ako sa vybrané varianty pokúšali vyhnúť jej slabinám. Vysvetľuje
-superrastúci trapdoor, Shamirov polynomiálny útok na pôvodný
-Merkleho--Hellmanov kryptosystém a dôvod, prečo môžu byť knapsack inštancie s
-nízkou hustotou zraniteľné voči útokom založeným na mriežkach. Praktická časť
-implementuje klasický, permutovaný a iterovaný variant v programovacom jazyku
-C. Každý variant obsahuje potrebné operácie kryptosystému, konkrétne
-generovanie kľúčov, šifrovanie a dešifrovanie. Experimenty porovnávajú čas
-behu jednotlivých variantov, skúmajú vplyv vybraných parametrov generovania
-kľúčov na vytvorené inštancie a testujú brute-force a meet-in-the-middle
-riešiče na malých subset-sum inštanciách. Hlavným záverom je, že klasické
-knapsack kryptosystémy nie sú vhodné na praktické šifrovanie s verejným
-kľúčom. Dôvodom je, že ich verejné kľúče sú generované zo superrastúcej
-trapdoor štruktúry, ktorá je omnoho jednoduchšia než všeobecná subset-sum
-inštancia. Ak verejný kľúč prezrádza informácie o tomto jednoduchom skrytom
-probléme, útoky môžu tieto informácie využiť na obnovenie správy alebo
-ekvivalentného trapdooru. Problém subset-sum a súvisiace mriežkové problémy sa
-naďalej skúmajú ako teoretické a algoritmické problémy, ale klasické trapdoor
-knapsack kryptosystémy dnes slúžia najmä na historické a vzdelávacie účely.
+Merkleho--Hellmanov batohový kryptosystém bol jedným z prvých pokusov o
+vytvorenie kryptosystému s verejným kľúčom. Je založený na probléme súčtu podmnožiny, čo
+robilo túto myšlienku atraktívnou, pretože rozhodovacia verzia tohto problému je NP-úplná. Neskorší
+vývoj týchto systémov ukázal, že táto skutočnosť sama osebe nestačí na
+bezpečnosť a že verejné batohové inštancie generované kryptosystémom môžu
+obsahovať skrytú štruktúru, ktorú môže útočník zneužiť. Práca sa zameriava na to,
+ako táto konštrukcia funguje, prečo je zraniteľná a ako sa vybrané varianty
+pokúsili vyhnúť jej slabým miestam. Vysvetľuje superrastúcu trapdoorovú štruktúru,
+Shamirov útok v polynomiálnom čase na pôvodný Merkleho--Hellmanov kryptosystém
+a prečo môžu byť batohové inštancie s nízkou hustotou zraniteľné voči útokom
+založeným na mriežkach. Praktická časť implementuje klasické, permutované a iterované
+varianty v programovacom jazyku C. Každý variant obsahuje potrebné
+operácie kryptosystému, a to generovanie kľúčov, šifrovanie a
+dešifrovanie. Experimenty porovnávajú čas behu variantov, skúmajú,
+ako vybrané parametre generovania kľúčov ovplyvňujú generované inštancie a testujú
+riešiče typu brute-force a meet-in-the-middle na malých inštanciách problému súčtu podmnožiny. Hlavným
+záverom je, že klasické batohové kryptosystémy nie sú vhodné na
+praktické šifrovanie s verejným kľúčom. Dôvodom je, že ich verejné kľúče sú
+generované zo superrastúcej trapdoorovej štruktúry, ktorá je oveľa jednoduchšia ako
+všeobecná inštancia problému súčtu podmnožiny. Ak verejný kľúč prezradí informáciu o
+základnom jednoduchom probléme, útoky môžu túto informáciu využiť na obnovenie
+správy alebo ekvivalentnej trapdoorovej štruktúry. Problém súčtu podmnožiny a súvisiace problémy na mriežkach sa
+stále študujú ako teoretické a algoritmické problémy, ale klasické trapdoorové
+batohové kryptosystémy sa dnes používajú najmä na historické a vzdelávacie
+účely.
 
-\paragraph*{Kľúčové slová:} knapsack kryptosystém, subset-sum, Merkle--Hellman, kryptoanalýza
+\paragraph*{Kľúčové slová:} batohový kryptosystém, problém súčtu podmnožiny, Merkle--Hellman, kryptoanalýza
 % --- Koniec Abstrakt - Slovensky
 
 

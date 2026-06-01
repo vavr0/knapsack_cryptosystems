@@ -1,31 +1,31 @@
 \chapter*{Conclusion}
 \addcontentsline{toc}{chapter}{Conclusion}
 
-The aim of this thesis was to study and implement classical knapsack
+The aim of this thesis was to study, analyze and implement classical knapsack
 cryptosystems. The thesis did not focus only on the original Merkle--Hellman
 variant, but also analyzed and compared selected related variants by looking at
 their design, efficiency, known weaknesses, and attacks. The motivation was to
-understand why basing a cryptosystem on an NP-complete problem is not enough
-for security when the system generates structured public instances. The
-implementation and experiments were used to compare the selected variants and
-to observe how parameter choices affect the generated knapsack instances.
+show why the hard computational complexity of the underlying mathematical
+problem is not enough to assume that a cryptosystem is secure, especially when
+the trapdoor is based on an easy structured version of that problem.
 
-The theoretical part first introduced cryptographic and complexity-theory
-background needed for the topic. Special focus was given to the distinction
-between general subset-sum hardness and the structured instances used in
-cryptosystems. It then described subset-sum as the underlying mathematical
-problem for the Merkle--Hellman cryptosystem. After defining the problem, it
-explained that the decision version of subset-sum is NP-complete and why this
-fact was important for early knapsack cryptography. The role of the
-superincreasing private sequence and modular multiplication was explained
-before moving to the individual phases of the system. The later sections
-discussed why the basic construction does not hide its trapdoor structure well
-enough and is therefore vulnerable. Shamir's attack was presented as a
-structural attack that can recover an equivalent trapdoor, while low-density
-lattice attacks were presented as direct attacks on suitable subset-sum
-instances. The thesis also described selected variants, including permuted and
-iterated Merkle--Hellman constructions and the Chor--Rivest knapsack-type
-cryptosystem, together with their known cryptanalysis.
+The theoretical part of this thesis first introduced cryptographic and
+complexity-theory background needed for the topic. Special focus was given to
+the distinction between general subset-sum hardness and the structured
+instances used in cryptosystems. It then described subset-sum as the underlying
+mathematical problem for the Merkle--Hellman cryptosystem. After defining the
+problem, it explained that the decision version of subset-sum is NP-complete
+and why this fact was important for early knapsack cryptography. The role of
+the superincreasing private sequence and modular multiplication was explained
+before moving to the individual phases of the system: key generation,
+encryption, and decryption. The later sections discussed why the basic
+construction does not hide its trapdoor structure well enough and is therefore
+vulnerable. Shamir's attack was presented as a structural attack that can
+recover an equivalent trapdoor, while low-density lattice attacks were
+presented as direct attacks on suitable subset-sum instances. The thesis also
+described selected variants, including permuted and iterated Merkle--Hellman
+constructions and the Chor--Rivest knapsack-type cryptosystem, together with
+their known cryptanalysis.
 
 The practical part of the thesis focused on implementing the classical
 Merkle--Hellman cryptosystem and selected variants in the C programming
@@ -66,12 +66,10 @@ helps an attacker recover an equivalent trapdoor or solve ciphertexts directly.
 This shows why security cannot be concluded only from the hardness of the
 general subset-sum problem.
 
-The contribution of this thesis is not a new cryptosystem, but a structured
-study of classical knapsack cryptography. It gives a chronological overview of
-the main constructions and attacks, summarizes the main reason why these
-systems failed, and connects the theory with a working implementation and
-experiments. Subset-sum itself remains an active theoretical and algorithmic
-problem, but classical trapdoor knapsack cryptosystems are no longer considered
-practical public-key encryption schemes. This makes them useful mainly as an
-example of how a cryptographic construction can fail even when it is based on a
-difficult general problem.
+The contribution of this thesis is a structured study of classical knapsack
+cryptography. It gives a chronological overview of the main constructions and
+attacks, summarizes the main reason why these systems failed, and connects the
+theory with a working implementation and experiments. Subset-sum itself remains
+an active theoretical and algorithmic problem, but classical trapdoor knapsack
+cryptosystems are no longer considered practical public-key encryption schemes.
+This contrast is one of the main lessons of the topic.

@@ -38,8 +38,8 @@ The compared schemes were \texttt{mh-classic}, \texttt{mh-permuted}, and
 running Linux with an Intel Core i9-10850K CPU. The program was compiled with
 GCC 16.1.1 using the C11 standard and linked with GMP 6.3.0. 
 
-A separate sweep was also run for the iterated variant. In this experiment, the
-number of total modular transformation layers was changed to
+A separate experiment was also run for the iterated variant. In this
+experiment, the number of total modular transformation layers was changed to
 \[
     L \in \{2,3,4,5\}.
 \]
@@ -56,11 +56,15 @@ lattice-based low-density attacks.
 
 \section{Correctness of the Implementation}
 
-Correctness was checked by encrypting an input message and then decrypting the
-resulting ciphertext. In each benchmark run, the decrypted bit sequence was
-compared with the original input before the timing result was accepted. The same
-check was also used in demo mode for raw bit strings and for plaintext messages
-that are converted into bit blocks before encryption.
+In demo and benchmark modes, decryption was run independently after encryption
+on the produced ciphertext. This means that the decryption function used the
+ciphertext and the key material, not the original unencrypted input. The
+recovered bit sequence was then compared with the original input, so this
+served as a correctness check for each run. If the comparison failed, the
+program returned an error value. For plaintext messages, the same check was done
+after converting the message into bit blocks and reconstructing the decrypted
+output. In solver mode, the bit vector recovered by the brute-force or
+meet-in-the-middle solver was also compared with the generated message.
 
 The automated test script builds the address-sanitized version of the program
 and runs the three implemented variants on small examples. It also checks that
@@ -73,9 +77,10 @@ the experiments.
 
 Figure~\ref{fig:crypto-total-ms} compares the total running time of the three
 implemented variants. The total time is the sum of key generation, encryption,
-and decryption for one fixed-size block. The measured times are small, so the
-exact ordering for the smallest block sizes should not be overinterpreted.
-However, the growth with increasing \(n\) is visible.
+and decryption for one fixed-size block. For the smallest block sizes, the
+measured times are tiny. Therefore, the exact order of the variants in this
+part of the graph should not be overinterpreted. The growth with increasing
+\(n\) is more visible.
 
 For example, the average total time of the classical variant increased from
 about \(0.016\) ms for \(n=128\) to about \(11.057\) ms for \(n=4096\). The
@@ -193,16 +198,20 @@ The recorded bit length of the private-weight sum explains this trend.
 Increasing \texttt{MH\_DEFAULT\_DELTA\_MAX} gives the generator more possible
 choices for each private weight, but it also makes the generated values larger.
 This creates a simple trade-off in this implementation between variation in the
-private sequence and the size of the resulting key material. In the experiment,
-increasing the increment bound from \(1\) to \(128\) raised the average
-private-sum bit length from \(128\) to \(135\) bits for \(n=128\), and from
-\(4096\) to \(4103\) bits for \(n=4096\). 
+private sequence and the size of the resulting key material. The reason is that
+the modulus $m$ is chosen above the private sum $S$, and the upper bound of each
+public weight is higher as a consequence. In the experiment, increasing the
+increment bound from \(1\) to \(128\) raised the average private-sum bit length
+from \(128\) to \(135\) bits for \(n=128\), and from \(4096\) to \(4103\) bits
+for \(n=4096\). 
 
-The sweep of the modulus margin had almost no visible effect on the reported
-density. Increasing the margin bound changed how much larger the modulus was
-than the sum of the private weights, but the bit length of the generated public
-weights stayed almost unchanged. This is expected for this generator, because
-the added margin is small compared with the private sum.
+A similar experiment was run for \texttt{MH\_DEFAULT\_MARGIN\_FACTOR}. In the
+generator, this constant is multiplied by the block size \(n\), so the margin
+\(\mu\) is sampled from \(1\) to \(\texttt{MH\_DEFAULT\_MARGIN\_FACTOR}\cdot
+n\). In contrast with \texttt{MH\_DEFAULT\_DELTA\_MAX}, changing this value had
+little to no visible effect on the reported density. The added margin was small
+compared with the private sum, so the bit length of the generated public
+weights stayed almost unchanged.
 
 These results should be interpreted carefully. They only show how this
 particular generator changes the measured density for the tested parameters and
@@ -220,11 +229,16 @@ splits the weights into two halves and compares partial sums. This reduces the
 time growth, but it requires an exponential table of partial sums.
 
 Figure~\ref{fig:attack-ms} shows the measured running time of both solvers. The
-vertical axis is logarithmic. The brute-force solver becomes expensive already
-for small values of \(n\). In these measurements, it was tested only up to
-\(n=22\), where the average running time was about \(188\) ms. The
-meet-in-the-middle solver handled larger values in this experiment. It reached
-\(n=40\), where the average running time was about \(757\) ms.
+vertical axis is logarithmic, so the almost straight orange curve still
+represents exponential growth. The meet-in-the-middle curve is also smoother
+because, for a fixed \(n\), the implementation builds and sorts full tables of
+partial sums before the final search. Brute force stops as soon as it finds a
+matching bit vector, so its time depends more on where this vector appears in
+the search order. The brute-force solver becomes expensive already for small
+values of \(n\). In these measurements, it was tested only up to \(n=22\),
+where the average running time was about \(188\) ms. The meet-in-the-middle
+solver handled larger values in this experiment. It reached \(n=40\), where the
+average running time was about \(757\) ms.
 
 \begin{figure}[htbp]
     \centering

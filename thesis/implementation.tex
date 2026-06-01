@@ -15,10 +15,10 @@ insecure against cryptanalytic attacks. The implementation is used mainly to
 illustrate how the trapdoor construction works in practice and to support the
 theoretical discussion from the previous chapters.
 
-The implementation also includes simple solvers for small subset-sum
-instances. They are used only to illustrate how direct recovery of the message
-becomes harder as the message length increases. They are not implementations of
-Shamir's structural attack or lattice-based attacks.
+The implementation also includes simple solvers for small subset-sum instances.
+They are used to illustrate how direct recovery of the message becomes harder
+as the message length increases. Our intention was not to implement Shamir's
+structural attack or lattice-based attacks.
 
 Another goal was to prepare a simple environment for experiments. The program
 supports deterministic runs through explicit seeds, so the same keys and test
@@ -149,11 +149,12 @@ modular transformation layers. The option \texttt{--layers} can be used with
 
 \subsection{Data Representation and Support Modules}
 
-The schemes work with fixed-length bit blocks. Raw bit-string input can be
-used directly, while plaintext input is first converted from bytes to bits. The
-bit sequence is then split into blocks of the selected size, and each block is
+The schemes work with fixed-length bit blocks. Raw bit-string input can be used
+directly, while plaintext input is first converted from bytes to bits. The bit
+sequence is then split into blocks of the selected size, and each block is
 encrypted as one knapsack ciphertext. For plaintext demo input, the default
-block size is 128 bits unless another value is given with \texttt{--n}.
+block size is 128 bits unless another value is given with the \texttt{--n}
+command-line option.
 
 The implementation uses \texttt{BitBuf} for owned bit arrays and
 \texttt{BitView} for non-owning views into an existing bit array. This is used
@@ -194,7 +195,7 @@ basic error cases are handled. This is sufficient for the purpose of this
 thesis, because the implementation is used as an educational and experimental
 tool.
 
-Python is used outside the C program for experiment automation and plotting.
+We used Python outside the C program for experiment automation and plotting.
 The scripts in the \texttt{experiments} directory do not implement the
 cryptographic schemes themselves. Instead, they run the compiled C executable
 with selected parameters, read the CSV output produced by the program, store the
