@@ -9,8 +9,6 @@ vypracoval pod vedením doc. RNDr. Tatiany Jajcayovej, PhD.
 
 ## MOTIVÁCIA / KONTEXT
 
-### v2
-
 Verejnokľúčová kryptografia vznikla ako riešenie problému zdieľania
 tajného kľúča. Namiesto jedného spoločného tajomstva používa verejný a
 súkromný kľúč. Matematicky za tým stojí problém, ktorý sa jedným
