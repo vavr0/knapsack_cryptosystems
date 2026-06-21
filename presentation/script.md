@@ -29,31 +29,6 @@ trapdoor, ktorý ho prevedie na ľahký prípad. Ak sa však táto štruktúra
 dá z verejného kľúča spätne odhaliť alebo obísť, samotná NP-úplnosť
 všeobecného problému bezpečnosť nezaručuje.
 
-### v1
-
-Verejnokľúčová kryptografia vznikla ako odpoveď na problém zdieľania
-tajného kľúča. Namiesto jedného spoločného kľúča používa dvojicu:
-verejný kľúč na šifrovanie a súkromný kľúč na dešifrovanie. Tieto
-kľúče sú generované kryptografickým algoritmom založeným na
-matematických problémoch, ktoré sa správajú ako jednosmerné funkcie.
-
-Jednosmerná funkcia v tomto kontexte neznamená, že spätný smer je
-úplne nemožný. Znamená to, že výpočet jedným smerom je jednoduchý, ale
-opačný smer je bez dodatočnej tajnej informácie výpočtovo náročný.
-
-Batohové kryptosystémy sú zaujímavé z viacerých dôvodov. Po prvé, na
-Merkle--Hellmanovej schéme sa dobre ukazuje základná myšlienka
-trapdooru: verejný problém má vyzerať ťažko, ale držiteľ súkromnej
-informácie ho vie previesť na ľahký prípad. Po druhé, tieto systémy
-boli historicky atraktívne aj preto, že šifrovanie a dešifrovanie
-mohli byť veľmi efektívne.
-
-Zároveň však práve na tomto príklade vidno, prečo samotný výber
-ťažkého problému nestačí. Problém súčtu podmnožiny je vo všeobecnosti
-výpočtovo náročný a jeho rozhodovacia verzia je NP-úplná, ale
-konkrétna kryptografická schéma generuje špeciálne inštancie. Ak v
-nich zostane štruktúra súkromného kľúča, útočník ju môže využiť.
-
 ## SUBSET-SUM A SUPERINCREASING
 
 Problém súčtu podmnožiny je základ, na ktorom sú tieto kryptosystémy
