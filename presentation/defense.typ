@@ -20,27 +20,19 @@
   ),
 )
 
-#show raw.where(block: true): set text(size: 0.78em)
+#show raw.where(block: true): set text(size: 0.74em)
 #set heading(numbering: none)
 #set par(leading: 0.22em)
 #set list(spacing: 0.90em)
 
-#let emphbox(body) = block(
-  fill: rgb("#fff7ef"),
-  stroke: (left: 4pt + rgb("#eb811b")),
+#let codebox(body) = block(
+  fill: rgb("#f7f7f7"),
+  stroke: rgb("#d0d0d0"),
   radius: 4pt,
-  inset: (x: 10pt, y: 7pt),
-  width: 100%,
-  body,
-)
-
-#let terminal(body) = block(
-  fill: rgb("#1f1f1f"),
-  radius: 6pt,
   inset: (x: 10pt, y: 8pt),
   width: 100%,
 )[
-  #set text(fill: rgb("#f5f5f5"), size: 0.70em)
+  #set text(size: 1.00em)
   #set par(leading: 0.28em)
   #body
 ]
@@ -59,107 +51,94 @@
 
 == Motivácia a kontext
 
-
-- verejnokľúčová kryptografia rieši problém zdieľania tajného kľúča
-- batohové kryptosystémy - historický pokus použiť problém súčtu podmnožiny
-- Merkle--Hellman príklad trapdooru
+- problém zdieľania tajného kľúča pri symetrickej kryptografii
+- verejný a súkromný kľúč, asymetria výpočtu
+- subset-sum ako historický základ batohových kryptosystémov
+- Merkle--Hellman: trapdoor, zlyhanie, varianty a implementácia
 
 == Subset-sum a ľahký prípad
 
 #align(center)[$ sum_(i=1)^n x_i a_i = S, quad x_i in {0, 1} $]
 
-- hľadáme podmnožinu váh s daným súčtom
-- rozhodovacia verzia je NP-úplná
-- v kryptosystéme hľadáme konkrétne bity správy
-- superrastúca postupnosť je ľahký prípad riešiteľný greedy algoritmom
-
-#emphbox[
-  V Merkle--Hellmanovi je ľahký prípad skrytý v súkromnom kľúči.
-]
+- všeobecne hľadáme podmnožinu váh s daným súčtom
+- rozhodovacia verzia sa pýta, či taká podmnožina existuje
+- táto rozhodovacia verzia je NP-úplná
+- superrastúca postupnosť je špeciálny riešiteľný prípad
+- greedy postupuje od najväčšej váhy nadol
+- menšie váhy nedokážu nahradiť jednu väčšiu
 
 == Merkle--Hellmanova schéma
 
-#align(center)[
-  súkromná ľahká inštancia $arrow.r$ verejná zdanlivo ťažká inštancia
-]
+- generovanie kľúčov vytvorí superrastúcu postupnosť $w$ a čísla $m$, $r$
+- platí $m > sum w_i$ a $gcd(r, m) = 1$, preto existuje inverzia modulo $m$
+#table(
+  columns: (1.05fr, 3.0fr),
+  stroke: none,
+  inset: (x: 4pt, y: 5pt),
+  [verejný kľúč], [$ b_i equiv r w_i mod m $],
+  [šifrovanie], [$ C = sum_(i=1)^n x_i b_i $],
+  [dešifrovanie], [$ C' equiv r^(-1) C mod m $],
+)
 
-- súkromný kľúč: superrastúca postupnosť $w$
-- zvolí sa $m > sum w_i$ a $r$ tak, že $gcd(r, m) = 1$
-
-#align(center)[
-  $ b_i equiv r w_i mod m $
-
-  $ C = sum_(i=1)^n x_i b_i $
-
-  $ C' equiv r^(-1) C mod m $
-]
-
-- po inverzii sa použije greedy algoritmus
+- po dešifrovacej transformácii sa rieši pôvodná superrastúca postupnosť
+- trapdoor je návrat zo zdanlivo ťažkej verejnej inštancie na ľahko riešiteľný prípad
 
 == Prečo konštrukcia zlyhala
 
 - verejný kľúč nevzniká ako náhodná všeobecná inštancia
 - vzniká prevodom zo súkromnej superrastúcej štruktúry
-- Shamir: ekvivalentný trapdoor v polynomiálnom čase
-- nízka hustota: mriežkové útoky a LLL
-
-#emphbox[
-  NP-úplnosť všeobecného problému sama osebe nezaručuje bezpečnosť konkrétnej schémy.
-]
+- Shamirov útok prelomil základnú schému v polynomiálnom čase
+- nízka hustota umožňuje mriežkové útoky, napríklad LLL
+- NP-úplnosť všeobecného problému sama osebe nestačí
 
 == Varianty a útoky
 
 #table(
-  columns: (1.2fr, 2.0fr, 2.0fr),
-  inset: 6pt,
+  columns: (1.15fr, 2.25fr, 2.10fr),
+  inset: (x: 8pt, y: 10pt),
   [*Schéma*], [*Myšlienka*], [*Slabina*],
-  [Merkle--Hellman], [modulárne skrytá superrastúca postupnosť], [Shamirov útok],
-  [permuted MH], [skrytá permutácia váh], [stále rovnaká trapdoor štruktúra],
+  [Merkle--Hellman], [skrytá superrastúca postupnosť], [Shamirov útok],
+  [permuted MH], [tajná permutácia poradia váh], [vzťah k súkromným váham zostáva],
   [iterated MH], [viac modulárnych vrstiev], [Brickell, mriežkové metódy],
-  [Chor--Rivest], [konečné polia, vyššia hustota], [algebraická štruktúra],
+  [Chor--Rivest], [trapdoor v konečných poliach], [algebraická štruktúra verejného kľúča],
 )
 
 == Implementácia
 
-- jazyk: C
-- veľké celé čísla: GMP (`mpz_t`)
-- varianty: `mh-classic`, `mh-permuted`, `mh-iterated`
-- spoločné rozhranie: `keygen`, `encrypt`, `decrypt`, cleanup
-- PCG generátor; bežný seed z OS entropie, experimenty s explicitným seedom
+- jazyk C
+- veľké celé čísla pomocou GMP (`mpz_t`)
+- varianty `mh-classic`, `mh-permuted`, `mh-iterated`
+- spoločné rozhranie `keygen`, `encrypt`, `decrypt`, cleanup
+- pseudonáhodný generátor; bežný seed z OS entropie, experimenty s explicitným seedom
 
 == Ukážka CLI
 
-#grid(
-  columns: (1.35fr, 0.75fr),
-  gutter: 0.6em,
-  align(horizon)[
-    #terminal[
+- voľby schémy, vstupu, veľkosti bloku a seedu
+- text sa prevedie na bity a rozdelí do blokov
+- seed umožňuje reprodukovateľný beh
+- benchmark režim vypisuje CSV pre grafy
+
+#codebox[
 ```text
-$ ./knapsack demo --scheme mh-classic --msg "hello" --n 40 --seed 123
+$ ./knapsack demo --scheme mh --msg "two block message" --n 128 --seed 123
 Scheme: mh-classic
-Block-Size: 40
-Blocks: 1
-Ciphertext: 154488066942563
-Decrypted-Text: hello
+Block-Size: 128
+Blocks: 2
+Ciphertext:
+146139970358749417963450435298092519600081
+9592959278104647334923768299118570459183
+Decrypted-Text: two block message
 Status: OK
 ```
-    ]
-  ],
-  align(horizon)[
-    - `demo`: celý priebeh
-    - `bench`: časy a parametre
-    - `attack`: brute force a MITM
-    - nie Shamir ani LLL
-  ],
-)
+]
 
 == Experimentálne nastavenie
 
-- veľkosti blokov: $n in {128, 256, 512, 1024, 2048, 4096}$
-- tri deterministické seedy; warm-up a merané opakovania
-- benchmark overí aj korektné dešifrovanie
-- Python skripty iba spúšťajú C program a generujú grafy
-- sledované: runtime, hustota, `sum_bits`, margin, MITM tabuľka
+- release build C programu
+- Python skripty pre spustenie, CSV a grafy
+- veľkosti blokov $n in {128, 256, 512, 1024, 2048, 4096}$
+- 3 seedy; warm-up; priemer z 5 meraní
+- kontrola správneho dešifrovania
 
 == Výsledok: runtime variantov
 
@@ -175,55 +154,44 @@ Status: OK
 
 #graphslide("../code/experiments/plots/crypto_components_classic.png")[
 - v klasickom variante dominuje generovanie kľúča
-- pri $n=4096$: keygen ≈ 10.9 ms
+- pri $n=4096$ keygen ≈ 10.9 ms
 - šifrovanie aj dešifrovanie boli pod 0.1 ms
 ]
 
 == Hustota pri iterovaní
 
 #graphslide("../code/experiments/plots/iterated_layers_density.png")[
-- hustota: $n / log_2(max b_i)$
+- hustota $n / log_2(max b_i)$
 - viac vrstiev zväčšuje verejné váhy
-- pri $n=128$: 2 vrstvy ≈ 0.916, 5 vrstiev ≈ 0.812
+- pri $n=128$ dve vrstvy ≈ 0.916, päť vrstiev ≈ 0.812
 ]
 
-== Vplyv delta a marginu
+== Vplyv parametra delta
 
 #graphslide("../code/experiments/plots/sweep_delta_density.png")[
-- `delta`: prírastok pri tvorbe súkromnej superrastúcej váhy
-- `margin`: rezerva medzi $sum w_i$ a modulom $m$
-- väčšie `delta_max` znižuje hustotu
-- margin mal v tejto implementácii malý vplyv
-]
-
-== Jednoduché solver experimenty
-
-#graphslide("../code/experiments/plots/attack_ms.png")[
-- brute force: približne $2^n$ možností
-- meet-in-the-middle: približne $2^(n/2)$, ale potrebuje veľa pamäte
-- baseline experiment, nie Shamirov ani LLL útok
+- `delta_max` je horná hranica prírastku súkromnej váhy
+- väčšie `delta_max` zväčšuje bitovú veľkosť verejných váh
+- pri $n=128$ hustota klesla z 1.000 na približne 0.948
+- `margin_factor` mal v tejto implementácii menší vplyv
 ]
 
 == Hlavné prínosy práce
 
 - prehľad a systematizácia klasických batohových kryptosystémov
-- vysvetlenie zlyhania: ťažký problém vs. štruktúra kľúčov
+- vysvetlenie zlyhania cez rozdiel medzi ťažkým problémom a štruktúrou kľúčov
 - C/GMP implementácia troch Merkle--Hellmanových variantov
-- demo, benchmark a jednoduché solver experimenty
+- demo a benchmark režim
 - reprodukovateľné merania a grafy
 
 == Záver
 
-#emphbox[
-  Klasické batohové kryptosystémy dnes nie sú vhodné na praktické šifrovanie.
-]
-
+- klasické batohové kryptosystémy dnes nie sú vhodné na praktické šifrovanie
 - ich význam je najmä historický a didaktický
 - problém súčtu podmnožiny sa v teórii stále študuje
 - praktická verejná kryptografia sa vydala inými smermi
-- napríklad RSA nestojí na NP-úplnom probléme, ale na faktorizácii
+- RSA ako kontrast, faktorizácia namiesto NP-úplného problému
 
-#align(center)[*Ďakujem za pozornosť.*]
+#align(center)[Ďakujem za pozornosť.]
 
 == Otázky k práci
 

@@ -9,20 +9,21 @@ vypracoval pod vedením doc. RNDr. Tatiany Jajcayovej, PhD.
 
 ## MOTIVÁCIA / KONTEXT
 
-Verejnokľúčová kryptografia vznikla ako odpoved na problém zdieľania tajného
-kľúča pri symetrickej kryptografii, ktora pouziva jeden zdielany kluc na
-sifrovanie a zaroven aj na desifrovanie a je potrebne aby ho komunikujuce
-strany zdielali pred komunikaciou. Asymetricka kryptografia vyuziva namiesto
-jedného spoločného tajomstva dva kluce - verejný a súkromný. Verejným kľúčom
-môže správu zašifrovať ktokoľvek, ale dešifrovať ju má vedieť iba držiteľ
-zodpovedajúceho súkromného kľúča. Celé to stojí na asymetrii výpočtu:
-zašifrovanie má byť jednoduché, ale opačný smer má byť bez súkromného kľúča
-prakticky nevykonateľný.
+Verejnokľúčová kryptografia vznikla ako odpoveď na problém zdieľania tajného
+kľúča pri symetrickej kryptografii. Pri symetrickej kryptografii sa ten istý
+tajný kľúč používa na šifrovanie aj dešifrovanie, takže komunikujúce strany si
+ho musia bezpečne vymeniť ešte pred komunikáciou.
+
+Asymetricka kryptografia vyuziva namiesto jedného spoločného tajomstva dva
+kluce - verejný a súkromný. Verejným kľúčom môže správu zašifrovať ktokoľvek,
+ale dešifrovať ju má vedieť iba držiteľ zodpovedajúceho súkromného kľúča. 
+
+Celé to stojí na asymetrii výpočtu: zašifrovanie má byť jednoduché, ale opačný smer
+má byť bez súkromného kľúča prakticky nevykonateľný.
 
 Batohové kryptosystémy boli historickým pokusom postaviť túto asymetriu na
-probléme súčtu podmnožiny. Dôležité je, že rozhodovacia verzia problému súčtu
-podmnožiny je NP-úplná. To bol jeden z dôvodov, prečo sa tento problém
-historicky javil ako silný základ pre kryptografiu.
+probléme súčtu podmnožiny. Jeho rozhodovacia verzia je NP-úplná, a práve preto
+sa tento problém na prvý pohľad javil ako silný základ pre kryptografiu.
 
 Merkle--Hellmanov batohovy kryptosystem je dobrý príklad toho, prečo to nestačí. Tento
 problém má vyzerať ťažko, ale drzitel súkromneho kľúča ho vie previest na
@@ -34,21 +35,21 @@ nezaručuje.
 
 Problém súčtu podmnožiny je matematicky základ, na ktorom sú tieto
 kryptosystémy postavené. Máme danu postupnosť čísel, ktoré si môžeme predstaviť
-ako váhy, a máme cieľový súčet. Rozhodovacia verzia sa pýta, či existuje
-podmnožina váh, ktorá dá práve tento súčet. 
+ako váhy, a máme cieľový súčet. Úlohou je vybrať také váhy, ktorých súčet dá
+práve túto hodnotu. V rozhodovacej verzii sa pýtame iba na to, či taký výber
+existuje. 
 
-V kryptosystéme sa to dá prirodzene pouzit na sifrovanie správy. Pre
-dešifrovanie však potrebujeme špeciálny prípad, ktorý je ľahko riešiteľný, inak
-by musel prijmatel spravy riesit rovnaky tazky problem ako pripadny utocnik.
-Tým je superrastúca postupnosť. !!To znamená, že každý ďalší prvok v postupnosti
-vah je väčší ako súčet všetkých predchádzajúcich prvkov.
+Vo všeobecnosti nepoznáme efektívny algoritmus, ktorý by tento problém riešil
+pre ľubovoľný vstup. Na to aby sme ho mohli pouzit v kryptosysteme pre
+dešifrovanie však bude dôležitý špeciálny prípad, ktorý efektívne riešiť vieme.
 
-Pri takejto postupnosti sa riešenie dá nájsť greedy algoritmom. Postupuje sa od
-najväčšej váhy nadol a vždy sa vyberie váha, ktorá sa ešte zmestí do
-zostávajúceho súčtu. Tento krok je korektný práve vďaka superrastúcej
-vlastnosti: ak je daná váha väčšia než súčet všetkých menších váh, menšie váhy
-ju už nedokážu nahradiť. Toto je ľahký prípad, ku ktorému sa Merkle--Hellman
-pri dešifrovaní potrebuje dostať späť.
+Tým je superrastúca postupnosť. To znamená, že každý ďalší prvok je väčší ako
+súčet všetkých predchádzajúcich prvkov.
+
+Pri takejto postupnosti funguje greedy algoritmus. Postupuje sa od najväčšej
+váhy nadol a vždy sa vyberie váha, ktorá sa ešte zmestí do zostávajúceho súčtu.
+Je to korektné práve preto, že menšie váhy už nedokážu nahradiť jednu väčšiu
+superrastúcu váhu.
 
 ## MERKLE--HELLMAN
 
@@ -56,12 +57,12 @@ Merkle--Hellmanova schéma využíva rozdiel medzi všeobecným problémom
 súčtu podmnožiny a superrastúcou postupnosťou, ktorá sa dá riešiť
 greedy algoritmom.
 
-Prvy krok systemu je generovanie kluca. Pri generovaní kľúča sa najprv vytvorí
-súkromná superrastúca postupnosť. Následne sa zvolí modul m,, ktorý je väčší
-ako súčet súkromných váh. Potom sa zvolí násobiteľ r, ktorý je s m
-nesúdeliteľný. Táto podmienka je dôležitá preto, že násobenie číslom r modulo m
-je potom vratná operácia. Inými slovami, existuje k nemu modulárna inverzia,
-ktorú neskôr použijeme pri dešifrovaní.
+Schema zacina generovanim klucov. Najprv vytvorí súkromná superrastúca
+postupnosť. Následne sa zvolí modulo m, ktorý je väčší ako súčet súkromných
+váh. Potom sa zvolí násobiteľ r, ktorý je s m nesúdeliteľný. Táto podmienka je
+dôležitá preto, že násobenie číslom r modulo m je potom vratná operácia. Inými
+slovami, existuje k nemu modulárna inverzia, ktorú neskôr použijeme pri
+dešifrovaní.
 
 Verejný kľúč sa vznikne tak, že každý prvok súkromnej
 postupnosti sa vynásobí rovnakým násobiteľom a zoberie sa zvyšok
@@ -72,10 +73,11 @@ superrastúca.
 ktoré váhy sa do súčtu zahrnú.
 
 Pri dešifrovaní sa šifrový text vynásobí modulárnou inverziou násobiteľa a
-zoberie sa zvyšok modulo m. Tým sa dostaneme späť k súčtu nad pôvodnou
-superrastúcou postupnosťou. Keďže $m$ bolo zvolené väčšie ako súčet všetkých
-súkromných váh, tento súčet sa dá jednoznačne obnoviť. Potom už použijeme
-greedy algoritmus pre superrastúcu postupnosť a získame pôvodné bity správy.
+zoberie sa zvyšok modulo m. Tým odstranime modularnu transformaciu a dostaneme
+sa späť k súčtu nad pôvodnou superrastúcou postupnosťou. Keďže $m$ bolo zvolené
+väčšie ako súčet všetkých súkromných váh, tento súčet sa dá jednoznačne
+obnoviť. Potom už použijeme greedy algoritmus pre superrastúcu postupnosť a
+získame pôvodné bity správy.
 
 Trapdoor je teda v tom, že útočník vidí iba transformovanú subset-sum
 inštanciu, zatiaľ čo držiteľ súkromného kľúča ju vie previesť späť na
@@ -96,12 +98,6 @@ Merkle--Hellmanovu schému je možné prelomiť v polynomiálnom
 kľúč. Stačí mu nájsť ekvivalentný trapdoor, teda inú transformáciu,
 ktorá mu umožní previesť verejnú batohovú inštanciu späť na ľahko
 riešiteľný prípad.
-
-To je hlavný dôvod, prečo tu nestačí argument, že problém súčtu
-podmnožiny je vo všeobecnosti náročný a jeho rozhodovacia verzia je
-NP-úplná. Kryptosystém nepoužíva ľubovoľné inštancie tohto problému,
-ale inštancie generované konkrétnou schémou. A bezpečnosť závisí práve
-od toho, či táto schéma nezanecháva vo verejnom kľúči štruktúru.
 
 Ďalšia línia útokov súvisí s nízkou hustotou batohových
 inštancií. Hustota zjednodušene vyjadruje pomer medzi počtom prvkov a
@@ -147,7 +143,7 @@ hodnotu než praktické použitie.
 
 ## IMPLEMENTÁCIA
 
-Po teoretickej časti som pripravil vlastnú implementáciu vybraných
+V praktickej casti som pripravil vlastnú implementáciu vybraných
 Merkle--Hellmanových variantov. Cieľom nebolo vytvoriť bezpečnú
 kryptografickú knižnicu, ale experimentálny nástroj, na ktorom sa dá
 ukázať fungovanie schém a porovnať ich správanie.
@@ -162,48 +158,33 @@ Merkle--Hellman a iterovaný Merkle--Hellman. Všetky sú v kóde zapojené
 cez rovnaké rozhranie, ktoré zjednocuje generovanie kľúčov, šifrovanie
 a dešifrovanie.
 
-Okrem samotných schém program obsahuje aj demo, benchmark a attack režim. Demo
-slúži na kontrolu celého priebehu šifrovania a dešifrovania, benchmark na
-meranie jednotlivých operácií a attack režim na jednoduché subset-sum solvery.
+Okrem samotných schém program obsahuje aj demo a benchmark režim. Demo slúži
+na kontrolu celého priebehu šifrovania a dešifrovania, benchmark na meranie
+jednotlivých operácií.
 
-## UKÁŽKA POUŽITIA A VSTUPY
+## UKÁŽKA CLI
 
-Program má command-line rozhranie. V demo režime sa dá zvoliť schéma,
-textový alebo bitový vstup, veľkosť bloku a seed. Textový vstup sa najprv
-prevedie na bity, rozdelí do blokov pevnej veľkosti a posledný blok sa
-prípadne doplní nulami.
+Toto je príklad demo režimu. Cez príkazový riadok sa volí schéma, veľkosť
+bloku, vstupná správa a voliteľne seed. Pri textovom vstupe program správu
+prevedie na bity, rozdelí ju do blokov pevnej veľkosti a posledný blok prípadne
+doplní nulami.
 
-Seedovanie je dôležité kvôli reprodukovateľnosti. Bez explicitného seedu si
-program berie entropiu z operačného systému, ale pri experimentoch som používal
-`--seed`. Ten sa rozbalí pre PCG generátor, takže rovnaké nastavenie vytvorí
-rovnaký beh.
+Seed slúži na reprodukovateľnosť. Ak ho nezadám, program použije entropiu
+operačného systému. Pri experimentoch som seed zadával explicitne a ďalej sa
+rozbalil pre PCG generátor.
 
-Benchmark režim potom meria keygen, encrypt a decrypt do CSV. Attack režim je
-iba jednoduchý subset-sum baseline: brute force a meet-in-the-middle, nie
-Shamir ani LLL.
+Benchmark režim používa rovnaké schémy, ale namiesto ukážky správy meria
+keygen, encrypt a decrypt a vypisuje výsledky do CSV.
 
 ## EXPERIMENTÁLNE NASTAVENIE
 
-Experimenty boli spúšťané nad release buildom C programu. Python skripty
-slúžili iba na automatické spúšťanie binárky, zber CSV výstupov a generovanie
-grafov. Samotné generovanie kľúčov, šifrovanie a dešifrovanie teda bežali v C.
+Merania som robil nad release buildom C programu. Python skripty slúžili iba
+na spúšťanie programu, zber CSV výstupov a generovanie grafov.
 
-V hlavných benchmarkoch som testoval blokové veľkosti od \(n = 128\) po \(n =
-4096\), tri deterministické seedy a merané opakovania po warm-upe. Porovnával
-som varianty `mh-classic`, `mh-permuted` a `mh-iterated`.
-
-Každý benchmark spravil celý cyklus keygen, encrypt a decrypt. Výsledok sa
-zapísal iba vtedy, keď sa dešifrované bity zhodovali s pôvodným vstupom.
-
-Okrem toho som robil samostatný sweep pre počet vrstiev iterovaného variantu a
-parameter sweep pre hodnoty `delta_max` a `margin_factor`.  Samostatne som
-meral aj brute force a meet-in-the-middle solvery, ktoré slúžia ako baseline
-pre priame riešenie subset-sum problému.
-
-Tieto experimenty nemajú dokazovať bezpečnosť schém. Keďže klasické batohové
-kryptosystémy sú už známe ako prelomené, cieľom bolo skôr ukázať, ako sa
-jednotlivé varianty správajú z hľadiska času, veľkosti a štruktúry verejných
-inštancií na zaklade parametrov ktore som volil pri generovani klucov.
+Pri runtime benchmarkoch som porovnával tri varianty pre n od 128 po 4096.
+Pre každé nastavenie som použil tri rôzne seedy; z meraných opakovaní sa bral
+priemer. Každý beh zároveň overil, že dešifrovaný výstup sedí s pôvodným
+vstupom.
 
 ## VÝSLEDKY: RUNTIME
 
@@ -258,26 +239,6 @@ Margin som testoval samostatne. Ten sa pridáva až po vytvorení súkromnej
 postupnosti ako rezerva medzi súčtom súkromných váh a modulom. V mojich
 meraniach mal na hustotu výrazne menší vplyv než delta.
 
-## JEDNODUCHÉ SOLVER EXPERIMENTY
-
-V poslednej časti experimentov som sa pozrel na priame riešenie
-subset-sum problému na malých inštanciách. Tu som porovnal brute force
-a meet-in-the-middle prístup.
-
-Brute force prechádza všetky možné bitové vektory, takže jeho počet
-možností rastie ako $2^n$. Je jednoduchý, ale veľmi rýchlo sa stáva
-nepoužiteľným.
-
-Meet-in-the-middle rozdelí váhy na dve polovice. Pre každú polovicu
-vytvorí možné súčty a potom hľadá dvojice, ktoré spolu dávajú cieľový
-súčet. Časovo je to výrazne lepšie než brute force, približne na
-úrovni $2^{n/2}$, ale platí sa za to pamäťou.
-
-Tieto experimenty treba chápať len ako baseline. Nejde o implementáciu
-Shamirovho útoku ani mriežkových metód. Ich cieľom bolo ukázať rozdiel
-medzi priamym hľadaním správy a útokmi, ktoré využívajú štruktúru
-kryptosystému.
-
 ## HLAVNÉ PRÍNOSY PRÁCE
 
 Hlavný prínos práce vidím najmä v prehľadnom spracovaní klasických
@@ -286,8 +247,8 @@ Merkle--Hellmanovu schému, ale aj ukázať, prečo zlyhala, aké varianty
 vznikli a aké typy útokov sa pri nich objavili.
 
 Druhá časť prínosu je praktická. Implementoval som tri
-Merkle--Hellmanove varianty v jazyku C, doplnil ich o demo, benchmark
-a jednoduchý solver režim a pripravil reprodukovateľné experimenty.
+Merkle--Hellmanove varianty v jazyku C, doplnil ich o demo a benchmark
+režim a pripravil reprodukovateľné experimenty.
 
 Práca tak prepája viac oblastí, ktoré som počas štúdia používal:
 diskrétnu matematiku, modulárnu aritmetiku, výpočtovú zložitosť,
