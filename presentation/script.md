@@ -9,91 +9,73 @@ vypracoval pod vedením doc. RNDr. Tatiany Jajcayovej, PhD.
 
 ## MOTIVÁCIA / KONTEXT
 
-Verejnokľúčová kryptografia vznikla ako riešenie problému zdieľania
-tajného kľúča. Namiesto jedného spoločného tajomstva používa verejný a
-súkromný kľúč. Matematicky za tým stojí problém, ktorý sa jedným
-smerom počíta ľahko, ale opačný smer je bez súkromnej informácie
-prakticky ťažký.
+Verejnokľúčová kryptografia vznikla ako odpoved na problém zdieľania tajného
+kľúča pri symetrickej kryptografii, ktora pouziva jeden zdielany kluc na
+sifrovanie a zaroven aj na desifrovanie a je potrebne aby ho komunikujuce
+strany zdielali pred komunikaciou. Asymetricka kryptografia vyuziva namiesto
+jedného spoločného tajomstva dva kluce - verejný a súkromný. Verejným kľúčom
+môže správu zašifrovať ktokoľvek, ale dešifrovať ju má vedieť iba držiteľ
+zodpovedajúceho súkromného kľúča. Celé to stojí na asymetrii výpočtu:
+zašifrovanie má byť jednoduché, ale opačný smer má byť bez súkromného kľúča
+prakticky nevykonateľný.
 
-Pri RSA je takým problémom faktorizácia veľkého čísla. Pri batohových
-kryptosystémoch je to problém súčtu podmnožiny. Rozdiel je v tom, že
-pri batohových systémoch sa historicky pracovalo s problémom, ktorého
-rozhodovacia verzia je NP-úplná, čo na prvý pohľad vyzeralo ako silný
-základ.
+Batohové kryptosystémy boli historickým pokusom postaviť túto asymetriu na
+probléme súčtu podmnožiny. Dôležité je, že rozhodovacia verzia problému súčtu
+podmnožiny je NP-úplná. To bol jeden z dôvodov, prečo sa tento problém
+historicky javil ako silný základ pre kryptografiu.
 
-Merkle--Hellmanova schéma je dobrý príklad toho, prečo to
-nestačí. Verejný problém má vyzerať ťažko, ale súkromný kľúč obsahuje
-trapdoor, ktorý ho prevedie na ľahký prípad. Ak sa však táto štruktúra
-dá z verejného kľúča spätne odhaliť alebo obísť, samotná NP-úplnosť
-všeobecného problému bezpečnosť nezaručuje.
+Merkle--Hellmanov batohovy kryptosystem je dobrý príklad toho, prečo to nestačí. Tento
+problém má vyzerať ťažko, ale drzitel súkromneho kľúča ho vie previest na
+jednoducho riešiteľnú inštanciu. Ak sa však táto štruktúra dá z verejného kľúča
+spätne odhaliť alebo obísť, samotná NP-úplnosť všeobecného problému bezpečnosť
+nezaručuje.
 
 ## SUBSET-SUM A SUPERINCREASING
 
-Problém súčtu podmnožiny je základ, na ktorom sú tieto kryptosystémy
-postavené. Máme postupnosť čísel, ktoré si môžeme predstaviť ako váhy,
-a máme cieľový súčet. Úloha je zistiť, ktoré z týchto váh treba
-vybrať, aby ich súčet dal práve danú hodnotu.
+Problém súčtu podmnožiny je matematicky základ, na ktorom sú tieto
+kryptosystémy postavené. Máme danu postupnosť čísel, ktoré si môžeme predstaviť
+ako váhy, a máme cieľový súčet. Rozhodovacia verzia sa pýta, či existuje
+podmnožina váh, ktorá dá práve tento súčet. 
 
-Vo všeobecnosti je rozhodovacia verzia tohto problému NP-úplná. V
-kryptografii nás však nezaujíma iba otázka, či také riešenie existuje,
-ale aj nájdenie konkrétnej podmnožiny, teda bitov správy.
+V kryptosystéme sa to dá prirodzene pouzit na sifrovanie správy. Pre
+dešifrovanie však potrebujeme špeciálny prípad, ktorý je ľahko riešiteľný, inak
+by musel prijmatel spravy riesit rovnaky tazky problem ako pripadny utocnik.
+Tým je superrastúca postupnosť. !!To znamená, že každý ďalší prvok v postupnosti
+vah je väčší ako súčet všetkých predchádzajúcich prvkov.
 
-V kryptosystéme sa to dá prirodzene prepojiť so správou. Správa je
-zapísaná ako postupnosť bitov. Bit jedna znamená, že danú váhu do
-súčtu zahrniem, bit nula znamená, že ju nezahrniem. Šifrový text je
-potom práve výsledný súčet vybraných verejných váh.
-
-Pre dešifrovanie však potrebujeme špeciálny prípad, ktorý je ľahko
-riešiteľný. Tým je superrastúca postupnosť. To znamená, že každý ďalší
-prvok je väčší ako súčet všetkých predchádzajúcich prvkov.
-
-Pri takejto postupnosti sa riešenie dá nájsť greedy spôsobom: začnem
-od najväčšej váhy, a ak sa ešte zmestí do zvyšného súčtu, použijem
-ju. Potom pokračujem smerom nadol. Toto je ľahký prípad, ku ktorému
-sa Merkle--Hellman pri dešifrovaní potrebuje dostať späť.
+Pri takejto postupnosti sa riešenie dá nájsť greedy algoritmom. Postupuje sa od
+najväčšej váhy nadol a vždy sa vyberie váha, ktorá sa ešte zmestí do
+zostávajúceho súčtu. Tento krok je korektný práve vďaka superrastúcej
+vlastnosti: ak je daná váha väčšia než súčet všetkých menších váh, menšie váhy
+ju už nedokážu nahradiť. Toto je ľahký prípad, ku ktorému sa Merkle--Hellman
+pri dešifrovaní potrebuje dostať späť.
 
 ## MERKLE--HELLMAN
 
 Merkle--Hellmanova schéma využíva rozdiel medzi všeobecným problémom
-súčtu podmnožiny a jeho ľahkým superrastúcim prípadom. Súkromný kľúč
-obsahuje superrastúcu postupnosť $w$, teda ľahký prípad problému,
-ktorý vieme efektívne riešiť.
+súčtu podmnožiny a superrastúcou postupnosťou, ktorá sa dá riešiť
+greedy algoritmom.
 
-Pri generovaní kľúča sa zvolí modul $m$, ktorý je väčší ako súčet
-prvkov postupnosti $w$, a násobiteľ $r$, pre ktorý platí
-$\gcd(r,m)=1$. Táto podmienka je dôležitá preto, aby existovala
-modulárna inverzia $r^{-1}$. Tú vieme vypočítať napríklad rozšíreným
-Euklidovým algoritmom.
+Prvy krok systemu je generovanie kluca. Pri generovaní kľúča sa najprv vytvorí
+súkromná superrastúca postupnosť. Následne sa zvolí modul m,, ktorý je väčší
+ako súčet súkromných váh. Potom sa zvolí násobiteľ r, ktorý je s m
+nesúdeliteľný. Táto podmienka je dôležitá preto, že násobenie číslom r modulo m
+je potom vratná operácia. Inými slovami, existuje k nemu modulárna inverzia,
+ktorú neskôr použijeme pri dešifrovaní.
 
-Verejný kľúč sa potom vytvorí vzťahom
+Verejný kľúč sa vznikne tak, že každý prvok súkromnej
+postupnosti sa vynásobí rovnakým násobiteľom a zoberie sa zvyšok
+modulo m. Tak vznikne verejná postupnosť, ktorá už nie je
+superrastúca.
 
-$$
-b_i = r w_i \bmod m.
-$$
+Šifrovanie je potom súčet vybraných verejných váh. Bity správy určujú,
+ktoré váhy sa do súčtu zahrnú.
 
-Inými slovami, každý prvok súkromnej postupnosti sa vynásobí rovnakým
-násobiteľom modulo $m$. Tak vznikne verejná postupnosť $b$, ktorá už
-nie je superrastúca.
-
-Šifrovanie je potom súčet vybraných verejných váh:
-
-$$
-c = \sum x_i b_i.
-$$
-
-Bity správy určujú, ktoré váhy sa do súčtu zahrnú.
-
-Pri dešifrovaní sa použije modulárna inverzia $r^{-1}$:
-
-$$
-c' = r^{-1}c \bmod m.
-$$
-
-Tým sa dostaneme späť k súčtu nad pôvodnou superrastúcou
-postupnosťou. Keďže $m$ bolo zvolené väčšie ako súčet všetkých
-súkromných váh, tento súčet sa dá jednoznačne obnoviť. Potom už
-použijeme greedy algoritmus pre superrastúcu postupnosť a získame
-pôvodné bity správy.
+Pri dešifrovaní sa šifrový text vynásobí modulárnou inverziou násobiteľa a
+zoberie sa zvyšok modulo m. Tým sa dostaneme späť k súčtu nad pôvodnou
+superrastúcou postupnosťou. Keďže $m$ bolo zvolené väčšie ako súčet všetkých
+súkromných váh, tento súčet sa dá jednoznačne obnoviť. Potom už použijeme
+greedy algoritmus pre superrastúcu postupnosť a získame pôvodné bity správy.
 
 Trapdoor je teda v tom, že útočník vidí iba transformovanú subset-sum
 inštanciu, zatiaľ čo držiteľ súkromného kľúča ju vie previesť späť na
@@ -176,62 +158,56 @@ blokových veľkostiach rýchlo rastú hodnoty súkromných váh, modulu aj
 verejného kľúča.
 
 Implementované sú tri varianty: klasický Merkle--Hellman, permutovaný
-Merkle--Hellman a iterovaný Merkle--Hellman. V kóde majú spoločné
-rozhranie pre generovanie kľúčov, šifrovanie a dešifrovanie, takže sa
-dajú testovať rovnakým spôsobom.
+Merkle--Hellman a iterovaný Merkle--Hellman. Všetky sú v kóde zapojené
+cez rovnaké rozhranie, ktoré zjednocuje generovanie kľúčov, šifrovanie
+a dešifrovanie.
 
-Pri implementácii som sa snažil oddeliť samotné schémy od režimov
-programu. Vďaka tomu rovnaká implementácia môže bežať v demo režime, v
-benchmark režime aj v jednoduchom attack režime.
+Okrem samotných schém program obsahuje aj demo, benchmark a attack režim. Demo
+slúži na kontrolu celého priebehu šifrovania a dešifrovania, benchmark na
+meranie jednotlivých operácií a attack režim na jednoduché subset-sum solvery.
 
-## REŽIMY PROGRAMU
+## UKÁŽKA POUŽITIA A VSTUPY
 
-Program má tri hlavné režimy. Demo režim ukazuje celý priebeh na
-jednej správe: vygenerovanie kľúčov, zašifrovanie a následné
-dešifrovanie.
+Program má command-line rozhranie. V demo režime sa dá zvoliť schéma,
+textový alebo bitový vstup, veľkosť bloku a seed. Textový vstup sa najprv
+prevedie na bity, rozdelí do blokov pevnej veľkosti a posledný blok sa
+prípadne doplní nulami.
 
-Benchmark režim slúži na experimentálne porovnanie jednotlivých
-variantov. Samostatne meria čas generovania kľúčov, šifrovania a
-dešifrovania pre rôzne veľkosti vstupu a rôzne varianty schémy.
+Seedovanie je dôležité kvôli reprodukovateľnosti. Bez explicitného seedu si
+program berie entropiu z operačného systému, ale pri experimentoch som používal
+`--seed`. Ten sa rozbalí pre PCG generátor, takže rovnaké nastavenie vytvorí
+rovnaký beh.
 
-Attack režim obsahuje jednoduché solver experimenty pre problém súčtu
-podmnožiny. Implementovaný je brute force a meet-in-the-middle
-prístup. Tento režim nemá predstavovať reálnu kryptanalýzu
-Merkle--Hellmanovej schémy, teda nejde o Shamirov ani LLL útok. Slúži
-skôr ako baseline na porovnanie priameho hľadania riešenia subset-sum
-problému.
+Benchmark režim potom meria keygen, encrypt a decrypt do CSV. Attack režim je
+iba jednoduchý subset-sum baseline: brute force a meet-in-the-middle, nie
+Shamir ani LLL.
 
 ## EXPERIMENTÁLNE NASTAVENIE
 
-Experimenty som rozdelil na dve časti. Prvá časť porovnáva
-kryptografické operácie implementovaných variantov, teda generovanie
-kľúčov, šifrovanie a dešifrovanie. Druhá časť sa pozerá na parametre,
-hlavne na hustotu verejných batohových inštancií a na jednoduché
-solver experimenty.
+Experimenty boli spúšťané nad release buildom C programu. Python skripty
+slúžili iba na automatické spúšťanie binárky, zber CSV výstupov a generovanie
+grafov. Samotné generovanie kľúčov, šifrovanie a dešifrovanie teda bežali v C.
 
-Merania som robil pre blokové veľkosti od $n = 128$ po $n = 4096$. Pri
-každom nastavení som použil tri deterministické seedy, aby výsledky
-nezáviseli iba od jedného náhodného behu.
+V hlavných benchmarkoch som testoval blokové veľkosti od \(n = 128\) po \(n =
+4096\), tri deterministické seedy a merané opakovania po warm-upe. Porovnával
+som varianty `mh-classic`, `mh-permuted` a `mh-iterated`.
 
-Program vie bežať aj bez explicitného seedu; vtedy si seed berie z
-entropie operačného systému, napríklad cez `getrandom` alebo
-`arc4random_buf` podľa platformy. V experimentoch som však seed zadával
-cez CLI. Jeden seed sa v kóde rozbalí na dve 64-bitové hodnoty pre PCG
-generátor, takže rovnaké nastavenie reprodukuje rovnaký keygen aj
-vstupnú správu.
+Každý benchmark spravil celý cyklus keygen, encrypt a decrypt. Výsledok sa
+zapísal iba vtedy, keď sa dešifrované bity zhodovali s pôvodným vstupom.
 
-Pri runtime experimentoch som sledoval samostatne čas generovania
-kľúčov, šifrovania a dešifrovania. Pri parametroch som sledoval najmä
-veľkosť čísel vo verejnom kľúči a hustotu inštancie.
+Okrem toho som robil samostatný sweep pre počet vrstiev iterovaného variantu a
+parameter sweep pre hodnoty `delta_max` a `margin_factor`.  Samostatne som
+meral aj brute force a meet-in-the-middle solvery, ktoré slúžia ako baseline
+pre priame riešenie subset-sum problému.
 
-Tieto experimenty nemajú dokazovať bezpečnosť schém. Keďže klasické
-batohové kryptosystémy sú už známe ako prelomené, cieľom bolo skôr
-ukázať, ako sa jednotlivé varianty správajú z hľadiska času, veľkosti
-parametrov a štruktúry verejných inštancií.
+Tieto experimenty nemajú dokazovať bezpečnosť schém. Keďže klasické batohové
+kryptosystémy sú už známe ako prelomené, cieľom bolo skôr ukázať, ako sa
+jednotlivé varianty správajú z hľadiska času, veľkosti a štruktúry verejných
+inštancií na zaklade parametrov ktore som volil pri generovani klucov.
 
 ## VÝSLEDKY: RUNTIME
 
-V runtime experimentoch sa ukázalo, že klasický a permutovaný variant
+V experimentoch na cas behu programu sa ukázalo, že klasický a permutovaný variant
 majú veľmi podobné správanie. To dáva zmysel, pretože permutácia mení
 poradie prvkov, ale nepridáva zásadne drahú operáciu pri samotnom
 šifrovaní alebo dešifrovaní.
@@ -252,49 +228,35 @@ správy. Dešifrovanie pridáva modulárnu inverziu a greedy postup, ale
 stále zostáva relatívne jednoduché. Najviac práce vzniká pri
 generovaní veľkých parametrov a verejného kľúča.
 
-## VÝSLEDKY: HUSTOTA A PARAMETRE
+## VÝSLEDKY: HUSTOTA PRI ITEROVANÍ
 
-Pri tejto časti som nesledoval len to, ako rýchlo program beží, ale aj
-aké verejné batohové inštancie implementácia vytvára. Hustotu som
-počítal ako pomer počtu prvkov $n$ k bitovej veľkosti najväčšej
-verejnej váhy.
+Hustotu verejnej batohovej inštancie počítam ako pomer počtu prvkov (n) k
+bitovej veľkosti najväčšej verejnej váhy. Pri rovnakom (n) teda nižšia hustota
+znamená, že najväčšia verejná váha potrebuje viac bitov.
 
-Toto je dôležité preto, že hustota priamo súvisí s tvarom verejného
-kľúča. Ak verejné váhy rastú rýchlejšie než počet prvkov, batohová
-inštancia sa stáva redšou. To ešte samo osebe nie je dôkaz útoku, ale
-je to parameter, ktorý sa v kryptanalýze batohových systémov sleduje.
+Pri iterovanom variante každá ďalšia vrstva znova transformuje aktuálne váhy
+pomocou nového modulu a násobiteľa. Počet bitov správy zostáva rovnaký, ale
+bitová veľkosť verejných váh sa zväčšuje. Preto s počtom vrstiev hustota klesá.
 
-Aby sa dali výsledky interpretovať, treba povedať, čo v mojej
-implementácii znamená delta a margin. Nová súkromná váha sa generuje
-ako aktuálny súčet predchádzajúcich váh plus náhodný prírastok delta.
-Parameter `delta_max` určuje hornú hranicu tohto prírastku; v základnej
-konfigurácii je to 64. Margin je naopak rezerva pri voľbe modulu:
-modul sa volí ako súčet súkromných váh plus náhodný margin, pričom
-základná horná hranica marginu je $64n$.
+Na grafe je to najvýraznejšie pri menších blokoch. Pri \(n = 128\) klesla
+hustota približne z 0.916 pri dvoch vrstvách na 0.812 pri piatich vrstvách.
 
-Pri delta experimentoch sa ukázalo to, čo zodpovedá implementácii. Keď
-je delta malá, súkromná superrastúca postupnosť rastie takmer
-minimálne a hustota je veľmi blízko jednej. Keď sa horná hranica delty
-zväčšuje, zväčšujú sa súkromné váhy, potom modul aj verejné váhy, a
-hustota klesá.
+## VÝSLEDKY: VPLYV PARAMETRA DELTA
 
-Pri margin parametroch bol efekt oveľa menší. Dôvod je, že margin sa v
-mojej implementácii pridáva k už existujúcemu súčtu súkromných
-váh. Tento súčet rastie veľmi rýchlo, zatiaľ čo margin je viazaný len
-lineárne na $n$. Preto zmena margin faktora zmení konkrétny modul, ale
-často nezmení bitovú veľkosť verejných váh natoľko, aby sa to výrazne
-prejavilo na hustote.
+Tento graf ukazuje vplyv parametra `delta_max`. V implementácii sa nová
+súkromná superrastúca váha generuje ako súčet predchádzajúcich váh plus náhodný
+prírastok delta.
 
-Najzaujímavejší je iterovaný variant. Každá ďalšia vrstva znovu
-vytvára modulárnu transformáciu nad aktuálnymi verejnými váhami. Tým
-sa zvyšuje veľkosť čísel, ale počet bitov správy zostáva
-rovnaký. Preto s počtom vrstiev hustota klesá a zároveň rastie čas
-generovania kľúča.
+Väčšie `delta_max` dáva generátoru viac priestoru zväčšiť súkromné váhy. Tým
+rastie súčet súkromných váh, následne modul aj bitová veľkosť verejných váh.
+Výsledkom je nižšia hustota.
 
-Toto pekne ukazuje kompromis pri historických variantoch. Iterovanie
-malo lepšie skryť pôvodný trapdoor, ale v implementácii vidno, že za
-to platíme väčšími číslami, pomalším generovaním kľúča a nižšou
-hustotou verejnej inštancie.
+Pri \(n = 128\) klesla hustota z 1.000 pre `delta_max = 1` na približne 0.948
+pre `delta_max = 128`.
+
+Margin som testoval samostatne. Ten sa pridáva až po vytvorení súkromnej
+postupnosti ako rezerva medzi súčtom súkromných váh a modulom. V mojich
+meraniach mal na hustotu výrazne menší vplyv než delta.
 
 ## JEDNODUCHÉ SOLVER EXPERIMENTY
 

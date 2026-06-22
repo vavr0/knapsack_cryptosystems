@@ -23,7 +23,7 @@
 #show raw.where(block: true): set text(size: 0.78em)
 #set heading(numbering: none)
 #set par(leading: 0.22em)
-#set list(spacing: 0.75em)
+#set list(spacing: 0.90em)
 
 #let emphbox(body) = block(
   fill: rgb("#fff7ef"),
@@ -59,14 +59,10 @@
 
 == Motivácia a kontext
 
-#emphbox[
-  Ako môže kryptosystém založený na ťažkom probléme zlyhať?
-]
 
 - verejnokľúčová kryptografia rieši problém zdieľania tajného kľúča
-- batohové kryptosystémy: historický pokus použiť problém súčtu podmnožiny
-- Merkle--Hellman: názorný príklad trapdooru
-- práca: prehľad konštrukcií a útokov + implementácia a experimenty
+- batohové kryptosystémy - historický pokus použiť problém súčtu podmnožiny
+- Merkle--Hellman príklad trapdooru
 
 == Subset-sum a ľahký prípad
 
