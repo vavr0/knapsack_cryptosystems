@@ -10,56 +10,49 @@ vypracoval pod vedením doc. RNDr. Tatiany Jajcayovej, PhD.
 ## MOTIVÁCIA / KONTEXT
 
 Verejnokľúčová kryptografia vznikla ako odpoveď na problém zdieľania tajného
-kľúča pri symetrickej kryptografii. Pri symetrickej kryptografii sa ten istý
-tajný kľúč používa na šifrovanie aj dešifrovanie, takže komunikujúce strany si
-ho musia bezpečne vymeniť ešte pred komunikáciou.
+kľúča pri symetrickej kryptografii. Asymetricka kryptografia vyuziva namiesto
+jedného spoločného tajomstva dva kluce - verejný a súkromný. Verejným kľúčom
+môže správu zašifrovať ktokoľvek, ale dešifrovať ju má vedieť iba držiteľ
+zodpovedajúceho súkromného kľúča. 
 
-Asymetricka kryptografia vyuziva namiesto jedného spoločného tajomstva dva
-kluce - verejný a súkromný. Verejným kľúčom môže správu zašifrovať ktokoľvek,
-ale dešifrovať ju má vedieť iba držiteľ zodpovedajúceho súkromného kľúča. 
-
-Celé to stojí na asymetrii výpočtu: zašifrovanie má byť jednoduché, ale opačný smer
-má byť bez súkromného kľúča prakticky nevykonateľný.
+Celé to stojí na asymetrii výpočtu: zašifrovanie má byť jednoduché, ale opačný
+smer má byť bez súkromného kľúča prakticky nevykonateľný.
 
 Batohové kryptosystémy boli historickým pokusom postaviť túto asymetriu na
-probléme súčtu podmnožiny. Jeho rozhodovacia verzia je NP-úplná, a práve preto
-sa tento problém na prvý pohľad javil ako silný základ pre kryptografiu.
+probléme súčtu podmnožiny. Pre všeobecný prípad nepoznáme efektívny algoritmus,
+preto sa tento problém na prvý pohľad javil ako zaujímavý základ pre
+kryptografiu.
 
-Merkle--Hellmanov batohovy kryptosystem je dobrý príklad toho, prečo to nestačí. Tento
-problém má vyzerať ťažko, ale drzitel súkromneho kľúča ho vie previest na
-jednoducho riešiteľnú inštanciu. Ak sa však táto štruktúra dá z verejného kľúča
-spätne odhaliť alebo obísť, samotná NP-úplnosť všeobecného problému bezpečnosť
-nezaručuje.
+V práci sa pozerám na to, ako túto myšlienku využíva Merkle--Hellmanova schéma,
+prečo táto konštrukcia zlyhala, aké varianty vznikli a ako sa vybrané varianty
+správajú v implementácii.
 
 ## SUBSET-SUM A SUPERINCREASING
 
 Problém súčtu podmnožiny je matematicky základ, na ktorom sú tieto
 kryptosystémy postavené. Máme danu postupnosť čísel, ktoré si môžeme predstaviť
 ako váhy, a máme cieľový súčet. Úlohou je vybrať také váhy, ktorých súčet dá
-práve túto hodnotu. V rozhodovacej verzii sa pýtame iba na to, či taký výber
-existuje. 
+práve túto hodnotu. Tento problem patri do triedy np-uplnych problemov.
 
-Vo všeobecnosti nepoznáme efektívny algoritmus, ktorý by tento problém riešil
-pre ľubovoľný vstup. Na to aby sme ho mohli pouzit v kryptosysteme pre
-dešifrovanie však bude dôležitý špeciálny prípad, ktorý efektívne riešiť vieme.
+Na to aby sme ho mohli pouzit v kryptosysteme pre dešifrovanie však bude
+dôležitý špeciálny prípad, ktorý efektívne riešiť vieme.
 
-Tým je superrastúca postupnosť. To znamená, že každý ďalší prvok je väčší ako
-súčet všetkých predchádzajúcich prvkov.
+Tým je superrastúca postupnosť. V takejto postupnosti je každá ďalšia váha
+väčšia než suma vsetkych predchádzajúcich váh dokopy.
 
-Pri takejto postupnosti funguje greedy algoritmus. Postupuje sa od najväčšej
+Takuto postupnost vieme riesit greedy algoritmus. Postupuje sa od najväčšej
 váhy nadol a vždy sa vyberie váha, ktorá sa ešte zmestí do zostávajúceho súčtu.
 Je to korektné práve preto, že menšie váhy už nedokážu nahradiť jednu väčšiu
 superrastúcu váhu.
 
 ## MERKLE--HELLMAN
 
-Merkle--Hellmanova schéma využíva rozdiel medzi všeobecným problémom
-súčtu podmnožiny a superrastúcou postupnosťou, ktorá sa dá riešiť
-greedy algoritmom.
+Merkle--Hellmanov kryptosystem využíva tento rozdiel medzi všeobecným problémom
+súčtu podmnožiny a superrastúcou postupnosťou.
 
-Schema zacina generovanim klucov. Najprv vytvorí súkromná superrastúca
+Schema zacina generovanim klucov. Najprv vygeneruje súkromná superrastúca
 postupnosť. Následne sa zvolí modulo m, ktorý je väčší ako súčet súkromných
-váh. Potom sa zvolí násobiteľ r, ktorý je s m nesúdeliteľný. Táto podmienka je
+váh a násobiteľ r, ktorý je s m nesúdeliteľný. Táto podmienka je
 dôležitá preto, že násobenie číslom r modulo m je potom vratná operácia. Inými
 slovami, existuje k nemu modulárna inverzia, ktorú neskôr použijeme pri
 dešifrovaní.
@@ -74,14 +67,8 @@ ktoré váhy sa do súčtu zahrnú.
 
 Pri dešifrovaní sa šifrový text vynásobí modulárnou inverziou násobiteľa a
 zoberie sa zvyšok modulo m. Tým odstranime modularnu transformaciu a dostaneme
-sa späť k súčtu nad pôvodnou superrastúcou postupnosťou. Keďže $m$ bolo zvolené
-väčšie ako súčet všetkých súkromných váh, tento súčet sa dá jednoznačne
-obnoviť. Potom už použijeme greedy algoritmus pre superrastúcu postupnosť a
-získame pôvodné bity správy.
-
-Trapdoor je teda v tom, že útočník vidí iba transformovanú subset-sum
-inštanciu, zatiaľ čo držiteľ súkromného kľúča ju vie previesť späť na
-ľahký superrastúci prípad.
+sa späť k súčtu nad pôvodnou superrastúcou postupnosťou. Potom už použijeme
+greedy algoritmus pre superrastúcu postupnosť a získame pôvodné bity správy.
 
 ## PREČO ZLYHAL
 
@@ -94,16 +81,16 @@ unikať využiteľná štruktúra.
 
 Kritickým momentom bol Shamirov útok, ktorý ukázal, že základnú
 Merkle--Hellmanovu schému je možné prelomiť v polynomiálnom
-čase. Dôležité je, že útočník nemusí nájsť presne pôvodný súkromný
+čase. Tento útok využíva vzťahy medzi verejnými váhami, ktoré vznikli rovnakým
+modulárnym násobiteľom, a z nich hľadá inú transformáciu späť na ľahký prípad.
+Dôležité je, že útočník nemusí nájsť presne pôvodný súkromný
 kľúč. Stačí mu nájsť ekvivalentný trapdoor, teda inú transformáciu,
 ktorá mu umožní previesť verejnú batohovú inštanciu späť na ľahko
 riešiteľný prípad.
 
-Ďalšia línia útokov súvisí s nízkou hustotou batohových
-inštancií. Hustota zjednodušene vyjadruje pomer medzi počtom prvkov a
-veľkosťou čísel vo verejnom kľúči. Pri nízkej hustote sa dajú použiť
-mriežkové metódy, napríklad založené na LLL algoritme, ktoré sa snažia
-nájsť riešenie subset-sum inštancie priamo.
+Druhá línia útokov súvisí s nízkou hustotou. Ak sú verejné váhy veľké vzhľadom
+na počet prvkov, subset-sum inštancia má špeciálny tvar, ktorý sa dá využiť
+mriežkovými metódami, napríklad pomocou LLL algoritmu.
 
 Hlavné poučenie je teda to, že NP-úplnosť všeobecného problému sama
 osebe nezaručuje bezpečnosť konkrétneho kryptosystému. Treba
@@ -112,69 +99,49 @@ zanecháva.
 
 ## VARIANTY A HISTORICKÝ VÝVOJ
 
-Po objavení slabín základnej Merkle--Hellmanovej schémy vznikali rôzne
-varianty, ktorých cieľom bolo lepšie skryť pôvodnú štruktúru
-súkromného kľúča.
+S Merkle--Hellmanovou myšlienkou vznikali aj varianty, ktorých cieľom bolo
+lepšie skryť pôvodnú súkromnú štruktúru.
 
-Jednoduchou úpravou je permutovaný Merkle--Hellman. Ten okrem
-modulárnej transformácie používa aj permutáciu prvkov, aby sa ešte
-zakrylo poradie pôvodnej superrastúcej postupnosti. Problém je, že
-základný vzťah medzi verejnými a súkromnými váhami tým nezmizne.
+Permutovaný variant pridáva tajnú permutáciu váh, iterovaný variant viac
+modulárnych vrstiev. Ani jedna úprava však neodstránila základný problém:
+verejný kľúč stále vzniká zo špeciálnej skrytej štruktúry.
 
-Ďalším pokusom je iterovaný Merkle--Hellman, kde sa nepoužije iba
-jedna modulárna transformácia, ale viac vrstiev za sebou. Myšlienka
-je, že opakovaním transformácie by malo byť ťažšie spätne odhaliť
-pôvodnú súkromnú štruktúru. Ukázalo sa však, že ani toto nestačí.
-Brickellov útok využil mriežkové metódy na obnovenie použiteľnej
-skrytej štruktúry aj pri iterovaných batohoch.
+V praci spominam aj Chor--Rivest system, ktory nepouziva superrastúcu
+postupnosť. je založený na aritmetike v konečných poliach. Aj tu však verejný
+kľúč niesol špeciálnu algebraickú štruktúru a navrhované parametre boli
+prelomené Vaudenayovým útokom.
 
-V práci spomínam aj Chor--Rivestov kryptosystém. Ten už nie je iba
-ďalšou úpravou Merkle--Hellmana, pretože nepoužíva superrastúcu
-postupnosť. Trapdoor je postavený na aritmetike v konečných poliach a
-verejný kľúč má stále podobu batohovej inštancie. Aj tu sa však neskôr
-ukázalo, že verejný kľúč nesie špeciálnu algebraickú štruktúru;
-navrhované parametre boli prelomené Vaudenayovým útokom.
+Spoločný vzor je teda rovnaký: pokusy o opravu zmenili formu trapdooru alebo
+maskovania, ale problém zneužiteľnej štruktúry verejného kľúča zostal.
 
-Spoločný vzor je teda rovnaký: varianty sa snažili zachovať efektivitu
-batohového šifrovania a lepšie zakryť súkromnú štruktúru, ale v praxi
-sa ukázalo, že táto štruktúra sa často dá z verejného kľúča stále
-využiť. Preto majú tieto systémy dnes skôr historickú a didaktickú
-hodnotu než praktické použitie.
+   ## IMPLEMENTÁCIA
 
-## IMPLEMENTÁCIA
+V praktickej časti som pripravil vlastnú C implementáciu vybraných
+Merkle--Hellmanových variantov. Cieľom nebola bezpečná kryptografická knižnica,
+ale experimentálny nástroj na ukázanie fungovania schém a porovnanie ich
+správania.
 
-V praktickej casti som pripravil vlastnú implementáciu vybraných
-Merkle--Hellmanových variantov. Cieľom nebolo vytvoriť bezpečnú
-kryptografickú knižnicu, ale experimentálny nástroj, na ktorom sa dá
-ukázať fungovanie schém a porovnať ich správanie.
-
-Implementácia je napísaná v jazyku C a používa knižnicu GMP na prácu s
-veľkými celými číslami. To je dôležité, pretože už pri väčších
-blokových veľkostiach rýchlo rastú hodnoty súkromných váh, modulu aj
+Na prácu s veľkými celými číslami používam knižnicu GMP. To je dôležité,
+pretože s rastúcou veľkosťou bloku rastú aj hodnoty súkromných váh, čísla m a
 verejného kľúča.
 
-Implementované sú tri varianty: klasický Merkle--Hellman, permutovaný
-Merkle--Hellman a iterovaný Merkle--Hellman. Všetky sú v kóde zapojené
-cez rovnaké rozhranie, ktoré zjednocuje generovanie kľúčov, šifrovanie
-a dešifrovanie.
+Implementované sú tri varianty: klasický, permutovaný a iterovaný
+Merkle--Hellman. Všetky sú zapojené cez rovnaké rozhranie pre generovanie
+kľúčov, šifrovanie a dešifrovanie.
 
-Okrem samotných schém program obsahuje aj demo a benchmark režim. Demo slúži
-na kontrolu celého priebehu šifrovania a dešifrovania, benchmark na meranie
-jednotlivých operácií.
+   ## UKÁŽKA CLI
 
-## UKÁŽKA CLI
+Program sa ovláda cez príkazový riadok a má dva hlavné režimy,  demo a
+benchmark. Demo režim ukazuje celý priebeh šifrovania a dešifrovania, benchmark
+režim meria keygen, encrypt a decrypt a vypisuje výsledky do CSV.
 
-Toto je príklad demo režimu. Cez príkazový riadok sa volí schéma, veľkosť
-bloku, vstupná správa a voliteľne seed. Pri textovom vstupe program správu
-prevedie na bity, rozdelí ju do blokov pevnej veľkosti a posledný blok prípadne
-doplní nulami.
+V demo režime sa volí schéma, veľkosť bloku, vstupná správa a voliteľne seed.
+Pri textovom vstupe program správu prevedie na bity, rozdelí ju do blokov
+pevnej veľkosti a posledný blok prípadne doplní nulami.
 
 Seed slúži na reprodukovateľnosť. Ak ho nezadám, program použije entropiu
 operačného systému. Pri experimentoch som seed zadával explicitne a ďalej sa
-rozbalil pre PCG generátor.
-
-Benchmark režim používa rovnaké schémy, ale namiesto ukážky správy meria
-keygen, encrypt a decrypt a vypisuje výsledky do CSV.
+rozbalil pre pseudonáhodný generátor.
 
 ## EXPERIMENTÁLNE NASTAVENIE
 
@@ -186,28 +153,25 @@ Pre každé nastavenie som použil tri rôzne seedy; z meraných opakovaní sa b
 priemer. Každý beh zároveň overil, že dešifrovaný výstup sedí s pôvodným
 vstupom.
 
-## VÝSLEDKY: RUNTIME
+   ## VÝSLEDOK: RUNTIME VARIANTOV
 
-V experimentoch na cas behu programu sa ukázalo, že klasický a permutovaný variant
-majú veľmi podobné správanie. To dáva zmysel, pretože permutácia mení
-poradie prvkov, ale nepridáva zásadne drahú operáciu pri samotnom
-šifrovaní alebo dešifrovaní.
+Pri meraní celkového času sa ukázalo, že klasický a permutovaný variant majú
+veľmi podobné správanie. Permutácia mení poradie prvkov, ale nepridáva zásadne
+drahú operáciu.
 
-Iterovaný variant bol pomalší, pretože pri generovaní kľúča aj pri
-dešifrovaní pracuje s viacerými modulárnymi transformáciami. Pri
-väčších blokových veľkostiach sa tento rozdiel prejaví výraznejšie.
+Iterovaný variant bol podľa očakávania pomalší, pretože používa viac
+modulárnych vrstiev. Pri n = 4096 bol klasický variant približne na úrovni
+11 ms, permutovaný okolo 12 ms a iterovaný okolo 31 ms.
 
-Najdôležitejší výsledok bol, že pri veľkých hodnotách $n$ dominuje
-hlavne generovanie kľúča. Šifrovanie a dešifrovanie ostávajú v
-porovnaní s ním relatívne rýchle. Napríklad pri $n = 4096$ bol
-klasický variant rádovo v desiatkach milisekúnd a iterovaný variant
-bol podľa očakávania pomalší.
+## VÝSLEDOK: ČO STOJÍ NAJVIAC ČASU
 
-Tento výsledok zodpovedá štruktúre schémy. Šifrovanie je v podstate
-lineárny prechod cez verejné váhy a ich sčítanie podľa bitov
-správy. Dešifrovanie pridáva modulárnu inverziu a greedy postup, ale
-stále zostáva relatívne jednoduché. Najviac práce vzniká pri
-generovaní veľkých parametrov a verejného kľúča.
+Pri meranii casu jednotlivych faz vidno, že pri veľkých hodnotách n dominuje generovanie
+kľúča. Šifrovanie aj dešifrovanie zostávajú v porovnaní s ním veľmi rýchle.
+
+To bola aj jedna z historicky atraktívnych vlastností batohových kryptosystémov:
+po vytvorení kľúčov je šifrovanie v podstate len sčítanie vybraných verejných
+váh. Problém teda nebol v efektivite, ale v tom, že verejný kľúč stále niesol
+zneužiteľnú štruktúru.
 
 ## VÝSLEDKY: HUSTOTA PRI ITEROVANÍ
 
@@ -241,7 +205,7 @@ meraniach mal na hustotu výrazne menší vplyv než delta.
 
 ## HLAVNÉ PRÍNOSY PRÁCE
 
-Hlavný prínos práce vidím najmä v prehľadnom spracovaní klasických
+Hlavný prínos práce je v prehľadnom spracovaní klasických
 batohových kryptosystémov. V práci som sa snažil nielen opísať
 Merkle--Hellmanovu schému, ale aj ukázať, prečo zlyhala, aké varianty
 vznikli a aké typy útokov sa pri nich objavili.

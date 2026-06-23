@@ -53,8 +53,8 @@
 
 - problém zdieľania tajného kľúča pri symetrickej kryptografii
 - verejný a súkromný kľúč, asymetria výpočtu
-- subset-sum ako historický základ batohových kryptosystémov
-- Merkle--Hellman: trapdoor, zlyhanie, varianty a implementácia
+- subset-sum ako zaujímavý základ bez známeho efektívneho algoritmu
+- práca sleduje Merkle--Hellman, zlyhanie, varianty a implementáciu
 
 == Subset-sum a ľahký prípad
 
@@ -87,7 +87,8 @@
 
 - verejný kľúč nevzniká ako náhodná všeobecná inštancia
 - vzniká prevodom zo súkromnej superrastúcej štruktúry
-- Shamirov útok prelomil základnú schému v polynomiálnom čase
+- Shamirov útok využíva vzťahy medzi verejnými váhami
+- hľadá inú transformáciu späť na ľahký prípad
 - nízka hustota umožňuje mriežkové útoky, napríklad LLL
 - NP-úplnosť všeobecného problému sama osebe nestačí
 
@@ -109,14 +110,14 @@
 - veľké celé čísla pomocou GMP (`mpz_t`)
 - varianty `mh-classic`, `mh-permuted`, `mh-iterated`
 - spoločné rozhranie `keygen`, `encrypt`, `decrypt`, cleanup
-- pseudonáhodný generátor; bežný seed z OS entropie, experimenty s explicitným seedom
 
 == Ukážka CLI
 
+- režimy `demo` a `bench`
 - voľby schémy, vstupu, veľkosti bloku a seedu
 - text sa prevedie na bity a rozdelí do blokov
-- seed umožňuje reprodukovateľný beh
-- benchmark režim vypisuje CSV pre grafy
+- bez seedu OS entropia, so seedom reprodukovateľný beh
+- `bench` meria keygen, encrypt, decrypt do CSV
 
 #codebox[
 ```text
@@ -155,7 +156,8 @@ Status: OK
 #graphslide("../code/experiments/plots/crypto_components_classic.png")[
 - v klasickom variante dominuje generovanie kľúča
 - pri $n=4096$ keygen ≈ 10.9 ms
-- šifrovanie aj dešifrovanie boli pod 0.1 ms
+- po vytvorení kľúčov je komunikácia veľmi lacná
+- problém bol v štruktúre verejného kľúča, nie v efektivite
 ]
 
 == Hustota pri iterovaní
@@ -188,7 +190,7 @@ Status: OK
 - klasické batohové kryptosystémy dnes nie sú vhodné na praktické šifrovanie
 - ich význam je najmä historický a didaktický
 - problém súčtu podmnožiny sa v teórii stále študuje
-- praktická verejná kryptografia sa vydala inými smermi
+- praktická verejná kryptografia sa vydala inými smermi, napríklad RSA a eliptické krivky
 - RSA ako kontrast, faktorizácia namiesto NP-úplného problému
 
 #align(center)[Ďakujem za pozornosť.]
