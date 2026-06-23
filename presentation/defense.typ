@@ -5,8 +5,7 @@
   aspect-ratio: "16-9",
   footer: self => self.info.institution,
   config-info(
-    title: [Klasický batohový kryptosystém a jeho varianty],
-    subtitle: [Classical Knapsack Cryptosystem and its Variations],
+    title: [Klasický knapsack kryptosystém a jeho varianty],
     author: [
       #grid(
         columns: (auto, 1fr),
@@ -52,9 +51,10 @@
 == Motivácia a kontext
 
 - problém zdieľania tajného kľúča pri symetrickej kryptografii
-- verejný a súkromný kľúč, asymetria výpočtu
-- subset-sum ako zaujímavý základ bez známeho efektívneho algoritmu
-- práca sleduje Merkle--Hellman, zlyhanie, varianty a implementáciu
+- verejný kľúč na šifrovanie 
+- súkromný kľúč na dešifrovanie
+- asymetria výpočtu
+- knapsack kryptosystémy ako historický pokus o takúto asymetriu
 
 == Subset-sum a ľahký prípad
 
@@ -79,8 +79,7 @@
   [šifrovanie], [$ C = sum_(i=1)^n x_i b_i $],
   [dešifrovanie], [$ C' equiv r^(-1) C mod m $],
 )
-
-- po dešifrovacej transformácii sa rieši pôvodná superrastúca postupnosť
+- vynásobenie modulárnym inverzom čísla r odstráni modulárnu transformáciu.
 - trapdoor je návrat zo zdanlivo ťažkej verejnej inštancie na ľahko riešiteľný prípad
 
 == Prečo konštrukcia zlyhala
@@ -104,16 +103,18 @@
   [Chor--Rivest], [trapdoor v konečných poliach], [algebraická štruktúra verejného kľúča],
 )
 
-== Implementácia
+== Implementácia a merania
 
-- jazyk C
-- veľké celé čísla pomocou GMP (`mpz_t`)
+- C implementácia s GMP pre veľké celé čísla
 - varianty `mh-classic`, `mh-permuted`, `mh-iterated`
 - spoločné rozhranie `keygen`, `encrypt`, `decrypt`, cleanup
+- release build C programu; Python iba spúšťa program a kreslí grafy
+- benchmarky pre $n in {128, 256, 512, 1024, 2048, 4096}$
+- 3 seedy; warm-up; priemer z 5 meraní; kontrola dešifrovania
 
 == Ukážka CLI
 
-- režimy `demo` a `bench`
+- `demo` ukazuje celý priebeh šifrovania a dešifrovania
 - voľby schémy, vstupu, veľkosti bloku a seedu
 - text sa prevedie na bity a rozdelí do blokov
 - bez seedu OS entropia, so seedom reprodukovateľný beh
@@ -132,14 +133,6 @@ Decrypted-Text: two block message
 Status: OK
 ```
 ]
-
-== Experimentálne nastavenie
-
-- release build C programu
-- Python skripty pre spustenie, CSV a grafy
-- veľkosti blokov $n in {128, 256, 512, 1024, 2048, 4096}$
-- 3 seedy; warm-up; priemer z 5 meraní
-- kontrola správneho dešifrovania
 
 == Výsledok: runtime variantov
 
@@ -179,7 +172,7 @@ Status: OK
 
 == Hlavné prínosy práce
 
-- prehľad a systematizácia klasických batohových kryptosystémov
+- prehľad a systematizácia klasických knapsack kryptosystémov
 - vysvetlenie zlyhania cez rozdiel medzi ťažkým problémom a štruktúrou kľúčov
 - C/GMP implementácia troch Merkle--Hellmanových variantov
 - demo a benchmark režim
@@ -187,7 +180,7 @@ Status: OK
 
 == Záver
 
-- klasické batohové kryptosystémy dnes nie sú vhodné na praktické šifrovanie
+- klasické knapsack kryptosystémy dnes nie sú vhodné na praktické šifrovanie
 - ich význam je najmä historický a didaktický
 - problém súčtu podmnožiny sa v teórii stále študuje
 - praktická verejná kryptografia sa vydala inými smermi, napríklad RSA a eliptické krivky
@@ -197,7 +190,9 @@ Status: OK
 
 == Otázky k práci
 
-- otázky z posudku oponenta: doplniť po doručení
+- Ktoré vlastnosti verejného kľúča umožňujú Shamirov útok?
+- Akú úlohu hrá hustota pri mriežkových útokoch na subset-sum?
+- Ktorý útok by bolo najpraktickejšie implementovať ako rozšírenie práce?
 
 == Otázky k rozprave
 

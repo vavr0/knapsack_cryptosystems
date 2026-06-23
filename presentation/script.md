@@ -18,11 +18,6 @@ zodpovedajúceho súkromného kľúča.
 Celé to stojí na asymetrii výpočtu: zašifrovanie má byť jednoduché, ale opačný
 smer má byť bez súkromného kľúča prakticky nevykonateľný.
 
-Batohové kryptosystémy boli historickým pokusom postaviť túto asymetriu na
-probléme súčtu podmnožiny. Pre všeobecný prípad nepoznáme efektívny algoritmus,
-preto sa tento problém na prvý pohľad javil ako zaujímavý základ pre
-kryptografiu.
-
 V práci sa pozerám na to, ako túto myšlienku využíva Merkle--Hellmanova schéma,
 prečo táto konštrukcia zlyhala, aké varianty vznikli a ako sa vybrané varianty
 správajú v implementácii.
@@ -50,7 +45,7 @@ superrastúcu váhu.
 Merkle--Hellmanov kryptosystem využíva tento rozdiel medzi všeobecným problémom
 súčtu podmnožiny a superrastúcou postupnosťou.
 
-Schema zacina generovanim klucov. Najprv vygeneruje súkromná superrastúca
+Schema zacina generovanim klucov. Najprv sa vygeneruje súkromná superrastúca
 postupnosť. Následne sa zvolí modulo m, ktorý je väčší ako súčet súkromných
 váh a násobiteľ r, ktorý je s m nesúdeliteľný. Táto podmienka je
 dôležitá preto, že násobenie číslom r modulo m je potom vratná operácia. Inými
@@ -72,68 +67,38 @@ greedy algoritmus pre superrastúcu postupnosť a získame pôvodné bity správ
 
 ## PREČO ZLYHAL
 
-Postupne sa ukázalo, že samotná modulárna transformácia v
-Merkle--Hellmanovej schéme nestačí na úplné skrytie pôvodnej
-superrastúcej štruktúry. Verejný kľúč síce už nevyzerá superrastúco,
-ale stále nevznikol ako náhodná všeobecná inštancia. Vznikol
-konkrétnym prevodom zo súkromného kľúča, a práve z tohto prevodu môže
-unikať využiteľná štruktúra.
+Slabina Merkle--Hellmana bola v tom, že verejný kľúč nie je náhodná
+subset-sum inštancia. Vznikol zo superrastúcej postupnosti konkrétnou
+modulárnou transformáciou.
 
-Kritickým momentom bol Shamirov útok, ktorý ukázal, že základnú
-Merkle--Hellmanovu schému je možné prelomiť v polynomiálnom
-čase. Tento útok využíva vzťahy medzi verejnými váhami, ktoré vznikli rovnakým
-modulárnym násobiteľom, a z nich hľadá inú transformáciu späť na ľahký prípad.
-Dôležité je, že útočník nemusí nájsť presne pôvodný súkromný
-kľúč. Stačí mu nájsť ekvivalentný trapdoor, teda inú transformáciu,
-ktorá mu umožní previesť verejnú batohovú inštanciu späť na ľahko
-riešiteľný prípad.
+Shamirov útok využíva vzťahy medzi verejnými váhami a zostaví ekvivalentný
+súkromný kľúč použiteľný na dešifrovanie. Pri nízkej hustote sa zase dá
+subset-sum riešiť mriežkovými metódami, napríklad pomocou LLL.
 
-Druhá línia útokov súvisí s nízkou hustotou. Ak sú verejné váhy veľké vzhľadom
-na počet prvkov, subset-sum inštancia má špeciálny tvar, ktorý sa dá využiť
-mriežkovými metódami, napríklad pomocou LLL algoritmu.
+Ďalšie varianty sa snažili túto štruktúru zakryť permutáciou, viacerými
+vrstvami alebo iným trapdoorom, ako pri Chor--Rivest. Spoločný problém však
+zostal: verejný kľúč stále niesol štruktúru, ktorú bolo možné využiť.
 
-Hlavné poučenie je teda to, že NP-úplnosť všeobecného problému sama
-osebe nezaručuje bezpečnosť konkrétneho kryptosystému. Treba
-analyzovať aj to, aké inštancie schéma generuje a akú štruktúru v nich
-zanecháva.
+## IMPLEMENTÁCIA A MERANIA
 
-## VARIANTY A HISTORICKÝ VÝVOJ
+V praktickej časti som pripravil vlastnú C implementáciu troch
+Merkle--Hellmanových variantov: klasického, permutovaného a iterovaného.
+Cieľom nebola bezpečná kryptografická knižnica, ale experimentálny nástroj na
+ukázanie fungovania schém a porovnanie ich správania.
 
-S Merkle--Hellmanovou myšlienkou vznikali aj varianty, ktorých cieľom bolo
-lepšie skryť pôvodnú súkromnú štruktúru.
+Na prácu s veľkými celými číslami používam knižnicu GMP. Varianty sú zapojené
+cez rovnaké rozhranie pre generovanie kľúčov, šifrovanie a dešifrovanie.
 
-Permutovaný variant pridáva tajnú permutáciu váh, iterovaný variant viac
-modulárnych vrstiev. Ani jedna úprava však neodstránila základný problém:
-verejný kľúč stále vzniká zo špeciálnej skrytej štruktúry.
+Merania bežali nad release buildom C programu. Python skripty slúžili iba na
+spúšťanie binárky, zber CSV výstupov a generovanie grafov. V benchmarkoch som
+testoval veľkosti od n = 128 po n = 4096, tri seedy a priemer z meraní po
+warm-upe. Každý beh zároveň overil správne dešifrovanie.
 
-V praci spominam aj Chor--Rivest system, ktory nepouziva superrastúcu
-postupnosť. je založený na aritmetike v konečných poliach. Aj tu však verejný
-kľúč niesol špeciálnu algebraickú štruktúru a navrhované parametre boli
-prelomené Vaudenayovým útokom.
+## UKÁŽKA CLI
 
-Spoločný vzor je teda rovnaký: pokusy o opravu zmenili formu trapdooru alebo
-maskovania, ale problém zneužiteľnej štruktúry verejného kľúča zostal.
-
-   ## IMPLEMENTÁCIA
-
-V praktickej časti som pripravil vlastnú C implementáciu vybraných
-Merkle--Hellmanových variantov. Cieľom nebola bezpečná kryptografická knižnica,
-ale experimentálny nástroj na ukázanie fungovania schém a porovnanie ich
-správania.
-
-Na prácu s veľkými celými číslami používam knižnicu GMP. To je dôležité,
-pretože s rastúcou veľkosťou bloku rastú aj hodnoty súkromných váh, čísla m a
-verejného kľúča.
-
-Implementované sú tri varianty: klasický, permutovaný a iterovaný
-Merkle--Hellman. Všetky sú zapojené cez rovnaké rozhranie pre generovanie
-kľúčov, šifrovanie a dešifrovanie.
-
-   ## UKÁŽKA CLI
-
-Program sa ovláda cez príkazový riadok a má dva hlavné režimy,  demo a
-benchmark. Demo režim ukazuje celý priebeh šifrovania a dešifrovania, benchmark
-režim meria keygen, encrypt a decrypt a vypisuje výsledky do CSV.
+Program sa ovláda cez príkazový riadok a má dva hlavné režimy, demo a
+benchmark. Demo ukazuje celý priebeh šifrovania a dešifrovania na konkrétnej
+správe, benchmark meria keygen, encrypt a decrypt a vypisuje výsledky do CSV.
 
 V demo režime sa volí schéma, veľkosť bloku, vstupná správa a voliteľne seed.
 Pri textovom vstupe program správu prevedie na bity, rozdelí ju do blokov
@@ -142,16 +107,6 @@ pevnej veľkosti a posledný blok prípadne doplní nulami.
 Seed slúži na reprodukovateľnosť. Ak ho nezadám, program použije entropiu
 operačného systému. Pri experimentoch som seed zadával explicitne a ďalej sa
 rozbalil pre pseudonáhodný generátor.
-
-## EXPERIMENTÁLNE NASTAVENIE
-
-Merania som robil nad release buildom C programu. Python skripty slúžili iba
-na spúšťanie programu, zber CSV výstupov a generovanie grafov.
-
-Pri runtime benchmarkoch som porovnával tri varianty pre n od 128 po 4096.
-Pre každé nastavenie som použil tri rôzne seedy; z meraných opakovaní sa bral
-priemer. Každý beh zároveň overil, že dešifrovaný výstup sedí s pôvodným
-vstupom.
 
    ## VÝSLEDOK: RUNTIME VARIANTOV
 
@@ -168,14 +123,14 @@ modulárnych vrstiev. Pri n = 4096 bol klasický variant približne na úrovni
 Pri meranii casu jednotlivych faz vidno, že pri veľkých hodnotách n dominuje generovanie
 kľúča. Šifrovanie aj dešifrovanie zostávajú v porovnaní s ním veľmi rýchle.
 
-To bola aj jedna z historicky atraktívnych vlastností batohových kryptosystémov:
+To bola aj jedna z historicky atraktívnych vlastností knapsack kryptosystémov:
 po vytvorení kľúčov je šifrovanie v podstate len sčítanie vybraných verejných
 váh. Problém teda nebol v efektivite, ale v tom, že verejný kľúč stále niesol
 zneužiteľnú štruktúru.
 
 ## VÝSLEDKY: HUSTOTA PRI ITEROVANÍ
 
-Hustotu verejnej batohovej inštancie počítam ako pomer počtu prvkov (n) k
+Hustotu verejnej knapsack inštancie počítam ako pomer počtu prvkov (n) k
 bitovej veľkosti najväčšej verejnej váhy. Pri rovnakom (n) teda nižšia hustota
 znamená, že najväčšia verejná váha potrebuje viac bitov.
 
@@ -206,7 +161,7 @@ meraniach mal na hustotu výrazne menší vplyv než delta.
 ## HLAVNÉ PRÍNOSY PRÁCE
 
 Hlavný prínos práce je v prehľadnom spracovaní klasických
-batohových kryptosystémov. V práci som sa snažil nielen opísať
+knapsack kryptosystémov. V práci som sa snažil nielen opísať
 Merkle--Hellmanovu schému, ale aj ukázať, prečo zlyhala, aké varianty
 vznikli a aké typy útokov sa pri nich objavili.
 
@@ -220,7 +175,7 @@ algoritmy pre subset-sum a praktickú implementáciu s veľkými číslami.
 
 ## ZÁVER
 
-Klasické batohové kryptosystémy dnes nie sú vhodné na praktické
+Klasické knapsack kryptosystémy dnes nie sú vhodné na praktické
 šifrovanie. Ich význam je skôr historický a didaktický.
 
 Problém súčtu podmnožiny tým ale z kryptografie úplne nezmizol. Stále
